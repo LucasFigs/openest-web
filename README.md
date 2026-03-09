@@ -13,12 +13,25 @@ Frontend Web da plataforma Openest, desenvolvido com React, Vite e TailwindCSS.
 
 ## 📋 Pré-requisitos
 
-- Node.js 18.x ou superior
-- NPM ou Yarn
+Antes de começar, você precisará ter instalado em sua máquina:
 
-## 🔧 Instalação
+### Obrigatórios
 
-1. Clone o repositório
+| Ferramenta  | Versão            | Instalação                      |
+| ----------- | ----------------- | ------------------------------- |
+| **Node.js** | 20.x LTS          | [Download](https://nodejs.org/) |
+| **npm**     | 10.x (já incluso) | Vem com Node.js                 |
+
+### Opcionais (recomendados)
+
+| Ferramenta                     | Uso                       | Instalação                                                              |
+| ------------------------------ | ------------------------- | ----------------------------------------------------------------------- |
+| **NVM** (Node Version Manager) | Gerenciar versões do Node | [Instalação NVM](https://github.com/nvm-sh/nvm#installing-and-updating) |
+| **Vite**                       | Já incluso no projeto     | -                                                                       |
+
+## 🚀 Como rodar o projeto
+
+### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/openest/openest-web.git
