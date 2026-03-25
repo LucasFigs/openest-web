@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+.recovery-page-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, #444444 0%, #2b003d 100%);
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+}
+
+.recovery-card {
+  background-color: #fce4ec; /* Rosa claro padrão */
+  padding: 40px;
+  border-radius: 25px;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- TÍTULOS (Recuperar Senha E Link Enviado) --- */
+.recovery-title, 
+.success-state h2 {
+  font-size: 22px;
+  color: #2b003d !important; /* Roxo escuro da sua paleta - Forçado */
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+/* --- TEXTOS DE INSTRUÇÃO (Enviaremos um link E Verifique sua caixa) --- */
+.recovery-desc, 
+.success-state p {
+  font-size: 14px;
+  color: #444444 !important; /* Cinza escuro para leitura clara - Forçado */
+  margin: 0 0 25px 0;
+  line-height: 1.5;
+}
+
+/* --- ESTILO DO ÍCONE E BOTÕES --- */
+.icon-check {
+  font-size: 45px;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.btn-recovery {
+  background: linear-gradient(90deg, #7b1fa2 0%, #4a148c 100%);
+  color: white;
+  border: none;
+  padding: 14px;
+  width: 100%;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #4a148c;
+  border: 2px solid #7b1fa2;
+  padding: 14px;
+  width: 100%;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+/* Fecha o X */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #7b1fa2;
+  cursor: pointer;
+}
+
+.recovery-logo-fogo { width: 60px; margin-bottom: 5px; }
+.recovery-logo-nome { width: 180px; margin-bottom: 20px; }
