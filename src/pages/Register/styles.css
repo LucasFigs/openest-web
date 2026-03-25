@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Figtree:wght@400;600;700&display=swap');
+
+
+:root {
+  --base-clara: #D9D9D9;       /* Profundidade e Luxo */
+  --roxo-intenso: #6F06AC;     /* Ousadia e Presença */
+  --magenta-escuro: #600156;   /* Mistério e Elegância */
+  --purpura-vivo: #A413AC;     /* Perfeito para Destaques */
+  --roxo-uva: #680481;         /* Seriedade e Criatividade */
+  --lavanda-brilhante: #D48BFF; /* Leveza e Proximidade */
+}
+
+/* RESET GLOBAL - TELA CHEIA */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* Prioriza Poppins, se não tiver, usa Figtree */
+  font-family: 'Poppins', 'Figtree', sans-serif; 
+}
+
+.register-page-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, #4b4b4b 0%, #1a1a1a 50%, #4b0082 100%);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* CARD COM GLASSMORPHISM */
+.register-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 40px;
+  width: 95%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: slideUp 0.5s ease;
+}
+
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.register-logo {
+  max-height: 100px;
+  width: auto;
+}
+
+.register-title {
+  color: #4b0082;
+  margin-bottom: 25px;
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* FORMULÁRIO E INPUTS SIMÉTRICOS */
+.step-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.step-form label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: -10px; /* Aproxima label do input */
+}
+
+.step-form input, .step-form select, .step-form textarea {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(75, 0, 130, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1a1a !important; /* Texto escuro sempre */
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: 0.3s;
+}
+
+.step-form input:focus {
+  outline: none;
+  border-color: #4b0082;
+  box-shadow: 0 0 0 4px rgba(75, 0, 130, 0.1);
+}
+
+/* BOTÕES SIMÉTRICOS E PROPORCIONAIS */
+.button-group {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-secondary {
+  flex: 1; /* Ocupa 1 parte do espaço */
+  background: rgba(255, 255, 255, 0.5);
+  color: #4b0082;
+  border: 1px solid rgba(75, 0, 130, 0.2);
+  border-radius: 12px;
+  padding: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-primary {
+  flex: 2; /* Ocupa 2 partes do espaço (mais largo que o voltar) */
+  background: linear-gradient(90deg, #4b0082 0%, #800080 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.2);
+  transform: translateY(-2px);
+}
