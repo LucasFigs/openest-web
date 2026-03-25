@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import './Login.css';
 
-// 1. CORREÇÃO: Verifique se o nome do arquivo na pasta é "google.png" (com dois 'g')
+// CAMINHOS EXATOS BASEADOS NO SEU PRINT
 import logoFogo from "../../assets/images/LOGO.png";
 import logoNome from "../../assets/images/NOME.png";
-import logoGoogle from "../../assets/images/google.png"; // Ajustei de goole para google
+import logoGoogle from "../../assets/images/google.png";
 
 export default function Login({ setPage }) {
   const [email, setEmail] = useState('');
@@ -27,7 +27,6 @@ export default function Login({ setPage }) {
         </div>
 
         <form onSubmit={handleLogin}>
-          {/* Usei as classes corrigidas aqui para bater com o CSS novo */}
           <div className="input-field">
             <label>Email</label>
             <input 
@@ -65,9 +64,9 @@ export default function Login({ setPage }) {
         </form>
 
         <p className="signup-call">
-          Não tem uma conta? <a href="#" onClick={() => setPage('register')}>Cadastre-se grátis!</a>
+          Não tem uma conta? <a href="#" onClick={(e) => { e.preventDefault(); setPage('register'); }}>Cadastre-se grátis!</a>
         </p>
       </div>
     </div>
-  );
-}
+  ); // Fechamento do return
+} // AQUI ESTAVA O ERRO: Faltava fechar a função!
