@@ -1,13 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Figtree:wght@400;600;700&display=swap');
 
-
 :root {
-  --base-clara: #D9D9D9;       /* Profundidade e Luxo */
-  --roxo-intenso: #6F06AC;     /* Ousadia e Presença */
-  --magenta-escuro: #600156;   /* Mistério e Elegância */
-  --purpura-vivo: #A413AC;     /* Perfeito para Destaques */
-  --roxo-uva: #680481;         /* Seriedade e Criatividade */
-  --lavanda-brilhante: #D48BFF; /* Leveza e Proximidade */
+  --roxo-escuro: #2b003d;
+  --roxo-openest: #4b0082;
+  --roxo-brilhante: #7b1fa2;
 }
 
 /* RESET GLOBAL - TELA CHEIA */
@@ -17,7 +13,6 @@ html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  /* Prioriza Poppins, se não tiver, usa Figtree */
   font-family: 'Poppins', 'Figtree', sans-serif; 
 }
 
@@ -46,36 +41,43 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
   animation: slideUp 0.5s ease;
 }
-
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.card-header {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10px;
+/* BOTÃO DE FECHAR (X) */
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--roxo-openest);
+  cursor: pointer;
+  z-index: 10;
 }
 
 .register-logo {
-  max-height: 100px;
+  max-height: 80px;
   width: auto;
+  margin-bottom: 10px;
 }
 
 .register-title {
-  color: #4b0082;
-  margin-bottom: 25px;
-  font-size: 26px;
+  color: var(--roxo-openest);
+  margin-bottom: 20px;
+  font-size: 24px;
   font-weight: 800;
   text-align: center;
 }
 
-/* FORMULÁRIO E INPUTS SIMÉTRICOS */
+/* FORMULÁRIO E INPUTS (Incluso Fix para Biografia) */
 .step-form {
   width: 100%;
   display: flex;
@@ -87,28 +89,77 @@ html, body, #root {
   font-size: 14px;
   font-weight: 600;
   color: #333;
-  margin-bottom: -10px; /* Aproxima label do input */
 }
 
-.step-form input, .step-form select, .step-form textarea {
+/* Estilo unificado para Input, Select e Textarea (Biografia) */
+.step-form input, 
+.step-form select, 
+.step-form textarea {
   width: 100%;
   padding: 14px;
   border: 1px solid rgba(75, 0, 130, 0.2);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.9);
-  color: #1a1a1a !important; /* Texto escuro sempre */
+  color: #1a1a1a !important; /* Texto escuro nítido */
   font-size: 15px;
   box-sizing: border-box;
   transition: 0.3s;
+  font-family: 'Poppins', sans-serif;
 }
 
-.step-form input:focus {
+/* Estilo específico para a Biografia */
+.step-form textarea {
+  min-height: 80px; /* Altura confortável */
+  max-height: 120px; /* Evita que o card cresça demais */
+  resize: vertical;  /* Bloqueia redimensionamento horizontal */
+  line-height: 1.4;
+}
+
+.step-form input:focus, 
+.step-form select:focus, 
+.step-form textarea:focus {
   outline: none;
-  border-color: #4b0082;
+  border-color: var(--roxo-openest);
   box-shadow: 0 0 0 4px rgba(75, 0, 130, 0.1);
 }
 
-/* BOTÕES SIMÉTRICOS E PROPORCIONAIS */
+/* FIX DA FOTO DE PERFIL: Tamanho Fixo e Redondo */
+.photo-upload-card {
+  width: 140px;
+  height: 140px;
+  margin: 10px auto;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--roxo-openest);
+  background-color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.photo-upload-card:hover {
+  transform: scale(1.02);
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ajusta a foto sem esticar */
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--roxo-openest);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* BOTÕES */
 .button-group {
   display: flex;
   gap: 12px;
@@ -117,19 +168,18 @@ html, body, #root {
 }
 
 .btn-secondary {
-  flex: 1; /* Ocupa 1 parte do espaço */
+  flex: 1;
   background: rgba(255, 255, 255, 0.5);
-  color: #4b0082;
+  color: var(--roxo-openest);
   border: 1px solid rgba(75, 0, 130, 0.2);
   border-radius: 12px;
   padding: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: 0.3s;
 }
 
 .btn-primary {
-  flex: 2; /* Ocupa 2 partes do espaço (mais largo que o voltar) */
+  flex: 2;
   background: linear-gradient(90deg, #4b0082 0%, #800080 100%);
   color: white;
   border: none;
@@ -138,10 +188,19 @@ html, body, #root {
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
-  transition: 0.3s;
 }
 
-.btn-primary:hover {
-  filter: brightness(1.2);
-  transform: translateY(-2px);
+/* FIX CONTRASTE RODAPÉ */
+.footer-text {
+  font-size: 13px;
+  color: var(--roxo-escuro) !important;
+  margin-top: 25px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.footer-text a {
+  color: var(--roxo-brilhante);
+  font-weight: 800;
+  text-decoration: none;
 }

@@ -1,16 +1,13 @@
-// src/pages/Register/Step3.jsx
 import React, { useState } from 'react';
 
 const Step3PhotoStatus = ({ back, update, data, submit }) => {
-  const [preview, setPreview] = useState(null); // Estado local para o preview da imagem
+  const [preview, setPreview] = useState(null);
 
-  // Lógica para capturar o arquivo e criar o preview
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      update({ photo: file }); // Salva o arquivo real no formData pai
+      update({ photo: file }); 
       
-      // Cria uma URL temporária para exibir a imagem no preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
@@ -23,20 +20,21 @@ const Step3PhotoStatus = ({ back, update, data, submit }) => {
     <div className="step-form">
       <h2 className="register-title">Quase lá...</h2>
 
-      <div>
+      <div style={{ textAlign: 'center' }}>
         <label>Foto de Perfil</label>
-        {/* Card do upload (referência da imagem 2) */}
+        
+        {/* Container redondo fixado no CSS */}
         <div className="photo-upload-card" onClick={() => document.getElementById('photoInput').click()}>
           {preview ? (
             <img src={preview} alt="Preview" className="photo-preview" />
           ) : (
             <div className="upload-placeholder">
-              {/* Insira aqui o ícone de upload (nuvem/seta) da imagem 2 */}
-              <span>Adicionar Foto</span>
+              <span style={{ fontSize: '28px', marginBottom: '5px' }}>📷</span>
+              <span>ADICIONAR FOTO</span>
             </div>
           )}
         </div>
-        {/* Input escondido para o clique */}
+
         <input 
           id="photoInput"
           type="file" 
@@ -59,8 +57,8 @@ const Step3PhotoStatus = ({ back, update, data, submit }) => {
       </div>
 
       <div className="button-group">
-        <button className="btn-secondary" onClick={back}>Voltar</button>
-        <button className="btn-primary" onClick={submit}>Finalizar Cadastro</button>
+        <button className="btn-secondary" onClick={back}>VOLTAR</button>
+        <button className="btn-primary" onClick={submit}>FINALIZAR</button>
       </div>
     </div>
   );
