@@ -1,39 +1,16 @@
-# Openest Web
+# React + Vite
 
-Frontend Web da plataforma Openest, desenvolvido com React, Vite e TailwindCSS.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## 🚀 Tecnologias
+Currently, two official plugins are available:
 
-- React 18
-- Vite
-- TailwindCSS
-- React Router DOM
-- Axios
-- Context API
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## 📋 Pré-requisitos
+## React Compiler
 
-Antes de começar, você precisará ter instalado em sua máquina:
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-### Obrigatórios
+## Expanding the ESLint configuration
 
-| Ferramenta  | Versão            | Instalação                      |
-| ----------- | ----------------- | ------------------------------- |
-| **Node.js** | 20.x LTS          | [Download](https://nodejs.org/) |
-| **npm**     | 10.x (já incluso) | Vem com Node.js                 |
-
-### Opcionais (recomendados)
-
-| Ferramenta                     | Uso                       | Instalação                                                              |
-| ------------------------------ | ------------------------- | ----------------------------------------------------------------------- |
-| **NVM** (Node Version Manager) | Gerenciar versões do Node | [Instalação NVM](https://github.com/nvm-sh/nvm#installing-and-updating) |
-| **Vite**                       | Já incluso no projeto     | -                                                                       |
-
-## 🚀 Como rodar o projeto
-
-### 1. Clone o repositório
-
-```bash
-git clone https://github.com/openest/openest-web.git
-cd openest-web
-```
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
