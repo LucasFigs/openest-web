@@ -1,9 +1,18 @@
-import RegisterPage from './pages/Register';
+import React, { useState } from 'react';
+import Welcome from "./pages/welcome/Welcome";
+import Login from "./pages/login/Login";
+import Register from "./pages/Register/index"; // Aponta para o index.jsx da pasta Register
+import './App.css';
 
 function App() {
+  // Começamos na tela de boas-vindas
+  const [page, setPage] = useState('welcome');
+
   return (
-    <div style={{ width: '100%', height: '100%' }}>
-      <RegisterPage />
+    <div className="App">
+      {page === 'welcome' && <Welcome setPage={setPage} />}
+      {page === 'login' && <Login setPage={setPage} />}
+      {page === 'register' && <Register setPage={setPage} />}
     </div>
   );
 }
