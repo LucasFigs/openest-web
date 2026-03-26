@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react'; // Adicionado useContext
+import { AuthContext } from '../../contexts/AuthContext'; 
 import './Login.css';
 
 // CAMINHOS EXATOS BASEADOS NO SEU PRINT
@@ -9,10 +10,23 @@ import logoGoogle from "../../assets/images/google.png";
 export default function Login({ setPage }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  // Pegamos a função de login do contexto global
+  const { login } = useContext(AuthContext);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setPage('home'); 
+    
+    try {
+      // Chama a função login do Contexto enviando os dados para a API
+      await login(email, password);
+      
+      // Se o login for bem-sucedido, o App.jsx mudará a tela automaticamente
+      // Não precisamos mais do setPage('home') manual aqui.
+    } catch (error) {
+      console.error("Erro na autenticação:", error);
+      alert("Falha no login. Verifique seu e-mail e senha.");
+    }
   };
 
   return (
@@ -68,5 +82,5 @@ export default function Login({ setPage }) {
         </p>
       </div>
     </div>
-  ); // Fechamento do return
-} // AQUI ESTAVA O ERRO: Faltava fechar a função!
+  );
+}

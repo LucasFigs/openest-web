@@ -3,8 +3,13 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
+// Importamos o AuthProvider que contém a lógica de login/JWT
+import { AuthProvider } from './contexts/AuthContext' 
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <AuthProvider> 
+      <App />
+    </AuthProvider>
   </StrictMode>,
 )
