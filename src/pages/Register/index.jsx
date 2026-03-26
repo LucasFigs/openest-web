@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
 import './styles.css';
 
 // Caminho do logo conforme seu print
@@ -9,8 +10,8 @@ import Step1Credentials from './Step1';
 import Step2PersonalInfo from './Step2';
 import Step3PhotoStatus from './Step3';
 
-// ADICIONADO: Recebendo a prop setPage para navegação
 const RegisterPage = ({ setPage }) => {
+  const { register } = useContext(AuthContext);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     email: '',
@@ -23,13 +24,29 @@ const RegisterPage = ({ setPage }) => {
     relationshipStatus: 'individual'
   });
 
+  // Função unificada e corrigida para enviar os dados certos ao backend
+  const handleSubmitFinal = async () => {
+    try {
+      const dataToSend = {
+        name: formData.fullName, 
+        email: formData.email,
+        password: formData.password
+      };
+
+      await register(dataToSend); 
+      // O AuthContext cuidará do redirecionamento se o token for salvo
+    } catch (error) {
+      console.error("Erro no cadastro:", error);
+      alert("Erro ao cadastrar. Verifique os dados e tente novamente.");
+    }
+  };
+
   const updateFormData = (newData) => {
     setFormData((prev) => ({ ...prev, ...newData }));
   };
 
   const nextStep = () => setCurrentStep((prev) => prev + 1);
 
-  // AJUSTADO: Se estiver no passo 1 e voltar, vai para a Welcome
   const prevStep = () => {
     if (currentStep === 1) {
       setPage('welcome');
@@ -38,30 +55,22 @@ const RegisterPage = ({ setPage }) => {
     }
   };
 
-  const handleSubmitFinal = () => {
-    console.log('Cadastro Finalizado:', formData);
-    alert('Cadastro realizado com sucesso!');
-    // Após sucesso, você pode mandar para o Login
-    setPage('login'); 
-  };
-
+  // O return agora está DENTRO da função RegisterPage
   return (
     <div className="register-page-container">
       <div className="register-card">
-        {/* BOTÃO DE FECHAR: Volta direto para a Welcome */}
         <button className="close-btn" onClick={() => setPage('welcome')}>✕</button>
 
         <div className="card-tittle">
           <img src={logoOpenest} alt="Openest" className="register-logo" />
         </div>
 
-        {/* Renderização das Etapas */}
         {currentStep === 1 && (
           <Step1Credentials 
             next={nextStep} 
             update={updateFormData} 
             data={formData} 
-            back={prevStep} // Agora o Step 1 também tem a função de voltar (para a Welcome)
+            back={prevStep} 
           />
         )}
         {currentStep === 2 && (
@@ -77,6 +86,6 @@ const RegisterPage = ({ setPage }) => {
       </div>
     </div>
   );
-};
+}; // Chave que fecha o componente principal
 
 export default RegisterPage;
