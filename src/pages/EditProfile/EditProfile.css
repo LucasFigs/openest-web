@@ -1,0 +1,124 @@
+/* CONTAINER PRINCIPAL */
+.profile-edit-wrapper {
+  width: 100vw; height: 100vh; overflow: hidden;
+  display: flex; justify-content: center; align-items: center;
+  background: radial-gradient(circle at top left, #a100ff 0%, #7b1fa2 100%);
+  font-family: 'Poppins', sans-serif;
+  padding: 20px; box-sizing: border-box;
+}
+
+/* CARD COM LARGURA FIXA */
+.profile-edit-card {
+  background: #ffffff; border-radius: 30px; padding: 30px 45px;
+  width: 100%; max-width: 980px;
+  height: auto; max-height: 85vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+}
+
+.profile-edit-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px;
+}
+.profile-edit-header h2 { font-size: 22px; color: #1a1a1a; font-weight: 800; margin: 0; }
+.exit-button { background: none; border: none; font-size: 22px; color: #ccc; cursor: pointer; }
+
+/* LAYOUT BIPARTIDO */
+.profile-edit-body {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  flex: 1;
+}
+
+/* COLUNA ESQUERDA */
+.column-left {
+  width: 35%;
+  display: flex; flex-direction: column; gap: 15px;
+}
+
+.image-container-3x4 {
+  width: 100%; aspect-ratio: 3 / 4; border-radius: 20px; 
+  overflow: hidden; position: relative; background: #000;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.img-render-3x4 { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+.image-overlay-info {
+  position: absolute; bottom: 0; width: 100%; padding: 20px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: #fff;
+}
+.image-overlay-info h3 { font-size: 20px; margin: 0; font-weight: 700; }
+.image-overlay-info p { font-size: 12px; margin: 2px 0 0; opacity: 0.8; }
+
+.carousel-mini-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.mini-item { width: 50px; height: 50px; border-radius: 10px; position: relative; cursor: pointer; border: 2.5px solid transparent; }
+.mini-item.active { border-color: #a100ff; }
+
+.remove-item-btn {
+  position: absolute; top: -5px; right: -5px; background: #ff4444; color: #fff;
+  width: 18px; height: 18px; border-radius: 50%; font-size: 11px;
+  display: flex; justify-content: center; align-items: center; font-weight: bold;
+}
+
+.add-item-btn {
+  width: 50px; height: 50px; background: #7b1fa2; color: #fff;
+  border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer;
+}
+
+/* COLUNA DIREITA (FOCO NO ALINHAMENTO DE RÉGUA) */
+.column-right {
+  width: 60%; 
+  display: flex; flex-direction: column; gap: 12px; justify-content: center;
+}
+
+.input-field-row { display: flex; gap: 20px; width: 100%; }
+.input-field-premium { flex: 1; display: flex; flex-direction: column; gap: 5px; width: 100%; }
+
+.input-field-premium label { 
+  font-size: 10px; font-weight: 800; color: #666; 
+  text-transform: uppercase; letter-spacing: 1px; 
+}
+
+.input-field-premium input, 
+.input-field-premium select, 
+.input-field-premium textarea {
+  width: 100%; /* Garante preenchimento total da coluna */
+  box-sizing: border-box; /* Fundamental para o alinhamento não passar da régua */
+  padding: 12px 15px; 
+  border-radius: 12px; 
+  border: 1px solid #ddd; 
+  background: #fafafa; 
+  font-size: 14px;
+  color: #333;
+}
+
+.input-field-premium textarea { height: 90px; resize: none; }
+
+/* BARRA LGPD ALINHADA COM A BORDA DO BOTÃO E DOS INPUTS */
+.lgpd-security-bar {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex; justify-content: space-between; align-items: center;
+  background: #f8f8f8; padding: 15px 25px; border-radius: 15px; 
+  font-weight: 700; font-size: 13px; color: #333;
+}
+
+/* RODAPÉ ALINHADO NA DIREITA */
+.form-action-buttons {
+  margin-top: 10px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  width: 100%;
+}
+
+.save-button-action {
+  padding: 14px 45px; border: none; color: #fff; font-weight: 800;
+  border-radius: 50px; cursor: pointer; font-size: 14px;
+  background: linear-gradient(90deg, #a100ff, #7b1fa2);
+  box-shadow: 0 10px 20px rgba(123, 31, 162, 0.3);
+}
+
+.delete-link-action { color: #ff4444; font-size: 12px; text-decoration: underline; cursor: pointer; font-weight: 600; }
