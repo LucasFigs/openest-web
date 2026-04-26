@@ -1,0 +1,140 @@
+.filter-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.filter-modal {
+  width: 100%;
+  height: 85%;
+  background: white;
+  border-radius: 30px 30px 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-header h2 { font-size: 18px; margin: 0; color: #1a1a1a; }
+
+.close-btn, .clear-text-btn {
+  background: none; border: none;
+  font-size: 16px; cursor: pointer;
+  color: #7b1fa2; font-weight: 600;
+}
+
+.filter-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.filter-section { margin-bottom: 30px; }
+
+.section-label {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+.value-tag { color: #7b1fa2; font-size: 13px; }
+
+/* SLIDER */
+.purple-slider {
+  width: 100%;
+  accent-color: #7b1fa2;
+}
+
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-inputs input {
+  width: 60px;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+/* CHECKBOX */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8f8f8;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.check-label { font-size: 13px; color: #666; }
+
+/* TAGS - AJUSTE DE VISIBILIDADE */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #d1d1d1; /* Borda mais escura para contraste */
+  background: white;
+  color: #444; /* Texto visível */
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.tag-btn.active {
+  background: #7b1fa2;
+  color: white;
+  border-color: #7b1fa2;
+}
+
+.filter-footer {
+  padding: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.apply-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #a100ff, #7b1fa2);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(123, 31, 162, 0.2);
+}
