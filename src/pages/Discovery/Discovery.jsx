@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Discovery.css';
 
+// Importação do componente de filtros (Task T042)
+import Filters from '../../components/Filters/Filters';
+
 // Importação da sua logo local
 import logoOn from '../../assets/images/LOGO.png'; 
 
@@ -11,6 +14,15 @@ const Discovery = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState('');
+
+  // Estados para a Task T042 (Filtros)
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    distance: 50,
+    ageRange: [18, 40],
+    relationshipStatus: [],
+    interests: []
+  });
 
   const logoPath = logoOn; 
 
@@ -39,6 +51,13 @@ const Discovery = () => {
 
   const next = () => setCurrentIndex(prev => prev + 1);
 
+  // Função para aplicar os filtros vindo do componente
+  const handleApplyFilters = (newFilters) => {
+    setActiveFilters(newFilters);
+    setIsFilterOpen(false);
+    console.log("Filtros aplicados com sucesso:", newFilters);
+  };
+
   if (loading) return <div className="discovery-main-container"><div className="loader">Carregando...</div></div>;
 
   const current = profiles[currentIndex];
@@ -59,7 +78,7 @@ const Discovery = () => {
              <span className="mono-icon">♥</span>
           </button>
           <button className="nav-btn-box">
-             <span className="mono-icon">☷</span> 
+             <span className="mono-icon">📅</span> 
           </button>
         </div>
         
@@ -73,7 +92,7 @@ const Discovery = () => {
       {/* ÁREA CENTRAL */}
       <main className="discovery-content-area">
         <div className="iphone-mockup-v2">
-          {/* HEADER (STATUS BAR) CORRIGIDA */}
+          {/* HEADER (STATUS BAR) COMPLETA */}
           <header className="iphone-header">
             <div className="header-left">
               <span className="live-clock">{currentTime}</span>
@@ -92,7 +111,6 @@ const Discovery = () => {
                   <div className="bar b3"></div>
                   <div className="bar b4"></div>
                </div>
-               {/* Ícone de Wi-Fi universal ou via CSS */}
                <div className="wifi-css">
                   <div className="w-dot"></div>
                   <div className="w-arc a1"></div>
@@ -128,12 +146,26 @@ const Discovery = () => {
             )}
           </div>
 
+          {/* FOOTER - BOTÃO ESTRELA ABRE OS FILTROS */}
           <div className="actions-footer">
             <button className="circle-btn x-btn" onClick={next}>✕</button>
-            <button className="circle-btn star-btn">⭐</button>
+            <button 
+              className="circle-btn star-btn" 
+              onClick={() => setIsFilterOpen(true)}
+            >
+              ⭐
+            </button>
             <button className="circle-btn heart-btn" onClick={next}>♥</button>
           </div>
           <div className="home-indicator"></div>
+
+          {/* COMPONENTE DE FILTROS (T042) */}
+          <Filters 
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            onApply={handleApplyFilters}
+            currentFilters={activeFilters}
+          />
         </div>
       </main>
     </div>

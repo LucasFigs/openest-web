@@ -33,18 +33,32 @@ html, body, #root {
   border: 2px solid #a100ff; padding: 2px;
 }
 
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
 .mono-icon { color: #7b1fa2; font-size: 26px; display: inline-block; }
 .mono-icon-shield { color: #7b1fa2; font-size: 24px; }
 
+/* AJUSTE DE VISIBILIDADE DOS BOTÕES */
 .nav-btn-box {
-  background: #f8f8f8; border: none;
-  width: 52px; height: 52px; border-radius: 16px;
+  background: transparent; /* Removido fundo fixo para destacar apenas o ativo */
+  border: none;
+  width: 52px; height: 52px;
   cursor: pointer; transition: all 0.3s;
   display: flex; justify-content: center; align-items: center;
-  opacity: 0.4;
+  opacity: 0.6; /* Aumentado de 0.4 para 0.6 para melhor visibilidade */
 }
 
-.nav-btn-box.active { opacity: 1; transform: scale(1.05); }
+.nav-btn-box.active { 
+  opacity: 1; 
+  transform: scale(1.05);
+  background: #f4f0ff; /* Fundo de destaque apenas no ativo */
+  border-radius: 16px;
+}
 
 .sidebar-footer { width: 100%; display: flex; justify-content: center; padding-bottom: 10px; }
 
@@ -72,7 +86,7 @@ html, body, #root {
   padding: 8px; position: relative; box-sizing: border-box;
 }
 
-/* STATUS BAR CORRIGIDA */
+/* STATUS BAR */
 .iphone-header {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -97,7 +111,7 @@ html, body, #root {
 .b3 { height: 80%; }
 .b4 { height: 100%; }
 
-/* WI-FI EM CSS PURO (MATA O BUG DO QUADRADO) */
+/* WI-FI CSS */
 .wifi-css {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   width: 14px; height: 10px; position: relative;
