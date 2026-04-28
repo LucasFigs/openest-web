@@ -154,3 +154,33 @@ html, body, #root {
 .home-indicator { width: 120px; height: 5px; background: #1a1a1a; border-radius: 10px; align-self: center; margin-bottom: 10px; opacity: 0.8; }
 
 .loader, .end-state { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #666; font-weight: 600; padding: 20px; }
+
+/* Mantenha todo o seu código anterior e adicione/ajuste estas partes: */
+
+.nav-btn-box {
+  position: relative; /* Necessário para o badge se posicionar */
+  background: transparent;
+  border: none;
+  width: 52px; height: 52px; border-radius: 16px;
+  cursor: pointer; transition: all 0.3s;
+  display: flex; justify-content: center; align-items: center;
+  opacity: 0.6;
+}
+
+/* ESTILO DO BADGE DE NOTIFICAÇÃO (TASK T043) */
+.sidebar-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background-color: #ff3b30;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid white;
+}
