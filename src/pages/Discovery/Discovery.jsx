@@ -4,6 +4,8 @@ import './Discovery.css';
 
 // Importação do componente de filtros (Task T042)
 import Filters from '../../components/Filters/Filters';
+// Importação do componente de Match (Task T043)
+import MatchPopup from '../../components/MatchPopup/MatchPopup';
 
 // Importação da sua logo local
 import logoOn from '../../assets/images/LOGO.png'; 
@@ -23,6 +25,10 @@ const Discovery = () => {
     relationshipStatus: [],
     interests: []
   });
+
+  // Estados para a Task T043 (Match)
+  const [showMatch, setShowMatch] = useState(false);
+  const [notificationBadge, setNotificationBadge] = useState(0);
 
   const logoPath = logoOn; 
 
@@ -51,6 +57,17 @@ const Discovery = () => {
 
   const next = () => setCurrentIndex(prev => prev + 1);
 
+  // Lógica de Match ao clicar no coração
+  const handleLike = () => {
+    const isMatch = Math.random() > 0.5; // 50% de chance
+    if (isMatch) {
+      setShowMatch(true);
+      setNotificationBadge(prev => prev + 1);
+    } else {
+      next();
+    }
+  };
+
   // Função para aplicar os filtros vindo do componente
   const handleApplyFilters = (newFilters) => {
     setActiveFilters(newFilters);
@@ -73,6 +90,7 @@ const Discovery = () => {
         <div className="nav-menu">
           <button className="nav-btn-box">
              <span className="mono-icon">✉</span> 
+             {notificationBadge > 0 && <span className="sidebar-badge">{notificationBadge}</span>}
           </button>
           <button className="nav-btn-box active">
              <span className="mono-icon">♥</span>
@@ -146,7 +164,7 @@ const Discovery = () => {
             )}
           </div>
 
-          {/* FOOTER - BOTÃO ESTRELA ABRE OS FILTROS */}
+          {/* FOOTER */}
           <div className="actions-footer">
             <button className="circle-btn x-btn" onClick={next}>✕</button>
             <button 
@@ -155,7 +173,7 @@ const Discovery = () => {
             >
               ⭐
             </button>
-            <button className="circle-btn heart-btn" onClick={next}>♥</button>
+            <button className="circle-btn heart-btn" onClick={handleLike}>♥</button>
           </div>
           <div className="home-indicator"></div>
 
@@ -165,6 +183,15 @@ const Discovery = () => {
             onClose={() => setIsFilterOpen(false)}
             onApply={handleApplyFilters}
             currentFilters={activeFilters}
+          />
+
+          {/* COMPONENTE DE MATCH (T043) */}
+          <MatchPopup 
+            isOpen={showMatch}
+            matchName={current?.name}
+            matchImg={current?.img}
+            onClose={() => { setShowMatch(false); next(); }}
+            onChat={() => navigate('/chat')}
           />
         </div>
       </main>

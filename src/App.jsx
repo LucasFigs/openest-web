@@ -1,48 +1,55 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from './contexts/AuthContext'; // teste
+import React, { useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthContext } from './contexts/AuthContext';
+
+// Páginas de Autenticação
 import Welcome from "./pages/welcome/Welcome";
 import Login from "./pages/login/Login";
 import Register from "./pages/Register/index"; 
 import Recovery from "./pages/recovery/Recovery"; 
+
+// Páginas Privadas
+import Discovery from './pages/Discovery/Discovery';
+import EditProfile from './pages/EditProfile/EditProfile';
+import Settings from './pages/Settings/Settings';
+
 import './App.css';
 
 function App() {
-  // Pega os estados globais do Contexto
   const { authenticated, loading } = useContext(AuthContext);
-  
-  // Estado local para navegação simples
-  const [page, setPage] = useState('welcome');
 
-  // 1. Enquanto o Contexto verifica o localStorage, exibe um loading
   if (loading) {
     return <div className="loading">Carregando Openest...</div>;
   }
 
   return (
-    <div className="App">
-      
-      {/* 2. Se NÃO estiver logado, mostra as páginas públicas */}
-      {!authenticated && (
-        <>
-          {page === 'welcome' && <Welcome setPage={setPage} />}
-          {page === 'login' && <Login setPage={setPage} />}
-          {page === 'register' && <Register setPage={setPage} />}
-          {page === 'forgot' && <Recovery setPage={setPage} />}
-        </>
-      )}
-
-      {/* 3. Se ESTIVER logado, mostra a área privada */}
-      {authenticated && (
-        <div className="dashboard-container">
-          <h1>🚀 Bem-vindo à Openest API, logado!</h1>
-          <p>Você transpôs a barreira do JWT.</p>
-          <button onClick={() => setPage('dashboard')}>Ir para Painel</button>
-          
-          {/* Dica: Você pode criar um botão de Logout aqui depois chamando a função logout() do contexto */}
-        </div>
-      )}
-
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          {/* SE NÃO ESTIVER LOGADO */}
+          {!authenticated ? (
+            <>
+              <Route path="/welcome" element={<Welcome />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/recovery" element={<Recovery />} />
+              {/* Qualquer tentativa de acesso cai no Welcome */}
+              <Route path="*" element={<Navigate to="/welcome" />} />
+            </>
+          ) : (
+            /* SE ESTIVER LOGADO */
+            <>
+              <Route path="/" element={<Navigate to="/discovery" />} />
+              <Route path="/discovery" element={<Discovery />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
+              <Route path="/settings" element={<Settings />} />
+              {/* Qualquer erro de rota logado cai na Discovery */}
+              <Route path="*" element={<Navigate to="/discovery" />} />
+            </>
+          )}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
