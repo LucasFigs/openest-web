@@ -1,0 +1,148 @@
+.figma-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+/* Sidebar */
+.figma-sidebar {
+  width: 380px;
+  background: #FFF;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-top {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 1º Detalhe: Nome Openest em Roxo Escuro */
+.brand-title { 
+  color: #4A148C; 
+  margin: 0; 
+  font-size: 26px; 
+  font-weight: 700; 
+}
+
+.icon-back { background: none; border: none; font-size: 28px; color: #4A148C; cursor: pointer; }
+
+.search-container { padding: 0 20px 20px; }
+.search-box {
+  background: #F3E5F5;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+}
+
+.search-box input {
+  background: none; border: none; outline: none;
+  width: 100%; color: #9C27B0; margin-left: 10px;
+}
+
+.search-box input::placeholder { color: #BA68C8; }
+
+.conversations-list { flex: 1; overflow-y: auto; }
+
+.conv-card {
+  display: flex; padding: 15px 20px; gap: 15px; cursor: pointer;
+  border-bottom: 1px solid #f9f9f9; transition: 0.2s;
+}
+
+.conv-card.active { background: #F3E5F5; }
+
+.avatar-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; }
+.conv-info h4 { margin: 0; font-size: 15px; color: #333; }
+.conv-info p { margin: 5px 0 0; font-size: 13px; color: #757575; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* 2º Detalhe: Degradê Rosa -> Branco (De baixo para cima) */
+.figma-chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(0deg, #F8BBD0 0%, #FFFFFF 100%);
+  position: relative;
+}
+
+.chat-area-header {
+  height: 75px; background: #fff; border-bottom: 1px solid #e0e0e0;
+  display: flex; align-items: center; padding: 0 25px; gap: 15px;
+  z-index: 10;
+}
+
+.header-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+
+.chat-scroll-area {
+  flex: 1; overflow-y: auto; padding: 30px; 
+  display: flex; flex-direction: column; gap: 15px;
+  position: relative;
+}
+
+/* 3º Detalhe: Logo transparente e sem cor original no fundo */
+.on-watermark-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: auto;
+  pointer-events: none;
+  z-index: 0;
+  /* Transforma em preto e branco, aumenta brilho e reduz opacidade */
+  filter: grayscale(100%) brightness(1.2);
+  opacity: 0.08;
+}
+
+.msg-wrapper { display: flex; width: 100%; z-index: 1; }
+.msg-wrapper.me { justify-content: flex-end; }
+.msg-wrapper.them { justify-content: flex-start; }
+
+.msg-bubble {
+  max-width: 65%; padding: 12px 20px; border-radius: 20px; font-size: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.me .msg-bubble { background: #6A1B9A; color: #fff; border-bottom-right-radius: 5px; }
+.them .msg-bubble { background: #fff; color: #333; border: 1px solid #eee; border-bottom-left-radius: 5px; }
+
+.chat-input-footer { padding: 25px; z-index: 10; }
+.input-form {
+  background: #F3E5F5; border-radius: 20px; display: flex; 
+  align-items: center; padding: 8px 18px; gap: 12px;
+}
+
+.input-form input {
+  flex: 1; background: none; border: none; outline: none; padding: 10px; font-size: 15px;
+  color: #4A148C;
+}
+
+.btn-plus, .btn-send {
+  background: none; border: none; font-size: 26px; color: #6A1B9A; cursor: pointer;
+}
+
+.empty-state {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  color: #4A148C; font-weight: 500; position: relative;
+}
+
+/* ... (todo o resto igual) ... */
+
+.brand-title { 
+  color: #4A148C !important; /* Roxo Escuro */
+  margin: 0; 
+  font-size: 26px; 
+  font-weight: 700; 
+}
+
+.no-matches-msg {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
