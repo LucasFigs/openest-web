@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Recovery.css';
+import recoveryService from '../../services/recoveryService';
 import logoFogo from "../../assets/images/LOGO.png";
 import logoNome from "../../assets/images/NOME.png";
 
@@ -23,25 +24,33 @@ export default function Recovery({ setPage }) {
     }
   }, []);
 
-  const handleSendLink = (e) => {
-    e.preventDefault();
-    // Validação de e-mail já é feita pelo type="email" do HTML5
+const handleSendLink = async (e) => {
+  e.preventDefault();
+  try {
+    // ESTA LINHA faz o log aparecer no terminal do VS Code:
+    await recoveryService.sendCode(email);
     setIsSent(true);
-  };
+ } catch (error) {
+  console.error("Erro na solicitação:", error); 
+  alert("Erro ao solicitar recuperação. Verifique o e-mail.");
+}
+};
 
-  const handleResetPassword = (e) => {
-    e.preventDefault();
-    // Validações (Critérios de Aceite)
-    if (newPassword.length < 6) {
-      alert("A senha deve ter no mínimo 6 caracteres.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      alert("As senhas não coincidem.");
-      return;
-    }
+const handleResetPassword = async (e) => {
+  e.preventDefault();
+  if (newPassword !== confirmPassword) {
+    alert("As senhas não coincidem.");
+    return;
+  }
+  try {
+    // Envia a nova senha para o banco de dados:
+    await recoveryService.resetPassword(email, token, newPassword);
     setIsReset(true);
-  };
+ } catch (error) {
+  console.error("Erro detalhado:", error);
+  alert("Erro ao redefinir senha. O token pode ter expirado.");
+}
+};
 
   return (
     <div className="recovery-page-container">
