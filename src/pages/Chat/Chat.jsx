@@ -6,28 +6,41 @@ import logoOn from '../../assets/images/LOGO.png';
 const Chat = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
+  
+  const [conversations, setConversations] = useState([]); 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
   const messagesEndRef = useRef(null);
 
+  // 1. BUSCA DINÂMICA: Puxa apenas os matches que você fez na Discovery
   useEffect(() => {
-    const savedMatches = localStorage.getItem('openest_matches');
-    if (savedMatches) {
-      setMatches(JSON.parse(savedMatches));
-    }
+    const fetchConversas = () => {
+      setLoading(true);
+      const savedMatches = localStorage.getItem('openest_matches');
+      
+      if (savedMatches) {
+        const matches = JSON.parse(savedMatches);
+        // Adicionamos campos extras que a Task #28 pede (unread e time)
+        const mappedConversations = matches.map(match => ({
+          ...match,
+          timestamp: 'Agora', // Em uma API real, viria do banco
+          unreadCount: 0      // Em uma API real, viria do banco
+        }));
+        setConversations(mappedConversations);
+      }
+      setLoading(false);
+    };
+
+    fetchConversas();
   }, []);
 
-  const activeChat = matches.find(c => c.id === Number(conversationId) || c.id === conversationId);
-
+  // 2. BUSCAR MENSAGENS DA CONVERSA SELECIONADA
   useEffect(() => {
     if (conversationId) {
       const saved = localStorage.getItem(`openest_chat_${conversationId}`);
-      if (saved) {
-        setMessages(JSON.parse(saved));
-      } else {
-        setMessages([]);
-      }
+      setMessages(saved ? JSON.parse(saved) : []);
     }
   }, [conversationId]);
 
@@ -53,6 +66,8 @@ const Chat = () => {
     setNewMessage('');
   };
 
+  const activeChat = conversations.find(c => String(c.id) === String(conversationId));
+
   return (
     <div className="figma-container">
       <aside className="figma-sidebar">
@@ -64,27 +79,41 @@ const Chat = () => {
         <div className="search-container">
           <div className="search-box">
             <span className="search-icon">🔍</span>
-            <input type="text" placeholder="Pesquisar matches..." />
+            <input type="text" placeholder="Pesquisar conversas..." />
           </div>
         </div>
 
         <div className="conversations-list">
-          {matches.length > 0 ? (
-            matches.map(conv => (
+          {loading ? (
+            <div className="loading-msg">Carregando...</div>
+          ) : conversations.length > 0 ? (
+            conversations.map(conv => (
               <div 
                 key={conv.id} 
-                className={`conv-card ${conversationId == conv.id ? 'active' : ''}`}
+                className={`conv-card ${conversationId === String(conv.id) ? 'active' : ''}`}
                 onClick={() => navigate(`/chat/${conv.id}`)}
               >
-                <img src={conv.img} alt={conv.name} className="avatar-img" />
+                <div className="avatar-container">
+                  <img src={conv.img} alt={conv.name} className="avatar-img" />
+                  {conv.unreadCount > 0 && (
+                    <span className="unread-badge">{conv.unreadCount}</span>
+                  )}
+                </div>
                 <div className="conv-info">
-                  <h4>{conv.name}</h4>
-                  <p>{messages.length > 0 && conversationId == conv.id ? messages[messages.length-1].text : 'Clique para conversar'}</p>
+                  <div className="conv-header-row">
+                    <h4>{conv.name}</h4>
+                    <span className="conv-time">{conv.timestamp}</span>
+                  </div>
+                  <p className="last-msg-text">
+                    {messages.length > 0 && conversationId === String(conv.id) 
+                      ? messages[messages.length - 1].text 
+                      : 'Clique para conversar'}
+                  </p>
                 </div>
               </div>
             ))
           ) : (
-            <div className="no-matches-msg">Nenhum match encontrado ainda.</div>
+            <div className="no-matches-msg">Nenhuma conversa ativa. Vá para a Discovery dar matches!</div>
           )}
         </div>
       </aside>
@@ -122,8 +151,8 @@ const Chat = () => {
           </>
         ) : (
           <div className="empty-state">
-             <img src={logoOn} alt="Watermark" className="on-watermagitrk-img" style={{opacity: 0.05}} />
-             <p>Selecione um match na lateral para conversar</p>
+             <img src={logoOn} alt="Watermark" className="on-watermark-img" style={{opacity: 0.05}} />
+             <p>Selecione um match para conversar</p>
           </div>
         )}
       </main>
@@ -131,4 +160,4 @@ const Chat = () => {
   );
 };
 
-export default Chat;
+export default Chat;  

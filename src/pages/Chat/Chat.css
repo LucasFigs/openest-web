@@ -146,3 +146,50 @@
   color: #999;
   font-size: 14px;
 }
+
+/* ... (Mantenha o que já tinha e adicione/ajuste estes abaixo) ... */
+
+.avatar-container {
+  position: relative;
+}
+
+.unread-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: #E91E63; /* Rosa vibrante para alerta */
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 2px solid #fff;
+}
+
+.conv-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.conv-time {
+  font-size: 11px;
+  color: #999;
+}
+
+.last-msg-text {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: #757575;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 200px; /* Evita que a mensagem empurre o timestamp */
+}
+
+.loading-msg {
+  padding: 20px;
+  text-align: center;
+  color: #7b1fa2;
+}
