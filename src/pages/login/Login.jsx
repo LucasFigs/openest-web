@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext'; 
-import { useNavigate } from 'react-router-dom'; // Importante
+import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 import logoFogo from "../../assets/images/LOGO.png";
@@ -11,15 +11,22 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useContext(AuthContext);
-  const navigate = useNavigate(); // Inicializa o navegador
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       await login(email, password);
-      // O App.jsx vai detectar o login e redirecionar, 
-      // mas podemos forçar para garantir:
-      navigate('/discovery');
+      
+      // REDIRECIONAMENTO INTELIGENTE (TASK #30)
+      // Se for o e-mail do admin, manda para a dashboard roxa
+      if (email === 'admin@openest.com') {
+        navigate('/admin');
+      } else {
+        // Se for usuário comum, segue para os matches
+        navigate('/discovery');
+      }
+      
     } catch (error) {
       console.error("Erro na autenticação:", error);
       alert("Falha no login. Verifique seu e-mail e senha.");
@@ -29,7 +36,6 @@ export default function Login() {
   return (
     <div className="login-page-container">
       <div className="login-card">
-        {/* Botão fechar volta para welcome via URL */}
         <button className="close-btn" onClick={() => navigate('/welcome')}>✕</button>
         
         <div className="login-header">
