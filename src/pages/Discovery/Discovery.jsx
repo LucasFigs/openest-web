@@ -59,10 +59,17 @@ const Discovery = () => {
 
   // Lógica de Match ao clicar no coração
   const handleLike = () => {
-    const isMatch = Math.random() > 0.5; // 50% de chance
+      const isMatch = Math.random() > 0.5;
     if (isMatch) {
       setShowMatch(true);
       setNotificationBadge(prev => prev + 1);
+
+      // ✅ SALVA O MATCH PARA O CHAT
+      const currentMatches = JSON.parse(localStorage.getItem('openest_matches') || '[]');
+      if (!currentMatches.find(m => m.id === current.id)) {
+        const updatedMatches = [...currentMatches, current];
+        localStorage.setItem('openest_matches', JSON.stringify(updatedMatches));
+      }
     } else {
       next();
     }
@@ -88,7 +95,8 @@ const Discovery = () => {
         </div>
         
         <div className="nav-menu">
-          <button className="nav-btn-box">
+          {/* HABILITADO: Botão de mensagens agora navega para a lista de chat */}
+          <button className="nav-btn-box" onClick={() => navigate('/chat/lista')}>
              <span className="mono-icon">✉</span> 
              {notificationBadge > 0 && <span className="sidebar-badge">{notificationBadge}</span>}
           </button>
@@ -191,8 +199,9 @@ const Discovery = () => {
             matchName={current?.name}
             matchImg={current?.img}
             onClose={() => { setShowMatch(false); next(); }}
-            onChat={() => navigate('/chat')}
+            onChat={() => navigate(`/chat/${current?.id}`)}
           />
+          {/* HABILITADO: Redireciona para o chat específico do usuário atual */}
         </div>
       </main>
     </div>
