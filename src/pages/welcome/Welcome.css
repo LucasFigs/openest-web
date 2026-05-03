@@ -1,85 +1,189 @@
-/* Container Principal: Fundo e Alinhamento */
-.welcome-container {
-  background: linear-gradient(180deg, #444444 0%, #2b003d 100%);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  color: white;
-  font-family: 'Inter', sans-serif;
+/* Isso remove qualquer trava de altura das camadas base do React */
+html, body, #root {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-y: visible !important;
   margin: 0;
   padding: 0;
 }
 
-/* O ícone da chama (LOGO.png) */
-.welcome-logo-icon { 
-  width: 100px; 
-  height: auto;
-  margin-bottom: 5px; 
+/* --- Root e Reset de Scroll --- */
+.welcome-page-container {
+  width: 100%;
+  /* Mudança aqui: height auto e min-height para garantir que cresça */
+  height: auto; 
+  min-height: 100vh;
+  /* Força o scroll vertical e remove travas de overflow */
+  overflow-y: visible !important;
+  overflow-x: hidden;
+  position: relative;
+  background-color: #0b091a;
+  color: #ffffff;
+  /* Display block é essencial para o fluxo vertical */
+  display: block; 
 }
 
-/* O nome do app (NOME.png) - Aumentado para 220px para destaque */
-.welcome-logo-name { 
-  width: 220px; 
-  height: auto;
-  margin-bottom: 10px; 
+/* Fundo Animado (Fixed para não sumir no scroll) */
+.welcome-animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: linear-gradient(135deg, #0b091a, #1a1a4d, #2d0a4e, #0b091a);
+  background-size: 400% 400%;
+  animation: welcomeGradient 15s ease infinite;
 }
 
-/* Subtítulo abaixo do nome */
-.welcome-subtitle { 
-  font-size: 14px; 
-  opacity: 0.8; 
-  margin-top: 5px;
-  margin-bottom: 40px; 
+@keyframes welcomeGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* Grupo de Botões */
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 280px;
+/* --- Navbar (Estilo Tinder) --- */
+.welcome-navbar {
+  /* Sticky pode travar em alguns navegadores se o pai for flex, 
+     estamos garantindo que ele funcione com o pai block */
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.welcome-nav-content {
+  max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px;
 }
 
-/* Botão CRIAR CONTA (Preenchido com degradê) */
-.btn-primary {
-  background: linear-gradient(90deg, #7b1fa2 0%, #4a148c 100%);
-  color: white; 
-  border: none; 
-  padding: 15px; 
+.welcome-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.welcome-logo-img {
+  height: 38px;
+  width: auto;
+  cursor: pointer;
+}
+
+.welcome-nav-links {
+  display: flex;
+  gap: 25px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.welcome-nav-links span { cursor: pointer; }
+
+.welcome-btn-login {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 9px 28px;
+  border-radius: 25px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.welcome-btn-login:hover { transform: scale(1.05); }
+
+/* --- Fluxo de Conteúdo --- */
+.welcome-main-flow {
+  display: block; /* Mudado de flex para block para evitar 'esmaltamento' de altura */
+  width: 100%;
+  position: relative;
+}
+
+.welcome-hero-section {
+  text-align: center;
+  padding: 100px 20px 80px;
+  max-width: 850px;
+  margin: 0 auto; /* Centraliza no modo block */
+}
+
+.welcome-hero-title {
+  font-size: 4.2rem;
+  line-height: 1.1;
+  font-weight: 900;
+  margin-bottom: 25px;
+  letter-spacing: -2px;
+}
+
+.welcome-text-gradient {
+  color: #9c27b0;
+}
+
+.welcome-hero-subtitle {
+  font-size: 1.3rem;
+  opacity: 0.9;
+  line-height: 1.6;
+  margin-bottom: 45px;
+}
+
+.welcome-hero-cta {
+  background: linear-gradient(90deg, #9c27b0, #673ab7);
+  color: #ffffff;
+  border: none;
+  padding: 18px 50px;
+  border-radius: 40px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(156, 39, 176, 0.3);
+}
+
+/* --- Features Section --- */
+.welcome-features-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  padding: 100px 20px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.welcome-feature-card {
+  width: 340px;
+  padding: 50px 35px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
   border-radius: 30px;
-  font-weight: bold; 
-  font-size: 14px;
-  cursor: pointer; 
-  transition: transform 0.3s ease, background 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+  transition: transform 0.3s;
 }
 
-/* Botão JÁ TENHO UMA CONTA (Apenas borda) */
-.btn-outline {
-  background: transparent;
-  color: white; 
-  border: 2px solid #7b1fa2; 
-  padding: 15px; 
-  border-radius: 30px;
-  font-weight: bold; 
-  font-size: 14px;
-  cursor: pointer; 
-  transition: transform 0.3s ease, border-color 0.3s ease;
+.welcome-feature-card:hover { transform: translateY(-10px); }
+
+.welcome-feature-icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
 }
 
-/* Efeito de aumentar levemente ao passar o mouse */
-.btn-primary:hover, .btn-outline:hover { 
-  transform: scale(1.05); 
+.welcome-footer-simple {
+  padding: 60px 20px;
+  opacity: 0.5;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
-/* Ajuste para telas menores (Responsividade básica) */
-@media (max-width: 480px) {
-  .welcome-logo-name {
-    width: 180px; /* Reduz um pouco em telas muito pequenas */
-  }
-  .button-group {
-    width: 250px;
-  }
+/* Ajustes Mobile */
+@media (max-width: 768px) {
+  .welcome-nav-links { display: none; }
+  .welcome-hero-title { font-size: 2.8rem; }
+  .welcome-feature-card { width: 100%; }
 }
