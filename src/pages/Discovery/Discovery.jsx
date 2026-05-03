@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import calendarIcon from '../../assets/images/calendar.png';
 import './Discovery.css';
 
-// Importação do componente de filtros (Task T042)
+// Componentes
+import Loading from '../../components/Loading/Loading';
 import Filters from '../../components/Filters/Filters';
-// Importação do componente de Match (Task T043)
 import MatchPopup from '../../components/MatchPopup/MatchPopup';
 
-// Importação da sua logo local
+// Assets
 import logoOn from '../../assets/images/LOGO.png'; 
 
 const Discovery = () => {
@@ -16,8 +18,8 @@ const Discovery = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState('');
+  const [groupMemberIndex, setGroupMemberIndex] = useState(0);
 
-  // Estados para a Task T042 (Filtros)
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
     distance: 50,
@@ -26,13 +28,11 @@ const Discovery = () => {
     interests: []
   });
 
-  // Estados para a Task T043 (Match)
   const [showMatch, setShowMatch] = useState(false);
   const [notificationBadge, setNotificationBadge] = useState(0);
 
   const logoPath = logoOn; 
 
-  // Relógio em tempo real
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -48,66 +48,97 @@ const Discovery = () => {
   useEffect(() => {
     setTimeout(() => {
       setProfiles([
-        { id: 1, name: 'Sofia Espanha', age: 25, location: 'Caucaia, Fortaleza', dist: '15 km', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800', type: 'Grupo' },
-        { id: 2, name: 'Beatriz Silva', age: 23, location: 'Meireles, Fortaleza', dist: '2 km', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800', type: 'Individual' },
+        { id: 1, name: 'Sofia Espanha', age: 25, location: 'Caucaia', dist: '15 km', img: ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800'], type: 'Individual' },
+        { 
+          id: 2, 
+          name: 'Beatriz & Tiago', 
+          age: '23/25', 
+          location: 'Meireles', 
+          dist: '2 km', 
+          img: [
+            'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800',
+            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800'
+          ], 
+          type: 'Grupo' 
+        },
+        { id: 3, name: 'Larissa Manoela', age: 22, location: 'Aldeota', dist: '5 km', img: ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800'], type: 'Individual' },
+        { 
+          id: 4, 
+          name: 'Marcos & Júlia', 
+          age: '28/27', 
+          location: 'Beira Mar', 
+          dist: '1 km', 
+          img: [
+            'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800',
+            'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800'
+          ], 
+          type: 'Grupo' 
+        },
+        { id: 5, name: 'Gabriela Costa', age: 24, location: 'Cocó', dist: '8 km', img: ['https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800'], type: 'Individual' }
       ]);
       setLoading(false);
     }, 800);
   }, []);
 
-  const next = () => setCurrentIndex(prev => prev + 1);
+  const next = () => {
+    setGroupMemberIndex(0);
+    setCurrentIndex(prev => prev + 1);
+  };
 
-  // Lógica de Match ao clicar no coração
+  const current = profiles[currentIndex];
+
+  const toggleGroupMember = (e) => {
+    e.stopPropagation();
+    if (current?.type === 'Grupo') {
+      setGroupMemberIndex(prev => (prev === 0 ? 1 : 0));
+    }
+  };
+
   const handleLike = () => {
-      const isMatch = Math.random() > 0.5;
+    const isMatch = Math.random() > 0.5;
     if (isMatch) {
       setShowMatch(true);
       setNotificationBadge(prev => prev + 1);
-
-      // ✅ SALVA O MATCH PARA O CHAT
       const currentMatches = JSON.parse(localStorage.getItem('openest_matches') || '[]');
-      if (!currentMatches.find(m => m.id === current.id)) {
-        const updatedMatches = [...currentMatches, current];
-        localStorage.setItem('openest_matches', JSON.stringify(updatedMatches));
+      if (current && !currentMatches.find(m => m.id === current.id)) {
+        const matchData = { ...current, img: Array.isArray(current.img) ? current.img[0] : current.img };
+        localStorage.setItem('openest_matches', JSON.stringify([...currentMatches, matchData]));
       }
     } else {
       next();
     }
   };
 
-  // Função para aplicar os filtros vindo do componente
-  const handleApplyFilters = (newFilters) => {
-    setActiveFilters(newFilters);
-    setIsFilterOpen(false);
-    console.log("Filtros aplicados com sucesso:", newFilters);
-  };
-
-  if (loading) return <div className="discovery-main-container"><div className="loader">Carregando...</div></div>;
-
-  const current = profiles[currentIndex];
+  if (loading) return <Loading />;
 
   return (
-    <div className="discovery-main-container">
-      {/* SIDEBAR ESQUERDA PADRONIZADA */}
+    <motion.div 
+      className="discovery-main-container"
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <aside className="discovery-sidebar">
         <div className="avatar-wrapper" onClick={() => navigate('/edit-profile')}>
           <img src="https://github.com/edudouraado.png" alt="Profile" />
         </div>
-        
         <div className="nav-menu">
-          {/* HABILITADO: Botão de mensagens agora navega para a lista de chat */}
           <button className="nav-btn-box" onClick={() => navigate('/chat/lista')}>
              <span className="mono-icon">✉</span> 
              {notificationBadge > 0 && <span className="sidebar-badge">{notificationBadge}</span>}
           </button>
-          <button className="nav-btn-box active">
-             <span className="mono-icon">♥</span>
-          </button>
+          <button className="nav-btn-box active"><span className="mono-icon">♥</span></button>
           <button className="nav-btn-box">
-             <span className="mono-icon">📅</span> 
+             <span className="mono-icon">
+                <img 
+                  src={calendarIcon} 
+                  alt="Cal" 
+                  className="calendar-dark-purple" 
+                  style={{ filter: 'invert(13%) sepia(94%) saturate(7451%) hue-rotate(277deg) brightness(94%) contrast(116%)' }} 
+                />
+              </span>
           </button>
         </div>
-        
         <div className="sidebar-footer">
           <button className="shield-btn-circle" onClick={() => navigate('/settings')}>
              <span className="mono-icon-shield">🛡</span>
@@ -115,96 +146,91 @@ const Discovery = () => {
         </div>
       </aside>
 
-      {/* ÁREA CENTRAL */}
       <main className="discovery-content-area">
-        <div className="iphone-mockup-v2">
-          {/* HEADER (STATUS BAR) COMPLETA */}
+        <div className="iphone-mockup-v2" style={{ position: 'relative' }}> {/* Adicionado position relative aqui */}
           <header className="iphone-header">
-            <div className="header-left">
-              <span className="live-clock">{currentTime}</span>
-            </div>
-            
+            <div className="header-left"><span className="live-clock">{currentTime}</span></div>
             <div className="header-center">
-               <div className="mini-logo-container">
-                  <img src={logoPath} alt="Logo ON" className="phone-logo-img" />
-               </div>
+               <div className="mini-logo-container"><img src={logoPath} alt="Logo" className="phone-logo-img" /></div>
             </div>
-            
             <div className="header-right">
-               <div className="signal-bars">
-                  <div className="bar b1"></div>
-                  <div className="bar b2"></div>
-                  <div className="bar b3"></div>
-                  <div className="bar b4"></div>
-               </div>
-               <div className="wifi-css">
-                  <div className="w-dot"></div>
-                  <div className="w-arc a1"></div>
-                  <div className="w-arc a2"></div>
-               </div>
-               <div className="battery-container">
-                  <div className="battery-shell">
-                    <div className="battery-level"></div>
-                  </div>
-                  <div className="battery-tip"></div>
-               </div>
+               <div className="signal-bars">{[1,2,3,4].map(b => <div key={b} className={`bar b${b}`}></div>)}</div>
+               <div className="wifi-css"><div className="w-dot"></div><div className="w-arc a1"></div><div className="w-arc a2"></div></div>
+               <div className="battery-container"><div className="battery-shell"><div className="battery-level"></div></div><div className="battery-tip"></div></div>
             </div>
           </header>
 
           <div className="card-container">
-            {current ? (
-              <div className="profile-card">
-                <img src={current.img} alt={current.name} className="card-img" />
-                <div className="group-badge">👥 {current.type}</div>
-                <div className="card-overlay">
-                  <div className="info-box">
-                    <h2>{current.name}, {current.age}</h2>
-                    <p>Mora em {current.location}</p>
-                    <small>{current.dist}</small>
+            <AnimatePresence mode="wait">
+              {current ? (
+                <motion.div 
+                  key={current.id}
+                  className="profile-card"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.img 
+                      key={groupMemberIndex}
+                      src={current.img[groupMemberIndex]} 
+                      alt={current.name} 
+                      className="card-img"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </AnimatePresence>
+                  <motion.div 
+                    className={`group-badge ${current.type === 'Grupo' ? 'clickable' : ''}`}
+                    onClick={toggleGroupMember}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {current.type === 'Grupo' ? `👥 Grupo (Ver ${groupMemberIndex === 0 ? '2º' : '1º'})` : `👤 ${current.type}`}
+                  </motion.div>
+                  <div className="card-overlay">
+                    <div className="info-box">
+                      <h2>{current.name}, {current.age}</h2>
+                      <p>{current.location} • {current.dist}</p>
+                    </div>
                   </div>
+                </motion.div>
+              ) : (
+                <div className="end-state">
+                  <h3>Acabaram os perfis!</h3>
+                  <button onClick={() => setCurrentIndex(0)} className="btn-retry">Recarregar</button>
                 </div>
-              </div>
-            ) : (
-              <div className="end-state">
-                <h3>Acabaram os perfis!</h3>
-                <button onClick={() => setCurrentIndex(0)} className="btn-retry">Recarregar</button>
-              </div>
-            )}
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* FOOTER */}
           <div className="actions-footer">
-            <button className="circle-btn x-btn" onClick={next}>✕</button>
-            <button 
-              className="circle-btn star-btn" 
-              onClick={() => setIsFilterOpen(true)}
-            >
-              ⭐
-            </button>
-            <button className="circle-btn heart-btn" onClick={handleLike}>♥</button>
+            <motion.button whileTap={{ scale: 0.8 }} className="circle-btn x-btn" onClick={next}>✕</motion.button>
+            <motion.button whileTap={{ scale: 0.8 }} className="circle-btn star-btn" onClick={() => setIsFilterOpen(true)}>⭐</motion.button>
+            <motion.button whileTap={{ scale: 0.8 }} className="circle-btn heart-btn" onClick={handleLike}>♥</motion.button>
           </div>
           <div className="home-indicator"></div>
 
-          {/* COMPONENTE DE FILTROS (T042) */}
+          {/* MOVIDO PARA DENTRO DO IPHONE-MOCKUP-V2 PARA RESPEITAR O TAMANHO DO CELULAR */}
           <Filters 
-            isOpen={isFilterOpen}
-            onClose={() => setIsFilterOpen(false)}
-            onApply={handleApplyFilters}
-            currentFilters={activeFilters}
+            isOpen={isFilterOpen} 
+            onClose={() => setIsFilterOpen(false)} 
+            onApply={(newFilters) => { setActiveFilters(newFilters); setIsFilterOpen(false); }} 
+            currentFilters={activeFilters} 
           />
-
-          {/* COMPONENTE DE MATCH (T043) */}
+          
           <MatchPopup 
-            isOpen={showMatch}
-            matchName={current?.name}
-            matchImg={current?.img}
-            onClose={() => { setShowMatch(false); next(); }}
-            onChat={() => navigate(`/chat/${current?.id}`)}
+            isOpen={showMatch} 
+            matchName={current?.name} 
+            matchImg={Array.isArray(current?.img) ? current.img[groupMemberIndex] : current?.img} 
+            onClose={() => { setShowMatch(false); next(); }} 
+            onChat={() => navigate(`/chat/${current?.id}`)} 
           />
-          {/* HABILITADO: Redireciona para o chat específico do usuário atual */}
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 };
 

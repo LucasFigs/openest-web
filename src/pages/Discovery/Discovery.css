@@ -30,7 +30,7 @@ html, body, #root {
 .avatar-wrapper img {
   width: 52px; height: 52px; border-radius: 50%;
   cursor: pointer; object-fit: cover;
-  border: 2px solid #a100ff; padding: 2px;
+  border: 2px solid rgb(161, 0, 255); padding: 2px;
 }
 
 .nav-menu {
@@ -183,4 +183,20 @@ html, body, #root {
   justify-content: center;
   align-items: center;
   border: 2px solid white;
+}
+
+.calendar-dark-purple {
+  width: 30px; 
+  height: 30px;
+  object-fit: contain;
+  
+  filter: invert(13%) sepia(94%) saturate(7451%) hue-rotate(277deg) brightness(60%) contrast(116%);
+  
+  opacity: 0.9; 
+  transition: transform 0.2s ease;
+}
+
+.calendar-dark-purple:hover {
+  transform: scale(1.1);
+  opacity: 1;
 }

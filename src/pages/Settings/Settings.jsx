@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Settings.css';
 
-const Settings = ({ setPage }) => {
+const Settings = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPassModal, setShowPassModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Estado inicial das configurações
   const [settings, setSettings] = useState({
     discreteMode: true,
     matchNotifications: true,
     messageNotifications: true
   });
 
-  // Carregar dados salvos ao iniciar (Persistência)
   useEffect(() => {
     const saved = localStorage.getItem('userSettings');
     if (saved) setSettings(JSON.parse(saved));
@@ -33,16 +35,21 @@ const Settings = ({ setPage }) => {
   };
 
   return (
-    <div className="settings-screen-wrapper">
+    <motion.div 
+      className="settings-screen-wrapper"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      style={{ overflow: 'hidden' }} 
+    >
       <div className="settings-premium-card">
         <header className="settings-header-box">
           <h2>Configurações</h2>
-          <button className="close-x-btn" onClick={() => setPage('welcome')}>✕</button>
+          <button className="close-x-btn" onClick={() => navigate('/discovery')}>✕</button>
         </header>
 
         <div className="settings-scroll-area">
           
-          {/* PRIVACIDADE */}
           <section className="settings-group">
             <h3 className="group-title">Privacidade</h3>
             <div className="setting-row">
@@ -61,7 +68,6 @@ const Settings = ({ setPage }) => {
             </div>
           </section>
 
-          {/* NOTIFICAÇÕES */}
           <section className="settings-group">
             <h3 className="group-title">Notificações</h3>
             <div className="setting-row">
@@ -88,14 +94,20 @@ const Settings = ({ setPage }) => {
             </div>
           </section>
 
-          {/* CONTA */}
+          {/* SEÇÃO CONTA COM TEXTO CENTRALIZADO */}
           <section className="settings-group">
             <h3 className="group-title">Conta</h3>
-            <button className="settings-action-btn" onClick={() => setShowPassModal(true)}>Alterar senha</button>
-            <button className="settings-action-btn btn-danger-soft" onClick={() => setShowDeleteModal(true)}>Excluir conta</button>
+            <button className="settings-action-btn centered-text" onClick={() => setShowPassModal(true)}>
+              Alterar senha
+            </button>
+            <button className="settings-action-btn centered-text" onClick={() => setShowLogoutModal(true)}>
+              Sair da conta
+            </button>
+            <button className="settings-action-btn btn-danger-soft centered-text" onClick={() => setShowDeleteModal(true)}>
+              Excluir conta
+            </button>
           </section>
 
-          {/* SOBRE */}
           <section className="settings-group">
             <h3 className="group-title">Sobre</h3>
             <div className="legal-links">
@@ -112,35 +124,63 @@ const Settings = ({ setPage }) => {
         </footer>
       </div>
 
-      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
-      {showDeleteModal && (
-        <div className="modal-blur-overlay">
-          <div className="modal-content-card">
-            <h4>Excluir conta?</h4>
-            <p>Seus dados serão removidos permanentemente.</p>
-            <div className="modal-btns">
-              <button className="m-btn-back" onClick={() => setShowDeleteModal(false)}>VOLTAR</button>
-              <button className="m-btn-danger" onClick={() => alert('Conta excluída!')}>OK</button>
-            </div>
+      <AnimatePresence>
+        {showLogoutModal && (
+          <div className="modal-blur-overlay">
+            <motion.div 
+              className="modal-content-card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <h4>Encerrar Sessão?</h4>
+              <p>Tem certeza que deseja sair do Openest?</p>
+              <div className="modal-btns">
+                <button className="m-btn-back" onClick={() => setShowLogoutModal(false)}>CANCELAR</button>
+                <button className="m-btn-danger" onClick={() => navigate('/')}>SAIR</button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* MODAL DE SENHA */}
-      {showPassModal && (
-        <div className="modal-blur-overlay">
-          <div className="modal-content-card">
-            <h4>Alterar senha</h4>
-            <input type="password" placeholder="Senha atual" className="m-input" />
-            <input type="password" placeholder="Nova senha" className="m-input" />
-            <div className="modal-btns">
-              <button className="m-btn-back" onClick={() => setShowPassModal(false)}>CANCELAR</button>
-              <button className="m-btn-save" onClick={() => setShowPassModal(false)}>SALVAR</button>
-            </div>
+        {showDeleteModal && (
+          <div className="modal-blur-overlay">
+            <motion.div 
+              className="modal-content-card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <h4>Excluir conta?</h4>
+              <p>Seus dados serão removidos permanentemente.</p>
+              <div className="modal-btns">
+                <button className="m-btn-back" onClick={() => setShowDeleteModal(false)}>VOLTAR</button>
+                <button className="m-btn-danger" onClick={() => alert('Conta excluída!')}>OK</button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {showPassModal && (
+          <div className="modal-blur-overlay">
+            <motion.div 
+              className="modal-content-card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <h4>Alterar senha</h4>
+              <input type="password" placeholder="Senha atual" className="m-input" />
+              <input type="password" placeholder="Nova senha" className="m-input" />
+              <div className="modal-btns">
+                <button className="m-btn-back" onClick={() => setShowPassModal(false)}>CANCELAR</button>
+                <button className="m-btn-save" onClick={() => setShowPassModal(false)}>SALVAR</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

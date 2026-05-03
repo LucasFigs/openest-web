@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion'; 
 import './EditProfile.css';
 
-const EditProfile = ({ setPage }) => {
-  // Estado das Fotos
+const EditProfile = () => {
+  const navigate = useNavigate();
+
+  // Estado das Fotos original
   const [photos, setPhotos] = useState([
     'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800',
     'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800'
   ]);
   const [activePhoto, setActivePhoto] = useState(0);
 
-  // Estado do Formulário
+  // Estado do Formulário completo
   const [formData, setFormData] = useState({
     fullName: 'Leandro Soares',
     age: 25,
@@ -25,7 +29,6 @@ const EditProfile = ({ setPage }) => {
   useEffect(() => {
     const savedData = localStorage.getItem('userProfile');
     if (savedData) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData(JSON.parse(savedData));
     }
   }, []);
@@ -47,12 +50,10 @@ const EditProfile = ({ setPage }) => {
     if (activePhoto >= updated.length) setActivePhoto(updated.length - 1);
   };
 
-  // Função de Salvar Real
   const handleSave = (e) => {
     e.preventDefault();
     setIsSaving(true);
 
-    // Simula envio para o servidor e salva no LocalStorage
     setTimeout(() => {
       localStorage.setItem('userProfile', JSON.stringify(formData));
       setIsSaving(false);
@@ -61,11 +62,17 @@ const EditProfile = ({ setPage }) => {
   };
 
   return (
-    <div className="profile-edit-wrapper">
+    <motion.div 
+      className="profile-edit-wrapper"
+      initial={{ opacity: 0, y: 15 }} // Começa invisível e um pouco abaixo
+      animate={{ opacity: 1, y: 0 }}  // Sobe suavemente
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="profile-edit-card">
         <header className="profile-edit-header">
           <h2>Editar Perfil</h2>
-          <button className="exit-button" onClick={() => setPage('welcome')}>✕</button>
+          {/* Ação de fechar agora volta para a Discovery */}
+          <button className="exit-button" onClick={() => navigate('/discovery')}>✕</button>
         </header>
 
         <form className="profile-edit-body" onSubmit={handleSave}>
@@ -81,7 +88,11 @@ const EditProfile = ({ setPage }) => {
 
             <div className="carousel-mini-list">
               {photos.map((photo, index) => (
-                <div key={index} className={`mini-item ${index === activePhoto ? 'active' : ''}`} onClick={() => setActivePhoto(index)}>
+                <div 
+                  key={index} 
+                  className={`mini-item ${index === activePhoto ? 'active' : ''}`} 
+                  onClick={() => setActivePhoto(index)}
+                >
                   <img src={photo} alt="Thumb" className="img-render-3x4" />
                   <span className="remove-item-btn" onClick={(e) => handleDeletePhoto(e, index)}>×</span>
                 </div>
@@ -123,7 +134,10 @@ const EditProfile = ({ setPage }) => {
 
             <div className="input-field-premium">
               <label>STATUS</label>
-              <select value={formData.relationshipStatus} onChange={e => setFormData({...formData, relationshipStatus: e.target.value})}>
+              <select 
+                value={formData.relationshipStatus} 
+                onChange={e => setFormData({...formData, relationshipStatus: e.target.value})}
+              >
                 <option value="individual">Indivíduo</option>
                 <option value="couple">Casal</option>
               </select>
@@ -131,7 +145,10 @@ const EditProfile = ({ setPage }) => {
 
             <div className="input-field-premium">
               <label>BIOGRAFIA (SOBRE MIM)</label>
-              <textarea value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} />
+              <textarea 
+                value={formData.bio} 
+                onChange={e => setFormData({...formData, bio: e.target.value})} 
+              />
             </div>
 
             <div className="lgpd-security-bar">
@@ -152,7 +169,7 @@ const EditProfile = ({ setPage }) => {
           </div>
         </form>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
