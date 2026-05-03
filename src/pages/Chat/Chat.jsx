@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Loading from '../../components/Loading/Loading'; 
 import './Chat.css';
 import logoOn from '../../assets/images/LOGO.png';
 
@@ -22,11 +23,10 @@ const Chat = () => {
       
       if (savedMatches) {
         const matches = JSON.parse(savedMatches);
-        // Adicionamos campos extras que a Task #28 pede (unread e time)
         const mappedConversations = matches.map(match => ({
           ...match,
-          timestamp: 'Agora', // Em uma API real, viria do banco
-          unreadCount: 0      // Em uma API real, viria do banco
+          timestamp: 'Agora', 
+          unreadCount: 0      
         }));
         setConversations(mappedConversations);
       }
@@ -85,7 +85,10 @@ const Chat = () => {
 
         <div className="conversations-list">
           {loading ? (
-            <div className="loading-msg">Carregando...</div>
+            /* Substituído o texto genérico pelo seu novo Spinner */
+            <div className="loading-sidebar-wrapper">
+               <Loading />
+            </div>
           ) : conversations.length > 0 ? (
             conversations.map(conv => (
               <div 
@@ -160,4 +163,4 @@ const Chat = () => {
   );
 };
 
-export default Chat;  
+export default Chat;

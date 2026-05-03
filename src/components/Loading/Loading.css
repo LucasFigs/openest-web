@@ -1,0 +1,56 @@
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #131212; /* Rosa claro de fundo */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.fire-spinner-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fire-spinner-image {
+  width: 60px;
+  height: auto;
+  z-index: 2;
+  animation: spin 2s linear infinite; /* Rotação infinita */
+  filter: drop-shadow(0 0 10px #6a1b9a); /* Brilho roxo */
+}
+
+.purple-glow {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, rgba(106, 27, 154, 0.4) 0%, rgba(106, 27, 154, 0) 70%);
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite; /* Pulsação suave */
+}
+
+.loading-text {
+  margin-top: 20px;
+  color: #6a1b9a; /* Roxo padrão */
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+}

@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
+import { motion } from 'framer-motion'; // Import para animação
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './Admin.css';
+
+// Importação da sua logo local
+import logoOn from '../../assets/images/LOGO.png'; 
 
 const Admin = () => {
   const { user } = useContext(AuthContext);
@@ -25,13 +29,28 @@ const Admin = () => {
   }
 
   return (
-    <div className="admin-page-container">
+    <motion.div 
+      className="admin-page-container"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Sidebar Lateral (Estilo Protótipo) */}
       <aside className="admin-sidebar">
-        <div className="admin-badge">
-           <span className="badge-number">2</span>
-           <span className="badge-icon"> whistle-icon </span>
-        </div>
+        {/* SUBSTITUIÇÃO DA DIV PELO LOGO COM ANIMAÇÃO */}
+        <motion.div 
+          className="admin-logo-wrapper"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+        >
+           <img 
+             src={logoOn} 
+             alt="Openest Logo" 
+             style={{ width: '40px', height: 'auto', objectFit: 'contain' }} 
+           />
+        </motion.div>
+
         <button className="logout-btn" onClick={() => navigate('/discovery')}> ➔ </button>
       </aside>
 
@@ -87,7 +106,7 @@ const Admin = () => {
               <div className="metrics-footer">
                 <div className="stat-box">
                   <span>Total de Usuários</span>
-                  <strong>1.580</strong>
+                  <strong>205</strong>
                 </div>
                 <div className="stat-box">
                   <span>Crescimento</span>
@@ -97,17 +116,15 @@ const Admin = () => {
             </div>
           ) : (
             <div className="reports-view">
-              {/* Aqui entraria a lista de denúncias ou gráficos de denúncia */}
               <h3>Denúncias Pendentes</h3>
               <div className="reports-list">
-                 {/* Lógica para mapear denúncias via GET /api/admin/denuncias */}
-                 <p>Nenhuma denúncia crítica no momento.</p>
+                  <p>Nenhuma denúncia crítica no momento.</p>
               </div>
             </div>
           )}
         </section>
       </main>
-    </div>
+    </motion.div>
   );
 };
 
