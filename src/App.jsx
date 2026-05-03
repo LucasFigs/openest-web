@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext } from './contexts/AuthContext';
+import { Toaster } from 'react-hot-toast'; // Task #40: Importação global do container
 
 // Componentes Universais
 import Loading from './components/Loading/Loading';
@@ -21,7 +22,6 @@ import './App.css';
 function App() {
   const { authenticated, user, loading } = useContext(AuthContext);
 
-  // Se estiver carregando, exibe o Foguinho Roxo animado
   if (loading) {
     return <Loading />;
   }
@@ -29,6 +29,20 @@ function App() {
   return (
     <Router>
       <div className="App">
+        {/* Task #40: O Toaster fica aqui para as notificações aparecerem em QUALQUER rota */}
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            duration: 5000,
+            style: {
+              background: 'transparent',
+              boxShadow: 'none',
+              border: 'none',
+              padding: 0,
+            }
+          }}
+        />
+
         <Routes>
           {/* ROTAS PÚBLICAS */}
           {!authenticated ? (

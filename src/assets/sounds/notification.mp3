@@ -1,0 +1,4 @@
+const playNotificationSound = () => {
+  const audio = new Audio('/src/assets/sounds/notification.mp3');
+  audio.play().catch(err => console.log("Erro ao tocar som:", err));
+};

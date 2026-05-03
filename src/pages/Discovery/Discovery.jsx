@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast, { Toaster } from 'react-hot-toast';
 import calendarIcon from '../../assets/images/calendar.png';
 import './Discovery.css';
 
@@ -33,6 +34,23 @@ const Discovery = () => {
 
   const logoPath = logoOn; 
 
+  // Task #40: Título da aba piscante
+  useEffect(() => {
+    if (notificationBadge > 0) {
+      const originalTitle = "Openest";
+      const interval = setInterval(() => {
+        document.title = document.title === originalTitle 
+          ? `(${notificationBadge}) Nova Mensagem!` 
+          : originalTitle;
+      }, 1000);
+      return () => {
+        clearInterval(interval);
+        document.title = originalTitle;
+      };
+    }
+  }, [notificationBadge]);
+
+  // Relógio em tempo real
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -45,6 +63,7 @@ const Discovery = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Simulação de carregamento e Notificação
   useEffect(() => {
     setTimeout(() => {
       setProfiles([
@@ -73,12 +92,41 @@ const Discovery = () => {
             'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800'
           ], 
           type: 'Grupo' 
-        },
-        { id: 5, name: 'Gabriela Costa', age: 24, location: 'Cocó', dist: '8 km', img: ['https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800'], type: 'Individual' }
+        }
       ]);
       setLoading(false);
+
+      const currentMatches = JSON.parse(localStorage.getItem('openest_matches') || '[]');
+      if (currentMatches.length > 0) {
+        const timer = setTimeout(() => {
+          const lastMatch = currentMatches[currentMatches.length - 1];
+          handleIncomingMessage(lastMatch); // Passamos o objeto completo do match
+        }, 4000);
+        return () => clearTimeout(timer);
+      }
     }, 800);
   }, []);
+
+  // Task #40: Notificação Clicável para abrir o Chat
+  const handleIncomingMessage = (matchObj) => {
+    setNotificationBadge(prev => prev + 1);
+    
+    toast.custom((t) => (
+      <div 
+        className={`toast-custom-openest clickable-toast ${t.visible ? 'animate-enter' : 'animate-leave'}`}
+        onClick={() => {
+          toast.dismiss(t.id);
+          navigate(`/chat/${matchObj.id}`); // Navega direto para o chat da pessoa
+        }}
+      >
+        <div className="toast-avatar">✉️</div>
+        <div className="toast-content">
+          <p className="toast-title">Nova mensagem de {matchObj.name}</p>
+          <p className="toast-text">Clique para responder...</p>
+        </div>
+      </div>
+    ), { duration: 5000, id: `msg-${matchObj.id}` });
+  };
 
   const next = () => {
     setGroupMemberIndex(0);
@@ -98,10 +146,12 @@ const Discovery = () => {
     const isMatch = Math.random() > 0.5;
     if (isMatch) {
       setShowMatch(true);
-      setNotificationBadge(prev => prev + 1);
       const currentMatches = JSON.parse(localStorage.getItem('openest_matches') || '[]');
       if (current && !currentMatches.find(m => m.id === current.id)) {
-        const matchData = { ...current, img: Array.isArray(current.img) ? current.img[0] : current.img };
+        const matchData = { 
+          ...current, 
+          img: Array.isArray(current.img) ? current.img[0] : current.img 
+        };
         localStorage.setItem('openest_matches', JSON.stringify([...currentMatches, matchData]));
       }
     } else {
@@ -118,6 +168,8 @@ const Discovery = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <Toaster position="top-right" />
+
       <aside className="discovery-sidebar">
         <div className="avatar-wrapper" onClick={() => navigate('/edit-profile')}>
           <img src="https://github.com/edudouraado.png" alt="Profile" />
@@ -147,7 +199,7 @@ const Discovery = () => {
       </aside>
 
       <main className="discovery-content-area">
-        <div className="iphone-mockup-v2" style={{ position: 'relative' }}> {/* Adicionado position relative aqui */}
+        <div className="iphone-mockup-v2" style={{ position: 'relative' }}>
           <header className="iphone-header">
             <div className="header-left"><span className="live-clock">{currentTime}</span></div>
             <div className="header-center">
@@ -213,7 +265,6 @@ const Discovery = () => {
           </div>
           <div className="home-indicator"></div>
 
-          {/* MOVIDO PARA DENTRO DO IPHONE-MOCKUP-V2 PARA RESPEITAR O TAMANHO DO CELULAR */}
           <Filters 
             isOpen={isFilterOpen} 
             onClose={() => setIsFilterOpen(false)} 
