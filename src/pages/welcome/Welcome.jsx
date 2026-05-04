@@ -18,8 +18,8 @@ const Welcome = () => {
           <div className="welcome-nav-left">
             <img src={logoOn} alt="Openest" className="welcome-logo-img" />
             <div className="welcome-nav-links">
-              <span>Produtos</span>
-              <span>Segurança</span>
+              <span onClick={() => navigate('/termos-de-uso')}>Termos de Uso</span>
+              <span onClick={() => navigate('/politica-de-privacidade')}>Privacidade</span>
               <span>Suporte</span>
             </div>
           </div>

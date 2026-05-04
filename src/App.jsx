@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext } from './contexts/AuthContext';
-import { Toaster } from 'react-hot-toast'; // Task #40: Importação global do container
+import { Toaster } from 'react-hot-toast'; 
 
 // Componentes Universais
 import Loading from './components/Loading/Loading';
@@ -16,6 +16,8 @@ import EditProfile from './pages/EditProfile/EditProfile';
 import Settings from './pages/Settings/Settings';
 import Chat from './pages/Chat/Chat';
 import Admin from './pages/Admin/Admin'; 
+import TermsOfUse from './pages/Legal/TermsOfUse';
+import PrivacyPolicy from './pages/Legal/PrivacyPolicy';
 
 import './App.css';
 
@@ -29,7 +31,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        {/* Task #40: O Toaster fica aqui para as notificações aparecerem em QUALQUER rota */}
+        {/* Task #40: Notificações globais */}
         <Toaster 
           position="top-right" 
           toastOptions={{
@@ -44,8 +46,16 @@ function App() {
         />
 
         <Routes>
-          {/* ROTAS PÚBLICAS */}
+          {/* 
+            TASK #43: ROTAS PÚBLICAS UNIVERSAIS 
+            Colocadas fora do bloco condicional para que os botões da Navbar 
+            da Welcome funcionem sem exigir login.
+          */}
+          <Route path="/termos-de-uso" element={<TermsOfUse />} />
+          <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+
           {!authenticated ? (
+            /* BLOCO: NÃO LOGADO */
             <>
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/login" element={<Login />} />
@@ -54,7 +64,7 @@ function App() {
               <Route path="*" element={<Navigate to="/welcome" />} />
             </>
           ) : (
-            /* ROTAS PRIVADAS */
+            /* BLOCO: AUTENTICADO */
             <>
               <Route 
                 path="/" 

@@ -1,9 +1,16 @@
+/* ANIMAÇÃO DE GRADIENTE MESH DINÂMICO */
+@keyframes meshGradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* RESET GLOBAL */
 html, body, #root {
   margin: 0; padding: 0;
   width: 100%; height: 100%;
   overflow: hidden;
-  background-color: #000;
+  background-color: #fdfbff; /* Fundo base para o glassmorphism light */
 }
 
 .discovery-main-container {
@@ -12,289 +19,247 @@ html, body, #root {
   overflow: hidden;
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
+  background: linear-gradient(-45deg, #fce4ec, #f3e5f5, #e1bee7, #fdfbff);
+  background-size: 400% 400%;
+  animation: meshGradientFlow 15s ease infinite;
 }
 
-/* SIDEBAR ESQUERDA */
+/* SIDEBAR ESQUERDA GLASSMOPHIRSM */
 .discovery-sidebar {
   width: 85px; min-width: 85px;
-  height: 100vh; background: white;
+  height: 100vh; 
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
   display: flex; flex-direction: column;
   justify-content: space-between;
   align-items: center; 
   padding: 40px 0;
-  border-right: 1px solid #f0f0f0;
-  z-index: 10;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 100;
   box-sizing: border-box;
 }
 
 .avatar-wrapper img {
-  width: 52px; height: 52px; border-radius: 50%;
+  width: 55px; height: 55px; border-radius: 50%;
   cursor: pointer; object-fit: cover;
-  border: 2px solid rgb(161, 0, 255); padding: 2px;
+  border: 2px solid #ff4081; padding: 2px;
+  box-shadow: 0 4px 15px rgba(255, 64, 129, 0.2);
 }
 
 .nav-menu {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 30px;
   align-items: center;
 }
 
-.mono-icon { color: #7b1fa2; font-size: 26px; display: inline-block; }
-.mono-icon-shield { color: #7b1fa2; font-size: 24px; }
-
-/* AJUSTE DE VISIBILIDADE DOS BOTÕES */
 .nav-btn-box {
-  background: transparent; /* Removido fundo fixo para destacar apenas o ativo */
+  position: relative;
+  background: transparent;
   border: none;
   width: 52px; height: 52px;
-  cursor: pointer; transition: all 0.3s;
+  cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex; justify-content: center; align-items: center;
-  opacity: 0.6; /* Aumentado de 0.4 para 0.6 para melhor visibilidade */
+  opacity: 0.5;
 }
 
 .nav-btn-box.active { 
   opacity: 1; 
-  transform: scale(1.05);
-  background: #f4f0ff; /* Fundo de destaque apenas no ativo */
-  border-radius: 16px;
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
 
-.sidebar-footer { width: 100%; display: flex; justify-content: center; padding-bottom: 10px; }
+.mono-icon { color: #4a148c; font-size: 26px; }
+
+/* BADGE DE NOTIFICAÇÃO PREMIUM */
+.sidebar-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(45deg, #ff1744, #ff4081);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 8px rgba(255, 23, 68, 0.3);
+}
 
 .shield-btn-circle {
-  background: #f8f8f8; border: none;
+  border: 1px solid rgba(255, 255, 255, 0.8);
   width: 50px; height: 50px; border-radius: 50%;
   cursor: pointer; display: flex; justify-content: center; align-items: center;
   transition: 0.3s;
+  color: #7b1fa2;
+  opacity: 2; 
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
 
 /* ÁREA CENTRAL */
 .discovery-content-area {
   flex: 1; width: 0; height: 100%;
   display: flex; justify-content: center; align-items: center;
-  background: radial-gradient(circle at top left, #dfa9ff 0%, #ca88ff 100%);
   overflow: hidden;
 }
 
-/* MOCKUP IPHONE */
+/* MOCKUP IPHONE PREMIUM LIGHT GLASS */
 .iphone-mockup-v2 {
   height: 92vh; aspect-ratio: 9 / 19;
-  background: white; border-radius: 50px;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.25);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(30px);
+  border: 8px solid #ffffff;
+  border-radius: 50px;
+  box-shadow: 0 40px 100px rgba(123, 31, 162, 0.15);
   display: flex; flex-direction: column;
   padding: 8px; position: relative; box-sizing: border-box;
 }
 
-/* STATUS BAR */
+/* STATUS BAR LIGHT */
 .iphone-header {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   padding: 18px 20px 10px 20px;
-  color: #1a1a1a;
+  color: #4a148c;
 }
 
-.header-left { display: flex; align-items: center; }
-.live-clock { font-size: 14px; font-weight: 700; letter-spacing: -0.3px; }
+.live-clock { font-size: 14px; font-weight: 800; }
+.phone-logo-img { max-height: 32px; width: auto; opacity: 0.8; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
 
-.header-center { display: flex; justify-content: center; }
-.phone-logo-img { max-height: 36px; width: auto; opacity: 0.8; }
+.bar { width: 3px; background: #4a148c; border-radius: 1px; }
+.w-dot { background: #4a148c; }
+.w-arc { border-top: 2px solid #4a148c; }
+.battery-shell { border: 1.5px solid #4a148c; }
+.battery-level { background: #4a148c; }
+.battery-tip { background: #4a148c; }
 
-.header-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-
-/* SINAL TELEFONE */
-.signal-bars { display: flex; align-items: flex-end; gap: 2px; height: 10px; }
-.bar { width: 3px; background: #1a1a1a; border-radius: 1px; }
-.b1 { height: 40%; }
-.b2 { height: 60%; }
-.b3 { height: 80%; }
-.b4 { height: 100%; }
-
-/* WI-FI CSS */
-.wifi-css {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 14px; height: 10px; position: relative;
-}
-.w-dot { width: 3px; height: 3px; background: #1a1a1a; border-radius: 50%; margin-top: auto; }
-.w-arc { 
-  border-top: 2px solid #1a1a1a; border-radius: 50%; 
-  position: absolute; border-left: 2px solid transparent; border-right: 2px solid transparent; 
-}
-.a1 { width: 10px; height: 10px; top: -1px; }
-.a2 { width: 14px; height: 14px; top: -4px; }
-
-/* BATERIA */
-.battery-container { display: flex; align-items: center; }
-.battery-shell {
-  width: 22px; height: 11px; border: 1.5px solid #1a1a1a;
-  border-radius: 3px; padding: 1px; display: flex;
-}
-.battery-level { width: 85%; height: 100%; background: #1a1a1a; border-radius: 1px; }
-.battery-tip {
-  width: 1.5px; height: 4px; background: #1a1a1a;
-  border-radius: 0 1px 1px 0; margin-left: 1px;
+/* CARD CONTAINER */
+.card-container { 
+  flex: 1; 
+  padding: 12px; 
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; 
+  min-height: 0; /* Impede o card de empurrar os botões para fora */
 }
 
-/* CARD E CONTEÚDO */
-.card-container { flex: 1; padding: 6px; display: flex; flex-direction: column; overflow: hidden; }
-.profile-card { flex: 1; width: 100%; border-radius: 35px; overflow: hidden; position: relative; background: #222; }
+.profile-card { 
+  flex: 1; 
+  width: 100%; 
+  border-radius: 35px; 
+  overflow: hidden; 
+  position: relative; 
+  background: #fff;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
 .card-img { width: 100%; height: 100%; object-fit: cover; }
-.group-badge { position: absolute; top: 20px; left: 20px; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); padding: 6px 14px; border-radius: 20px; color: white; font-size: 11px; font-weight: 700; z-index: 5; }
-.card-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 50px 25px 30px 25px; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%); color: white; }
-.info-box h2 { font-size: 24px; margin: 0; font-weight: 700; }
-.info-box p { font-size: 14px; margin: 5px 0; opacity: 0.9; }
-.info-box small { font-size: 12px; opacity: 0.7; }
 
-.actions-footer { display: flex; justify-content: space-evenly; align-items: center; padding: 15px 0; width: 100%; }
-.circle-btn { width: 62px; height: 62px; border-radius: 50%; border: 1px solid #f2f2f2; background: white; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 22px; transition: 0.2s; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
-.x-btn { color: #a100ff; border-color: #a100ff; }
-.heart-btn { background: #34d399; color: white; border: none; font-size: 30px; }
-
-.home-indicator { width: 120px; height: 5px; background: #1a1a1a; border-radius: 10px; align-self: center; margin-bottom: 10px; opacity: 0.8; }
-
-.loader, .end-state { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #666; font-weight: 600; padding: 20px; }
-
-/* Mantenha todo o seu código anterior e adicione/ajuste estas partes: */
-
-.nav-btn-box {
-  position: relative; /* Necessário para o badge se posicionar */
-  background: transparent;
-  border: none;
-  width: 52px; height: 52px; border-radius: 16px;
-  cursor: pointer; transition: all 0.3s;
-  display: flex; justify-content: center; align-items: center;
-  opacity: 0.6;
+.group-badge { 
+  position: absolute; top: 20px; left: 20px; 
+  background: rgba(255, 255, 255, 0.3); 
+  backdrop-filter: blur(10px); 
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 6px 14px; border-radius: 20px; 
+  color: white; font-size: 11px; font-weight: 700; z-index: 5;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-/* ESTILO DO BADGE DE NOTIFICAÇÃO (TASK T043) */
-.sidebar-badge {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background-color: #ff3b30;
-  color: white;
-  font-size: 10px;
-  font-weight: 800;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 2px solid white;
+.card-overlay { 
+  position: absolute; bottom: 0; left: 0; right: 0; 
+  padding: 50px 25px 25px 25px; 
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); 
+  color: white; 
 }
 
-.calendar-dark-purple {
-  width: 30px; 
-  height: 30px;
-  object-fit: contain;
-  
-  filter: invert(13%) sepia(94%) saturate(7451%) hue-rotate(277deg) brightness(60%) contrast(116%);
-  
-  opacity: 0.9; 
-  transition: transform 0.2s ease;
+/* FOOTER ACTIONS */
+.actions-footer { 
+  display: flex; 
+  justify-content: space-evenly; 
+  align-items: center; 
+  padding: 15px 0 25px; 
+  width: 100%; 
 }
 
-.calendar-dark-purple:hover {
-  transform: scale(1.1);
-  opacity: 1;
+.circle-btn { 
+  width: 65px; height: 65px; border-radius: 50%; 
+  border: none; background: white; cursor: pointer; 
+  display: flex; justify-content: center; align-items: center; 
+  font-size: 24px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+  box-shadow: 0 10px 25px rgba(123, 31, 162, 0.1); 
 }
 
-/* --- Estilização do Toast Personalizado (Task #40) --- */
+.circle-btn:hover { transform: scale(1.1); }
+
+.x-btn { color: #ff5252; background: rgba(255, 255, 255, 0.9); }
+.star-btn { color: #ffca28; background: rgba(255, 255, 255, 0.9); }
+.heart-btn { 
+  background: linear-gradient(45deg, #f06292, #ba68c8); 
+  color: white; font-size: 32px; 
+  box-shadow: 0 10px 20px rgba(186, 104, 200, 0.3);
+}
+
+.home-indicator { 
+  width: 120px; height: 5px; 
+  background: rgba(74, 20, 140, 0.1); 
+  border-radius: 10px; align-self: center; 
+  margin-bottom: 10px; 
+}
+
+/* TOAST PERSONALIZADO PREMIUM */
 .toast-custom-openest {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 12px 18px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(142, 36, 170, 0.2); /* Roxo suave */
-  min-width: 280px;
-  gap: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(15px);
+  padding: 14px 20px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(123, 31, 162, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  min-width: 290px;
+  gap: 15px;
+  cursor: pointer;
 }
 
 .toast-avatar {
   font-size: 24px;
   background: #f3e5f5;
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.toast-content {
-  display: flex;
-  flex-direction: column;
-}
+.toast-title { color: #4a148c; font-weight: 800; font-size: 0.95rem; }
+.toast-text { color: #757575; font-size: 0.85rem; }
 
-.toast-title {
-  margin: 0;
-  font-weight: 700;
-  color: #4a148c;
-  font-size: 0.9rem;
-}
-
-.toast-text {
-  margin: 0;
-  color: #666;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-}
-
-/* --- Animações para o Toast --- */
-.animate-enter {
-  animation: slideInRight 0.4s ease forwards;
-}
-
-.animate-leave {
-  animation: fadeOut 0.3s ease forwards;
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-/* --- Badge de Notificação na Sidebar --- */
-.sidebar-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #ff1744; /* Vermelho vibrante para atenção */
-  color: white;
-  font-size: 10px;
-  font-weight: bold;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-/* --- Ajuste no botão da Sidebar para conter o Badge --- */
-.nav-btn-box {
-  position: relative; /* Necessário para o badge se posicionar corretamente */
-}
-
-/* --- Filtro Roxo para o Ícone de Calendário --- */
+/* FILTRO CALENDÁRIO */
 .calendar-dark-purple {
-  /* Filtro específico para converter preto em roxo escuro (#4a148c) */
   filter: invert(13%) sepia(94%) saturate(7451%) hue-rotate(277deg) brightness(94%) contrast(116%);
-  width: 24px;
-  height: 24px;
+  width: 24px; height: 24px;
+}
+
+/* LOADER / END STATE */
+.loader, .end-state { 
+  flex: 1; display: flex; flex-direction: column; 
+  justify-content: center; align-items: center; 
+  text-align: center; color: #4a148c; font-weight: 800; 
+}
+
+.btn-retry {
+  margin-top: 20px; padding: 12px 25px;
+  background: #7b1fa2; color: white;
+  border: none; border-radius: 25px;
+  cursor: pointer; font-weight: 700;
+  box-shadow: 0 5px 15px rgba(123, 31, 162, 0.3);
 }

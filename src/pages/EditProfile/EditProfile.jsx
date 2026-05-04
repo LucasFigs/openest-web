@@ -6,16 +6,16 @@ import './EditProfile.css';
 const EditProfile = () => {
   const navigate = useNavigate();
 
-  // Estado das Fotos original
+  // Estado das Fotos original restaurado
   const [photos, setPhotos] = useState([
     'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800',
     'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800'
   ]);
   const [activePhoto, setActivePhoto] = useState(0);
 
-  // Estado do Formulário completo
+  // Estado do Formulário completo (Eduardo Dourado)
   const [formData, setFormData] = useState({
-    fullName: 'Leandro Soares',
+    fullName: 'Eduardo Dourado',
     age: 25,
     location: 'Fortaleza, CE',
     bio: 'Apaixonado por tecnologia e integração de sistemas.',
@@ -25,7 +25,6 @@ const EditProfile = () => {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Carregar dados salvos ao iniciar
   useEffect(() => {
     const savedData = localStorage.getItem('userProfile');
     if (savedData) {
@@ -64,14 +63,13 @@ const EditProfile = () => {
   return (
     <motion.div 
       className="profile-edit-wrapper"
-      initial={{ opacity: 0, y: 15 }} // Começa invisível e um pouco abaixo
-      animate={{ opacity: 1, y: 0 }}  // Sobe suavemente
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="profile-edit-card">
+      <div className="profile-edit-glass-card">
         <header className="profile-edit-header">
           <h2>Editar Perfil</h2>
-          {/* Ação de fechar agora volta para a Discovery */}
           <button className="exit-button" onClick={() => navigate('/discovery')}>✕</button>
         </header>
 
@@ -80,6 +78,7 @@ const EditProfile = () => {
           <div className="column-left">
             <div className="image-container-3x4">
               <img src={photos[activePhoto]} alt="Perfil" className="img-render-3x4" />
+              {/* FUNÇÃO RESTAURADA: Info overlay sobre a foto */}
               <div className="image-overlay-info">
                 <h3>{formData.fullName}, {formData.age}</h3>
                 <p>{formData.location}</p>
@@ -151,13 +150,16 @@ const EditProfile = () => {
               />
             </div>
 
-            <div className="lgpd-security-bar">
+            <div className="lgpd-security-bar-glass">
               <span>Modo Discreto (LGPD)</span>
-              <input 
-                type="checkbox" 
-                checked={formData.discreteMode} 
-                onChange={e => setFormData({...formData, discreteMode: e.target.checked})} 
-              />
+              <label className="ui-switch-mini">
+                <input 
+                  type="checkbox" 
+                  checked={formData.discreteMode} 
+                  onChange={e => setFormData({...formData, discreteMode: e.target.checked})} 
+                />
+                <span className="ui-slider-mini"></span>
+              </label>
             </div>
 
             <div className="form-action-buttons">

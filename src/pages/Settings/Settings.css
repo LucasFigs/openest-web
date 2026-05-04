@@ -1,121 +1,108 @@
-/* CENTRALIZAÇÃO TOTAL E FUNDO */
+/* WRAPPER E FUNDO */
 .settings-screen-wrapper {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
   display: flex; justify-content: center; align-items: center;
-  background: radial-gradient(circle at top left, #a100ff 0%, #7b1fa2 100%);
+  background: #0b091a;
   font-family: 'Poppins', sans-serif;
   z-index: 999;
+  overflow: hidden;
 }
 
-/* CARD CENTRALIZADO */
+.settings-screen-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at top left, rgba(161, 0, 255, 0.2) 0%, transparent 100%);
+  z-index: -1;
+}
+
+/* CARD GLASSMORPHISM */
 .settings-premium-card {
-  background: #ffffff;
-  border-radius: 32px;
-  padding: 35px 45px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 35px;
+  padding: 35px;
   width: 90%;
-  max-width: 500px;
-  height: auto;
+  max-width: 480px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+  color: white;
 }
 
+/* HEADER */
 .settings-header-box {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 20px; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px;
+  margin-bottom: 25px; 
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-.settings-header-box h2 { font-size: 22px; color: #1a1a1a; font-weight: 800; margin: 0; }
-.close-x-btn { background: none; border: none; font-size: 22px; color: #ccc; cursor: pointer; }
+.settings-header-box h2 { font-size: 24px; color: #fff; font-weight: 700; margin: 0; }
+.close-x-btn { background: rgba(255,255,255,0.05); border: none; width: 35px; height: 35px; border-radius: 50%; color: #fff; cursor: pointer; }
 
-.settings-scroll-area { flex: 1; overflow-y: auto; padding-right: 5px; }
+/* ÁREA DE SCROLL */
+.settings-scroll-area { flex: 1; overflow-y: auto; scrollbar-width: none; }
+.settings-scroll-area::-webkit-scrollbar { display: none; }
 
-.settings-group { margin-bottom: 25px; }
+/* GRUPOS E TEXTOS */
 .group-title {
-  font-size: 11px; font-weight: 800; color: #999;
-  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px;
+  font-size: 10px; font-weight: 700; color: #a100ff;
+  text-transform: uppercase; letter-spacing: 2px; margin: 25px 0 15px;
 }
-
 .setting-row {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 0; border-bottom: 1px solid #f9f9f9;
+  padding: 15px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
+.label-dark { font-size: 15px; font-weight: 600; color: #fff; }
+.desc-text { font-size: 12px; color: rgba(255,255,255,0.5); }
 
-/* CORES DAS LETRAS (VISIBILIDADE) */
-.label-dark { font-size: 14px; font-weight: 700; color: #1a1a1a; }
-.desc-text { font-size: 11px; color: #666; margin: 2px 0 0; line-height: 1.4; }
-
-/* SWITCH ESTILO IOS */
-.ui-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+/* SWITCH NEON */
+.ui-switch { position: relative; width: 46px; height: 24px; }
 .ui-switch input { opacity: 0; width: 0; height: 0; }
 .ui-slider {
   position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #eee; transition: .4s; border-radius: 34px;
+  background-color: rgba(255, 255, 255, 0.1); transition: .4s; border-radius: 34px;
 }
 .ui-slider:before {
   position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
   background-color: white; transition: .4s; border-radius: 50%;
 }
-input:checked + .ui-slider { background-color: #a100ff; }
-input:checked + .ui-slider:before { transform: translateX(20px); }
+input:checked + .ui-slider { background-color: #a100ff; box-shadow: 0 0 15px rgba(161, 0, 255, 0.4); }
+input:checked + .ui-slider:before { transform: translateX(22px); }
 
-/* BOTÕES DE OPÇÃO */
+/* BOTÕES DE AÇÃO */
 .settings-action-btn {
-  width: 100%; padding: 14px; margin-bottom: 10px; border-radius: 12px;
-  border: 1px solid #eee; background: #fafafa; font-weight: 700;
-  color: #333; cursor: pointer; text-align: left; font-size: 13px;
+  width: 100%; padding: 16px; margin-bottom: 10px; border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(255, 255, 255, 0.02);
+  color: #fff; font-weight: 600; cursor: pointer; transition: 0.3s;
 }
-.btn-danger-soft { background: #fff1f1; color: #ff4444; border: none; }
+.btn-danger-soft { color: #ff5252; background: rgba(255, 82, 82, 0.05); border: none; }
+.centered-text { text-align: center; display: flex; justify-content: center; }
 
-/* LINKS */
-.legal-links { display: flex; flex-direction: column; gap: 8px; }
-.legal-links a { font-size: 13px; color: #7b1fa2; text-decoration: none; font-weight: 600; }
+/* LINKS LEGAIS */
+.legal-links { display: flex; flex-direction: column; gap: 12px; margin-top: 5px; }
+.settings-legal-item { color: rgba(255, 255, 255, 0.6); font-size: 13px; cursor: pointer; transition: 0.3s; width: fit-content; }
+.settings-legal-item:hover { color: #a100ff; transform: translateX(5px); }
 
-/* FOOTER E BOTÃO SALVAR */
-.settings-footer-action { margin-top: 20px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+/* BOTÃO SALVAR */
 .main-save-btn {
-  width: 100%; padding: 14px; border: none; color: #fff; font-weight: 800;
-  border-radius: 50px; cursor: pointer; font-size: 14px;
-  background: linear-gradient(90deg, #a100ff, #7b1fa2);
-  box-shadow: 0 10px 20px rgba(123, 31, 162, 0.3);
+  width: 100%; padding: 16px; border: none; color: #fff; font-weight: 700;
+  border-radius: 18px; background: #a100ff; cursor: pointer;
+  box-shadow: 0 10px 20px rgba(161, 0, 255, 0.3);
 }
 
 /* MODAIS */
-.modal-blur-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;
-  backdrop-filter: blur(4px);
-}
-.modal-content-card { background: #fff; padding: 25px; border-radius: 20px; width: 300px; text-align: center; }
+.modal-blur-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content-card { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 30px; border-radius: 28px; width: 320px; text-align: center; }
 .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-.m-input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
-.m-btn-back { flex: 1; padding: 10px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; background: rgb(161, 161, 161); }
-.m-btn-danger { flex: 1; background: #ff4444; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; }
-.m-btn-save { flex: 1; background: #a100ff; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; }g
+.m-input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; box-sizing: border-box; }
+.m-btn-back { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #444; color: #fff; cursor: pointer; font-weight: 600; }
+.m-btn-danger { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #ff4444; color: #fff; cursor: pointer; font-weight: 600; }
+.m-btn-save { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #a100ff; color: #fff; cursor: pointer; font-weight: 600; }
 
-.settings-screen-wrapper {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden; /* Remove o scroll da página inteira */
-}
-
-/* Opcional: Garante que a área de scroll interna não gere barra visual */
-.settings-scroll-area {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-}
-.settings-scroll-area::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-
-.settings-action-btn.centered-text {
-  width: 100%; /* Volta a ocupar a largura total do grupo */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
+.settings-version-text { font-size: 10px; color: rgba(255,255,255,0.3); text-align: center; margin-top: 20px; }
