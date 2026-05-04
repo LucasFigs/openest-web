@@ -40,7 +40,6 @@ const Settings = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      style={{ overflow: 'hidden' }} 
     >
       <div className="settings-premium-card">
         <header className="settings-header-box">
@@ -49,7 +48,6 @@ const Settings = () => {
         </header>
 
         <div className="settings-scroll-area">
-          
           <section className="settings-group">
             <h3 className="group-title">Privacidade</h3>
             <div className="setting-row">
@@ -94,7 +92,6 @@ const Settings = () => {
             </div>
           </section>
 
-          {/* SEÇÃO CONTA COM TEXTO CENTRALIZADO */}
           <section className="settings-group">
             <h3 className="group-title">Conta</h3>
             <button className="settings-action-btn centered-text" onClick={() => setShowPassModal(true)}>
@@ -111,9 +108,14 @@ const Settings = () => {
           <section className="settings-group">
             <h3 className="group-title">Sobre</h3>
             <div className="legal-links">
-              <a href="#">Termos de Uso</a>
-              <a href="#">Política de Privacidade</a>
+              <span className="settings-legal-item" onClick={() => navigate('/termos-de-uso')}>
+                Termos de Uso
+              </span>
+              <span className="settings-legal-item" onClick={() => navigate('/politica-de-privacidade')}>
+                Política de Privacidade
+              </span>
             </div>
+            <p className="settings-version-text">Versão 1.0.4 (Beta) - Fortaleza, CE</p>
           </section>
         </div>
 
@@ -137,7 +139,7 @@ const Settings = () => {
               <p>Tem certeza que deseja sair do Openest?</p>
               <div className="modal-btns">
                 <button className="m-btn-back" onClick={() => setShowLogoutModal(false)}>CANCELAR</button>
-                <button className="m-btn-danger" onClick={() => navigate('/')}>SAIR</button>
+                <button className="m-btn-danger" onClick={() => navigate('/welcome')}>SAIR</button>
               </div>
             </motion.div>
           </div>
@@ -152,10 +154,10 @@ const Settings = () => {
               exit={{ opacity: 0, y: 20 }}
             >
               <h4>Excluir conta?</h4>
-              <p>Seus dados serão removidos permanentemente.</p>
+              <p>Seus dados serão removidos permanentemente conforme a LGPD.</p>
               <div className="modal-btns">
                 <button className="m-btn-back" onClick={() => setShowDeleteModal(false)}>VOLTAR</button>
-                <button className="m-btn-danger" onClick={() => alert('Conta excluída!')}>OK</button>
+                <button className="m-btn-danger" onClick={() => alert('Conta excluída!')}>EXCLUIR</button>
               </div>
             </motion.div>
           </div>

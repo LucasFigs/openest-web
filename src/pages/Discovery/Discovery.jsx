@@ -20,6 +20,8 @@ const Discovery = () => {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState('');
   const [groupMemberIndex, setGroupMemberIndex] = useState(0);
+  // Estado para controlar a direção da animação de saída
+  const [exitX, setExitX] = useState(0);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
@@ -100,7 +102,7 @@ const Discovery = () => {
       if (currentMatches.length > 0) {
         const timer = setTimeout(() => {
           const lastMatch = currentMatches[currentMatches.length - 1];
-          handleIncomingMessage(lastMatch); // Passamos o objeto completo do match
+          handleIncomingMessage(lastMatch); 
         }, 4000);
         return () => clearTimeout(timer);
       }
@@ -116,7 +118,7 @@ const Discovery = () => {
         className={`toast-custom-openest clickable-toast ${t.visible ? 'animate-enter' : 'animate-leave'}`}
         onClick={() => {
           toast.dismiss(t.id);
-          navigate(`/chat/${matchObj.id}`); // Navega direto para o chat da pessoa
+          navigate(`/chat/${matchObj.id}`); 
         }}
       >
         <div className="toast-avatar">✉️</div>
@@ -142,7 +144,9 @@ const Discovery = () => {
     }
   };
 
+  // Funções de ação com controle de animação
   const handleLike = () => {
+    setExitX(300); // Define animação para a direita
     const isMatch = Math.random() > 0.5;
     if (isMatch) {
       setShowMatch(true);
@@ -155,8 +159,13 @@ const Discovery = () => {
         localStorage.setItem('openest_matches', JSON.stringify([...currentMatches, matchData]));
       }
     } else {
-      next();
+      setTimeout(next, 50); // Delay curto para o Framer Motion processar o exitX
     }
+  };
+
+  const handleDislike = () => {
+    setExitX(-300); // Define animação para a esquerda
+    setTimeout(next, 50);
   };
 
   if (loading) return <Loading />;
@@ -175,13 +184,13 @@ const Discovery = () => {
           <img src="https://github.com/edudouraado.png" alt="Profile" />
         </div>
         <div className="nav-menu">
-          <button className="nav-btn-box" onClick={() => navigate('/chat/lista')}>
-             <span className="mono-icon">✉</span> 
-             {notificationBadge > 0 && <span className="sidebar-badge">{notificationBadge}</span>}
+          <button className="nav-btn-box active" onClick={() => navigate('/chat/lista')}>
+              <span className="mono-icon">✉</span> 
+              {notificationBadge > 0 && <span className="sidebar-badge">{notificationBadge}</span>}
           </button>
           <button className="nav-btn-box active"><span className="mono-icon">♥</span></button>
-          <button className="nav-btn-box">
-             <span className="mono-icon">
+          <button className="nav-btn-box active">
+              <span className="mono-icon">
                 <img 
                   src={calendarIcon} 
                   alt="Cal" 
@@ -193,7 +202,7 @@ const Discovery = () => {
         </div>
         <div className="sidebar-footer">
           <button className="shield-btn-circle" onClick={() => navigate('/settings')}>
-             <span className="mono-icon-shield">🛡</span>
+              <span className="mono-icon-shield">🛡</span>
           </button>
         </div>
       </aside>
@@ -203,12 +212,12 @@ const Discovery = () => {
           <header className="iphone-header">
             <div className="header-left"><span className="live-clock">{currentTime}</span></div>
             <div className="header-center">
-               <div className="mini-logo-container"><img src={logoPath} alt="Logo" className="phone-logo-img" /></div>
+                <div className="mini-logo-container"><img src={logoPath} alt="Logo" className="phone-logo-img" /></div>
             </div>
             <div className="header-right">
-               <div className="signal-bars">{[1,2,3,4].map(b => <div key={b} className={`bar b${b}`}></div>)}</div>
-               <div className="wifi-css"><div className="w-dot"></div><div className="w-arc a1"></div><div className="w-arc a2"></div></div>
-               <div className="battery-container"><div className="battery-shell"><div className="battery-level"></div></div><div className="battery-tip"></div></div>
+                <div className="signal-bars">{[1,2,3,4].map(b => <div key={b} className={`bar b${b}`}></div>)}</div>
+                <div className="wifi-css"><div className="w-dot"></div><div className="w-arc a1"></div><div className="w-arc a2"></div></div>
+                <div className="battery-container"><div className="battery-shell"><div className="battery-level"></div></div><div className="battery-tip"></div></div>
             </div>
           </header>
 
@@ -220,7 +229,7 @@ const Discovery = () => {
                   className="profile-card"
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
+                  exit={{ opacity: 0, x: exitX }}
                   transition={{ duration: 0.4 }}
                 >
                   <AnimatePresence mode="wait">
@@ -259,7 +268,7 @@ const Discovery = () => {
           </div>
 
           <div className="actions-footer">
-            <motion.button whileTap={{ scale: 0.8 }} className="circle-btn x-btn" onClick={next}>✕</motion.button>
+            <motion.button whileTap={{ scale: 0.8 }} className="circle-btn x-btn" onClick={handleDislike}>✕</motion.button>
             <motion.button whileTap={{ scale: 0.8 }} className="circle-btn star-btn" onClick={() => setIsFilterOpen(true)}>⭐</motion.button>
             <motion.button whileTap={{ scale: 0.8 }} className="circle-btn heart-btn" onClick={handleLike}>♥</motion.button>
           </div>
