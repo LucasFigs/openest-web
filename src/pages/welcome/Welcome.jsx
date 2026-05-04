@@ -44,7 +44,7 @@ const Welcome = () => {
             </h1>
             <p className="welcome-hero-subtitle">
               O refúgio seguro para casais e indivíduos explorarem novas experiências 
-              com total discrição e autenticidade em Fortaleza.
+              com total discrição e autenticidade.
             </p>
             <button className="welcome-hero-cta" onClick={() => navigate('/register')}>
               Começar agora
@@ -74,7 +74,7 @@ const Welcome = () => {
         </section>
 
         <footer className="welcome-footer-simple">
-          <p>© 2026 Openest - Feito com liberdade em Fortaleza.</p>
+          <p>© 2026 Openest - Feito com liberdade e sigilo.</p>
         </footer>
       </div>
     </div>
