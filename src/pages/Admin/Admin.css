@@ -110,3 +110,43 @@
 .stat-box span { display: block; font-size: 12px; color: #999; }
 .stat-box strong { font-size: 20px; color: #4a148c; }
 .positive { color: #2e7d32 !important; }
+
+/* --- Estilização do Botão de Voltar/Sair --- */
+.logout-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px; /* Levemente arredondado, estilo iOS/Moderno */
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin-bottom: 20px; /* Distância do fundo da sidebar */
+}
+
+.logout-btn:hover {
+  background: white;
+  color: #6a1b9a; /* Roxo principal do seu projeto */
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Opcional: Efeito de clique */
+.logout-btn:active {
+  transform: scale(0.95);
+}
+
+/* Ajuste na Sidebar para garantir que o botão fique no fundo */
+.admin-sidebar {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Garante logo no topo e botão no fundo */
+  padding: 40px 0;
+  background-color: #00000021; /* Um roxo levemente mais escuro para profundidade */
+}
