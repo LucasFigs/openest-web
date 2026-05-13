@@ -1,43 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'; 
+import userService from '../../services/userService'; 
 import './EditProfile.css';
 
 const EditProfile = () => {
   const navigate = useNavigate();
 
-  // Estado das Fotos original restaurado
-  const [photos, setPhotos] = useState([
-    'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800',
-    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800'
-  ]);
+  const [photos, setPhotos] = useState([]);
   const [activePhoto, setActivePhoto] = useState(0);
-
-  // Estado do Formulário completo (Eduardo Dourado)
   const [formData, setFormData] = useState({
-    fullName: 'Eduardo Dourado',
-    age: 25,
-    location: 'Fortaleza, CE',
-    bio: 'Apaixonado por tecnologia e integração de sistemas.',
+    fullName: '',
+    age: '',
+    location: '',
+    bio: '',
     relationshipStatus: 'individual',
-    discreteMode: true
+    discreteMode: false
   });
 
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  // 1. CARREGAR DADOS (Busca do banco e mapeia para o formulário)
   useEffect(() => {
-    const savedData = localStorage.getItem('userProfile');
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
-    }
+    const loadProfileData = async () => {
+      try {
+        const data = await userService.getProfile();
+        setFormData({
+          fullName: data.name || '',
+          age: data.age || '',
+          location: data.location || '',
+          bio: data.bio || '',
+          relationshipStatus: data.status_relacionamento || 'individual',
+          discreteMode: data.modo_discreto || false
+        });
+        if (data.foto_url) setPhotos([data.foto_url]);
+      } catch { 
+        // Catch sem variável resolve o erro de "unused variable"
+        console.error("Erro ao carregar dados do perfil");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProfileData();
   }, []);
 
-  const handleAddPhoto = (e) => {
+  // 2. UPLOAD DE FOTO (Cloudinary via API)
+  const handleAddPhoto = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const newUrl = URL.createObjectURL(file);
-      setPhotos([...photos, newUrl]);
-      setActivePhoto(photos.length);
+      try {
+        setIsSaving(true);
+        const photoUrl = await userService.uploadPhoto(file);
+        setPhotos(prev => [...prev, photoUrl]);
+        setActivePhoto(photos.length);
+      } catch {
+        alert("Erro ao realizar o upload da imagem.");
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -49,16 +71,32 @@ const EditProfile = () => {
     if (activePhoto >= updated.length) setActivePhoto(updated.length - 1);
   };
 
-  const handleSave = (e) => {
+  // 3. SALVAR ALTERAÇÕES (Mapeia do formulário para as colunas do Postgres)
+  const handleSave = async (e) => {
     e.preventDefault();
     setIsSaving(true);
+    
+    // Objeto formatado com os nomes exatos das colunas do seu banco de dados
+    const dataToSave = {
+      name: formData.fullName,
+      bio: formData.bio,
+      status_relacionamento: formData.relationshipStatus,
+      modo_discreto: formData.discreteMode,
+      location: formData.location,
+      age: formData.age
+    };
 
-    setTimeout(() => {
-      localStorage.setItem('userProfile', JSON.stringify(formData));
-      setIsSaving(false);
+    try {
+      await userService.updateProfile(dataToSave);
       alert("Perfil atualizado com sucesso!");
-    }, 1500);
+    } catch {
+      alert("Erro ao salvar alterações no banco de dados.");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) return <div className="loading-overlay">Sincronizando dados...</div>;
 
   return (
     <motion.div 
@@ -70,18 +108,20 @@ const EditProfile = () => {
       <div className="profile-edit-glass-card">
         <header className="profile-edit-header">
           <h2>Editar Perfil</h2>
-          <button className="exit-button" onClick={() => navigate('/discovery')}>✕</button>
+          <button type="button" className="exit-button" onClick={() => navigate('/discovery')}>✕</button>
         </header>
 
         <form className="profile-edit-body" onSubmit={handleSave}>
-          
           <div className="column-left">
             <div className="image-container-3x4">
-              <img src={photos[activePhoto]} alt="Perfil" className="img-render-3x4" />
-              {/* FUNÇÃO RESTAURADA: Info overlay sobre a foto */}
+              {photos.length > 0 ? (
+                <img src={photos[activePhoto]} alt="Perfil" className="img-render-3x4" />
+              ) : (
+                <div className="img-placeholder">Sem fotos</div>
+              )}
               <div className="image-overlay-info">
-                <h3>{formData.fullName}, {formData.age}</h3>
-                <p>{formData.location}</p>
+                <h3>{formData.fullName || "Usuário"}, {formData.age || "0"}</h3>
+                <p>{formData.location || "Localização"}</p>
               </div>
             </div>
 
@@ -132,7 +172,7 @@ const EditProfile = () => {
             </div>
 
             <div className="input-field-premium">
-              <label>STATUS</label>
+              <label>STATUS DE RELACIONAMENTO</label>
               <select 
                 value={formData.relationshipStatus} 
                 onChange={e => setFormData({...formData, relationshipStatus: e.target.value})}
@@ -143,7 +183,7 @@ const EditProfile = () => {
             </div>
 
             <div className="input-field-premium">
-              <label>BIOGRAFIA (SOBRE MIM)</label>
+              <label>BIOGRAFIA</label>
               <textarea 
                 value={formData.bio} 
                 onChange={e => setFormData({...formData, bio: e.target.value})} 
@@ -163,7 +203,6 @@ const EditProfile = () => {
             </div>
 
             <div className="form-action-buttons">
-              <span className="delete-link-action" onClick={() => alert('Deseja excluir?')}>Excluir Conta</span>
               <button type="submit" className="save-button-action" disabled={isSaving}>
                 {isSaving ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
               </button>

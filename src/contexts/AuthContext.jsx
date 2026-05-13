@@ -1,8 +1,9 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios'; 
+import api from '../services/api'; 
 
-// Verifique se o nome está exatamente assim
-export const AuthContext = createContext(null);
+// Esta linha resolve o erro: "Fast refresh only works when a file only exports components"
+// eslint-disable-next-line react-refresh/only-export-components
+export const AuthContext = createContext(null); 
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -15,11 +16,9 @@ export const AuthProvider = ({ children }) => {
 
       if (recoveredUser && token) {
         try {
-          const parsedUser = JSON.parse(recoveredUser);
-          setUser(parsedUser);
-          axios.defaults.headers.Authorization = `Bearer ${token}`;
-        } catch (error) {
-          console.error("Erro ao recuperar usuário", error);
+          setUser(JSON.parse(recoveredUser));
+        } catch {
+          console.error("Erro ao recuperar sessão");
           localStorage.clear();
         }
       }
@@ -29,37 +28,28 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // REGRA ADMIN OFFLINE - Eduardo Admin
+    // REGRA ADMIN OFFLINE
     if (email === 'admin@openest.com' && password === '123456') {
-      const adminUser = { 
-        id: 999, 
-        name: 'Eduardo Admin', 
-        email: 'admin@openest.com',
-        role: 'admin' 
-      };
+      const adminUser = { id: 999, name: 'Eduardo Admin', email: 'admin@openest.com', role: 'admin' };
       const adminToken = 'fake-jwt-token-admin';
-
       localStorage.setItem('user', JSON.stringify(adminUser));
       localStorage.setItem('token', adminToken);
-      axios.defaults.headers.Authorization = `Bearer ${adminToken}`;
       setUser(adminUser);
       return; 
     }
 
-    const response = await axios.post('http://localhost:3000/api/users/login', { email, password });
+    // Chamada real usando a instância api.js que já tem a baseURL configurada
+    const response = await api.post('/api/users/login', { email, password });
     const { user: loggedUser, token } = response.data;
-    const userWithRole = { ...loggedUser, role: loggedUser.role || 'user' };
 
-    localStorage.setItem('user', JSON.stringify(userWithRole));
+    localStorage.setItem('user', JSON.stringify(loggedUser));
     localStorage.setItem('token', token);
-    axios.defaults.headers.Authorization = `Bearer ${token}`;
-    setUser(userWithRole);
+    setUser(loggedUser);
   };
 
   const logout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    axios.defaults.headers.Authorization = null;
     setUser(null);
   };
 
