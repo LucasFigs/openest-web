@@ -15,25 +15,26 @@ export const useChat = (conversationId) => {
   const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
 
- const fetchMessages = useCallback(async (pageNumber) => {
-  // Removido a checagem de 'loading' e 'hasNext' daqui para simplificar o useCallback
-  setLoading(true);
-  try {
-    const response = await api.get(`/conversas/${conversationId}/mensagens`, {
-      params: { page: pageNumber, limit: 20 }
-    });
+  // --- FUNÇÃO PARA BUSCAR HISTÓRICO NO POSTGRES ---
+  const fetchMessages = useCallback(async (pageNumber) => {
+    if (loading || (!hasNext && pageNumber > 1)) return;
 
-    const { messages: newMessages, pagination } = response.data;
+    setLoading(true);
+    try {
+      const response = await api.get(`/conversas/${conversationId}/mensagens`, {
+        params: { page: pageNumber, limit: 20 }
+      });
 
-    setMessages((prev) => (pageNumber === 1 ? newMessages : [...newMessages, ...prev]));
-    setHasNext(pagination.hasNext);
-  } catch (error) {
-    console.error("Erro ao carregar histórico de mensagens:", error);
-  } finally {
-    setLoading(false);
-  }
-  // Mantenha APENAS o conversationId aqui para estabilizar a função
-}, [conversationId]);
+      const { messages: newMessages, pagination } = response.data;
+
+      setMessages((prev) => (pageNumber === 1 ? newMessages : [...newMessages, ...prev]));
+      setHasNext(pagination.hasNext);
+    } catch (error) {
+      console.error("Erro ao carregar histórico de mensagens:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [conversationId, hasNext, loading]);
 
   // --- FUNÇÃO PARA DISPARAR CARREGAMENTO DE MAIS MENSAGENS ---
   const loadMore = () => {
@@ -85,6 +86,8 @@ export const useChat = (conversationId) => {
       setIsOtherUserTyping(is_typing);
     }
 
+
+    
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('new_message', onNewMessage);
