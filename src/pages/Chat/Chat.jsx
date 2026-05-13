@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Loading from '../../components/Loading/Loading'; 
-import { useChat } from '../../hooks/useChat'; 
-import './Chat.css';
-import logoOn from '../../assets/images/LOGO.png';
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import Loading from "../../components/Loading/Loading";
+import { useChat } from "../../hooks/useChat";
+import "./Chat.css";
+import logoOn from "../../assets/images/LOGO.png";
 
 const Chat = () => {
   const { conversationId } = useParams();
@@ -11,21 +11,22 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
 
   const [conversations, setConversations] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
   // ID de usuário logado (Idealmente viria do seu AuthContext)
-  const usuarioLogadoId = "id-do-usuario-atual"; 
+  const usuarioLogadoId = "id-do-usuario-atual";
+  const modoDiscreto = true;
 
   // --- INTEGRAÇÃO DO HOOK USECHAT (TASKS #62, #63, #64) ---
-  const { 
-    messages, 
-    sendMessage, 
-    isOtherUserTyping, 
+  const {
+    messages,
+    sendMessage,
+    isOtherUserTyping,
     handleTyping,
     loading: chatLoading,
     loadMore,
-    hasNext 
+    hasNext,
   } = useChat(conversationId);
 
   // GATILHO DE SCROLL (TASK #62)
@@ -39,14 +40,14 @@ const Chat = () => {
   useEffect(() => {
     const fetchConversas = () => {
       setLoading(true);
-      const savedMatches = localStorage.getItem('openest_matches');
-      
+      const savedMatches = localStorage.getItem("openest_matches");
+
       if (savedMatches) {
         const matches = JSON.parse(savedMatches);
-        const mappedConversations = matches.map(match => ({
+        const mappedConversations = matches.map((match) => ({
           ...match,
-          timestamp: 'Agora', 
-          unreadCount: 0      
+          timestamp: "Agora",
+          unreadCount: 0,
         }));
         setConversations(mappedConversations);
       }
@@ -67,17 +68,21 @@ const Chat = () => {
     if (!newMessage.trim() || !conversationId) return;
 
     sendMessage(newMessage, usuarioLogadoId);
-    setNewMessage('');
+    setNewMessage("");
   };
 
-  const activeChat = conversations.find(c => String(c.id) === String(conversationId));
+  const activeChat = conversations.find(
+    (c) => String(c.id) === String(conversationId),
+  );
 
   return (
     <div className="figma-container">
       <aside className="figma-sidebar">
         <header className="sidebar-top">
           <h2 className="brand-title">Openest</h2>
-          <button className="icon-back" onClick={() => navigate('/discovery')}>←</button>
+          <button className="icon-back" onClick={() => navigate("/discovery")}>
+            ←
+          </button>
         </header>
 
         <div className="search-container">
@@ -90,13 +95,13 @@ const Chat = () => {
         <div className="conversations-list">
           {loading ? (
             <div className="loading-sidebar-wrapper">
-               <Loading />
+              <Loading />
             </div>
           ) : conversations.length > 0 ? (
-            conversations.map(conv => (
-              <div 
-                key={conv.id} 
-                className={`conv-card ${conversationId === String(conv.id) ? 'active' : ''}`}
+            conversations.map((conv) => (
+              <div
+                key={conv.id}
+                className={`conv-card ${conversationId === String(conv.id) ? "active" : ""}`}
                 onClick={() => navigate(`/chat/${conv.id}`)}
               >
                 <div className="avatar-container">
@@ -111,17 +116,26 @@ const Chat = () => {
                     <span className="conv-time">{conv.timestamp}</span>
                   </div>
                   <p className="last-msg-text">
-                    {isOtherUserTyping && conversationId === String(conv.id) 
-                      ? <span className="typing-small">Digitando...</span>
-                      : messages.length > 0 && conversationId === String(conv.id) 
-                        ? messages[messages.length - 1].content 
-                        : 'Clique para conversar'}
+                    {isOtherUserTyping && conversationId === String(conv.id) ? (
+                      <span className="typing-small">Digitando...</span>
+                    ) : messages.length > 0 &&
+                      conversationId === String(conv.id) ? (
+                      modoDiscreto ? (
+                        "Nova mensagem" // Se o modo estiver ativo, oculta o conteúdo
+                      ) : (
+                        messages[messages.length - 1].content
+                      ) // Caso contrário, mostra a pré-visualização
+                    ) : (
+                      "Clique para conversar"
+                    )}
                   </p>
                 </div>
               </div>
             ))
           ) : (
-            <div className="no-matches-msg">Nenhuma conversa ativa. Vá para a Discovery dar matches!</div>
+            <div className="no-matches-msg">
+              Nenhuma conversa ativa. Vá para a Discovery dar matches!
+            </div>
           )}
         </div>
       </aside>
@@ -130,9 +144,16 @@ const Chat = () => {
         {activeChat ? (
           <>
             <header className="chat-area-header">
-              <img src={activeChat.img} alt={activeChat.name} className="header-avatar" />
+              <img
+                src={activeChat.img}
+                alt={activeChat.name}
+                className="header-avatar"
+              />
               <div className="header-info">
-                <h4>{activeChat.name}</h4>
+                {/* TASK #63: Oculta o nome se o modo discreto estiver ativo */}
+                <h4>{modoDiscreto ? "Usuário" : activeChat.name}</h4>
+
+                {/* TASK #64: Indicador de digitação permanece funcional */}
                 {isOtherUserTyping && (
                   <span className="typing-header">digitando...</span>
                 )}
@@ -141,7 +162,7 @@ const Chat = () => {
 
             <div className="chat-scroll-area" onScroll={handleScroll}>
               {chatLoading && (
-                <div style={{ textAlign: 'center', padding: '10px' }}>
+                <div style={{ textAlign: "center", padding: "10px" }}>
                   <Loading />
                 </div>
               )}
@@ -149,7 +170,10 @@ const Chat = () => {
               <img src={logoOn} alt="Watermark" className="on-watermark-img" />
 
               {messages.map((msg, index) => (
-                <div key={msg.id || index} className={`msg-wrapper ${msg.sender_id === usuarioLogadoId ? 'me' : 'other'}`}>
+                <div
+                  key={msg.id || index}
+                  className={`msg-wrapper ${msg.sender_id === usuarioLogadoId ? "me" : "other"}`}
+                >
                   <div className="msg-bubble">{msg.content}</div>
                 </div>
               ))}
@@ -165,24 +189,33 @@ const Chat = () => {
 
             <footer className="chat-input-footer">
               <form className="input-form" onSubmit={handleSend}>
-                <button type="button" className="btn-plus">+</button>
-                <input 
-                  type="text" 
-                  placeholder="Envie uma mensagem..." 
+                <button type="button" className="btn-plus">
+                  +
+                </button>
+                <input
+                  type="text"
+                  placeholder="Envie uma mensagem..."
                   value={newMessage}
                   onChange={(e) => {
                     setNewMessage(e.target.value);
                     handleTyping(usuarioLogadoId);
                   }}
                 />
-                <button type="submit" className="btn-send">➤</button>
+                <button type="submit" className="btn-send">
+                  ➤
+                </button>
               </form>
             </footer>
           </>
         ) : (
           <div className="empty-state">
-             <img src={logoOn} alt="Watermark" className="on-watermark-img" style={{opacity: 0.05}} />
-             <p>Selecione um match para conversar</p>
+            <img
+              src={logoOn}
+              alt="Watermark"
+              className="on-watermark-img"
+              style={{ opacity: 0.05 }}
+            />
+            <p>Selecione um match para conversar</p>
           </div>
         )}
       </main>
