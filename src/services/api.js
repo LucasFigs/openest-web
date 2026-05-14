@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000' // A porta que seu backend Openest está rodando
+  baseURL: 'http://localhost:3000' 
 });
 
-// Lembra da Task? Aqui vamos configurar o Token automaticamente depois
+// Injeta o token automaticamente se ele existir no localStorage
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
