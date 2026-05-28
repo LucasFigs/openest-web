@@ -4,11 +4,12 @@ import Loading from "../../components/Loading/Loading";
 import { useChat } from "../../hooks/useChat";
 import "./Chat.css";
 import logoOn from "../../assets/images/LOGO.png";
+import api from "../../services/api";
 
 const Chat = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
-  
+
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null); // Ref para a div que tem o scroll
   const previousScrollHeight = useRef(0); // Guarda a altura do scroll para a matemática
@@ -16,9 +17,10 @@ const Chat = () => {
   const [conversations, setConversations] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loggedUser, setLoggedUser] = useState(null);
+  const usuarioLogadoId = loggedUser?.id || "";
 
   // ID de usuário logado (Idealmente viria do seu AuthContext)
-  const usuarioLogadoId = "id-do-usuario-atual";
   const modoDiscreto = true;
 
   // --- INTEGRAÇÃO DO HOOK USECHAT ---
@@ -47,12 +49,13 @@ const Chat = () => {
     // Se temos uma altura guardada, significa que acabámos de carregar mensagens antigas
     if (chatContainerRef.current && previousScrollHeight.current > 0) {
       const container = chatContainerRef.current;
-      // 2. A nova altura menos a altura antiga dá a diferença exata. 
+      // 2. A nova altura menos a altura antiga dá a diferença exata.
       // Ajustamos o scrollTop para essa diferença, anulando o "salto".
-      container.scrollTop = container.scrollHeight - previousScrollHeight.current;
-      
+      container.scrollTop =
+        container.scrollHeight - previousScrollHeight.current;
+
       // 3. Resetamos a variável para os próximos scrolls
-      previousScrollHeight.current = 0; 
+      previousScrollHeight.current = 0;
     }
   }, [messages]);
 
@@ -64,22 +67,27 @@ const Chat = () => {
     }
   }, [messages, isOtherUserTyping]);
 
-  // BUSCA LISTA DE CONVERSAS (SIDEBAR)
+  // 1. Busca o ID do usuário logado
   useEffect(() => {
-    const fetchConversas = () => {
-      setLoading(true);
-      const savedMatches = localStorage.getItem("openest_matches");
+    api
+      .get("/users/perfil")
+      .then(({ data }) => setLoggedUser(data))
+      .catch((err) => console.error("Erro ao buscar perfil:", err));
+  }, []);
 
-      if (savedMatches) {
-        const matches = JSON.parse(savedMatches);
-        const mappedConversations = matches.map((match) => ({
-          ...match,
-          timestamp: "Agora",
-          unreadCount: 0,
-        }));
-        setConversations(mappedConversations);
+  // 2. BUSCA LISTA DE CONVERSAS (SIDEBAR) REAIS
+  useEffect(() => {
+    const fetchConversas = async () => {
+      setLoading(true);
+      try {
+        // 🔥 A MÁGICA ACONTECE AQUI: Rota corrigida para português!
+        const { data } = await api.get("/conversas");
+        setConversations(data);
+      } catch (error) {
+        console.error("Erro ao buscar conversas:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchConversas();
@@ -144,10 +152,10 @@ const Chat = () => {
                     ) : messages.length > 0 &&
                       conversationId === String(conv.id) ? (
                       modoDiscreto ? (
-                        "Nova mensagem" 
+                        "Nova mensagem"
                       ) : (
                         messages[messages.length - 1].content
-                      ) 
+                      )
                     ) : (
                       "Clique para conversar"
                     )}
@@ -182,11 +190,21 @@ const Chat = () => {
             </header>
 
             {/* ADICIONADA A REF DO CONTAINER AQUI */}
-            <div className="chat-scroll-area" onScroll={handleScroll} ref={chatContainerRef}>
-              
+            <div
+              className="chat-scroll-area"
+              onScroll={handleScroll}
+              ref={chatContainerRef}
+            >
               {/* TASK #48: Mensagem de Fim de Histórico */}
               {!hasNext && messages.length > 0 && (
-                <div style={{ textAlign: "center", padding: "15px 10px", color: "#888", fontSize: "12px" }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "15px 10px",
+                    color: "#888",
+                    fontSize: "12px",
+                  }}
+                >
                   Não há mais mensagens
                 </div>
               )}
