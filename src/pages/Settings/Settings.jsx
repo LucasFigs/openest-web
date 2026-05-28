@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AuthContext } from '../../contexts/AuthContext'; 
+import userService from '../../services/userService'; 
 import './Settings.css';
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { logout } = useContext(AuthContext); // Hook para deslogar
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPassModal, setShowPassModal] = useState(false);
@@ -32,6 +35,29 @@ const Settings = () => {
       setLoading(false);
       alert("Configurações salvas com sucesso!");
     }, 1200);
+  };
+
+  // --- LÓGICA FUNCIONAL DE SAIR ---
+  const handleLogout = () => {
+    logout(); // Limpa estado global e localStorage
+    navigate('/welcome');
+  };
+
+  // --- LÓGICA FUNCIONAL DE EXCLUIR ---
+  const handleConfirmDelete = async () => {
+    try {
+      setLoading(true);
+      await userService.deleteAccount(); // Chama API para deletar no banco
+      logout(); // Limpa sessão
+      alert('Conta excluída com sucesso.');
+      navigate('/welcome');
+    } catch (err) {
+      console.error("Erro na exclusão:", err);
+      alert('Erro ao excluir conta.');
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
+    }
   };
 
   return (
@@ -129,17 +155,12 @@ const Settings = () => {
       <AnimatePresence>
         {showLogoutModal && (
           <div className="modal-blur-overlay">
-            <motion.div 
-              className="modal-content-card"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-            >
+            <motion.div className="modal-content-card">
               <h4>Encerrar Sessão?</h4>
               <p>Tem certeza que deseja sair do Openest?</p>
               <div className="modal-btns">
                 <button className="m-btn-back" onClick={() => setShowLogoutModal(false)}>CANCELAR</button>
-                <button className="m-btn-danger" onClick={() => navigate('/welcome')}>SAIR</button>
+                <button className="m-btn-danger" onClick={handleLogout}>SAIR</button>
               </div>
             </motion.div>
           </div>
@@ -147,17 +168,14 @@ const Settings = () => {
 
         {showDeleteModal && (
           <div className="modal-blur-overlay">
-            <motion.div 
-              className="modal-content-card"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-            >
+            <motion.div className="modal-content-card">
               <h4>Excluir conta?</h4>
               <p>Seus dados serão removidos permanentemente conforme a LGPD.</p>
               <div className="modal-btns">
                 <button className="m-btn-back" onClick={() => setShowDeleteModal(false)}>VOLTAR</button>
-                <button className="m-btn-danger" onClick={() => alert('Conta excluída!')}>EXCLUIR</button>
+                <button className="m-btn-danger" onClick={handleConfirmDelete} disabled={loading}>
+                  {loading ? "EXCLUINDO..." : "EXCLUIR"}
+                </button>
               </div>
             </motion.div>
           </div>
@@ -165,12 +183,7 @@ const Settings = () => {
 
         {showPassModal && (
           <div className="modal-blur-overlay">
-            <motion.div 
-              className="modal-content-card"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-            >
+            <motion.div className="modal-content-card">
               <h4>Alterar senha</h4>
               <input type="password" placeholder="Senha atual" className="m-input" />
               <input type="password" placeholder="Nova senha" className="m-input" />

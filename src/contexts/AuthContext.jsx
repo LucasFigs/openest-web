@@ -1,7 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import api from '../services/api'; 
 
-// Esta linha resolve o erro: "Fast refresh only works when a file only exports components"
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null); 
 
@@ -38,15 +37,29 @@ export const AuthProvider = ({ children }) => {
       return; 
     }
 
-    // Chamada real usando a instância api.js que já tem a baseURL configurada
-    const response = await api.post('/api/users/login', { email, password });
-    const { user: loggedUser, token } = response.data;
+    const response = await api.post('/users/login', { email, password });
+   const { user: loggedUser, token } = response.data;
+    localStorage.setItem('user', JSON.stringify(loggedUser));
+    localStorage.setItem('token', token);
+    setUser(loggedUser);
+  
 
     localStorage.setItem('user', JSON.stringify(loggedUser));
     localStorage.setItem('token', token);
     setUser(loggedUser);
   };
 
+  // --- NOVA FUNÇÃO DE REGISTRO ---
+const register = async (userData) => {
+    // Adicionamos o /users/ para completar a URL corretamente!
+    const response = await api.post('/users/register', userData);
+    const { user: registeredUser, token } = response.data;
+
+    localStorage.setItem('user', JSON.stringify(registeredUser));
+    localStorage.setItem('token', token);
+    setUser(registeredUser);
+  };
+  
   const logout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
@@ -54,7 +67,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ authenticated: !!user, user, loading, login, logout }}>
+    // AQUI ESTÁ O SEGREDO: O 'register' agora foi adicionado à lista de valores!
+    <AuthContext.Provider value={{ authenticated: !!user, user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
