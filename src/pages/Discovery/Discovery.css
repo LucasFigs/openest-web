@@ -39,11 +39,33 @@ html, body, #root {
   box-sizing: border-box;
 }
 
+.avatar-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;          /* círculo perfeito */
+  overflow: hidden;
+  cursor: pointer;
+  border: 2.5px solid #8B2FC9; /* borda roxa da identidade visual */
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0c8f8;         /* fallback enquanto a foto carrega */
+  transition: border-color 0.2s, transform 0.15s;
+}
+ 
+.avatar-wrapper:hover {
+  border-color: #c060f0;
+  transform: scale(1.06);
+}
+ 
 .avatar-wrapper img {
-  width: 55px; height: 55px; border-radius: 50%;
-  cursor: pointer; object-fit: cover;
-  border: 2px solid #ff4081; padding: 2px;
-  box-shadow: 0 4px 15px rgba(255, 64, 129, 0.2);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;           /* preenche sem distorcer */
+  object-position: center top; /* prioriza o rosto */
+  border-radius: 50%;
+  display: block;
 }
 
 .nav-menu {

@@ -27,20 +27,31 @@ const RegisterPage = () => { // 2. Remover o { setPage } das props
     relationshipStatus: 'individual'
   });
 
-  const handleSubmitFinal = async () => {
+const handleSubmitFinal = async () => {
     try {
+      // 1. Limpeza da data: se estiver vazia, manda null para não quebrar o banco
+      const dataNascimentoLimpa = formData.birthDate && formData.birthDate.trim() !== '' 
+        ? formData.birthDate 
+        : null;
+
+      // 2. Empacotando TODOS os dados corretamente
       const dataToSend = {
         name: formData.fullName, 
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        birth_date: dataNascimentoLimpa,
+        bio: formData.bio,
+        status_relacionamento: formData.relationshipStatus
       };
 
       await register(dataToSend); 
       // Se o cadastro der certo, o AuthContext loga o usuário e nós jogamos para a Discovery
       navigate('/discovery'); 
     } catch (error) {
-      console.error("Erro no cadastro:", error);
-      alert("Erro ao cadastrar. Verifique os dados e tente novamente.");
+      // 3. O DETETIVE DE ERROS: Isso vai mostrar exatamente o que deu errado!
+      const erroReal = error.response?.data?.error || error.response?.data?.message || error.message;
+      console.error("ERRO COMPLETO DO AXIOS:", error.response || error);
+      alert(`Erro do Servidor/Rede: ${erroReal}`);
     }
   };
 

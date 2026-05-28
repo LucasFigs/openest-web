@@ -1,7 +1,8 @@
 import React from 'react';
 import './MatchPopup.css';
 
-const MatchPopup = ({ isOpen, matchName, matchImg, onClose, onChat }) => {
+// 1. Adicionamos o 'loggedUserImg' aqui nos parâmetros para ele receber a sua foto
+const MatchPopup = ({ isOpen, matchName, matchImg, loggedUserImg, onClose, onChat }) => {
   if (!isOpen) return null;
 
   return (
@@ -12,7 +13,9 @@ const MatchPopup = ({ isOpen, matchName, matchImg, onClose, onChat }) => {
           <p className="match-subtitle">Você e {matchName} curtiram um ao outro.</p>
           
           <div className="match-avatars">
-            <img src="https://github.com/edudouraado.png" alt="Edu" className="avatar-me" />
+            {/* 2. Trocamos o link fixo do GitHub pela sua foto real */}
+            <img src={loggedUserImg} alt="Você" className="avatar-me" />
+            
             <img src={matchImg} alt={matchName} className="avatar-them" />
           </div>
 
