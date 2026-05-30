@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import socket from '../services/socket';
 import api from '../services/api'; 
 
-// 🔥 AGORA O HOOK RECEBE O 'loggedUserId'
 export const useChat = (conversationId, loggedUserId) => {
   const [messages, setMessages] = useState([]);
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -16,7 +15,6 @@ export const useChat = (conversationId, loggedUserId) => {
   const loadingRef = useRef(false);
   const hasNextRef = useRef(true);
 
-  // 🔥 LÊ DA MEMÓRIA BASEADO NO ID DO USUÁRIO LOGADO!
   const getHiddenMessages = useCallback(() => {
     if (!loggedUserId) return [];
     return JSON.parse(localStorage.getItem(`openest_hidden_msgs_${loggedUserId}`)) || [];
@@ -27,7 +25,6 @@ export const useChat = (conversationId, loggedUserId) => {
   }, [hasNext]);
 
   const fetchMessages = useCallback(async (pageNumber) => {
-    // 🔥 Só busca as mensagens se já soubermos quem é o usuário
     if (!conversationId || isNaN(conversationId) || !loggedUserId) return;
     if (loadingRef.current || (!hasNextRef.current && pageNumber > 1)) return;
 
@@ -43,7 +40,6 @@ export const useChat = (conversationId, loggedUserId) => {
       
       const hiddenIds = getHiddenMessages();
       const visiveis = newMessages.filter(m => !hiddenIds.includes(m.id));
-      
       const mensagensOrdenadas = visiveis.reverse();
 
       setMessages((prev) => (pageNumber === 1 ? mensagensOrdenadas : [...mensagensOrdenadas, ...prev]));
@@ -130,7 +126,6 @@ export const useChat = (conversationId, loggedUserId) => {
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
     const fakeId = Date.now();
-
     const tempMessage = {
       id: fakeId,
       conversation_id: conversationId,
@@ -150,22 +145,52 @@ export const useChat = (conversationId, loggedUserId) => {
         reply_to_id: replyToMsg ? replyToMsg.id : null 
       });
 
-      setMessages((prev) => prev.map(m => 
-        m.id === fakeId ? { ...m, id: response.data.id } : m
-      ));
-
+      setMessages((prev) => prev.map(m => m.id === fakeId ? { ...m, id: response.data.id } : m));
     } catch (error) {
       console.error("Erro ao salvar a mensagem no banco:", error);
     }
   };
 
-  const deleteMessage = async (msgId) => {
-    setMessages((prev) => prev.map(m => 
-      m.id === msgId 
-        ? { ...m, content: "🚫 Mensagem apagada", is_deleted: true } 
-        : m
-    ));
+  // 🔥 NOVA FUNÇÃO PARA ENVIAR IMAGEM
+  const sendImage = async (file, senderId) => {
+    if (!conversationId) return;
+
+    const fakeId = Date.now();
+    // Cria um link temporário direto do seu PC para mostrar na tela na hora
+    const localUrlPreview = URL.createObjectURL(file); 
+
+    const tempMessage = {
+      id: fakeId,
+      conversation_id: conversationId,
+      sender_id: senderId,
+      content: localUrlPreview, 
+      createdAt: new Date().toISOString()
+    };
     
+    setMessages((prev) => [...prev, tempMessage]);
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('conversation_id', conversationId);
+
+    try {
+      // Bate na rota nova enviando o FormData (Multipart)
+      const response = await api.post('/mensagens/imagem', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      // Quando o Cloudinary responder, trocamos o ID e a imagem temporária pela imagem real da nuvem
+      setMessages((prev) => prev.map(m => m.id === fakeId ? { ...m, id: response.data.id, content: response.data.content } : m));
+    } catch (error) {
+      console.error("Erro ao fazer upload da imagem:", error);
+      // Se falhar, você pode remover a mensagem falsa aqui
+      setMessages((prev) => prev.filter(m => m.id !== fakeId));
+      alert("Erro ao enviar imagem. Tente novamente.");
+    }
+  };
+
+  const deleteMessage = async (msgId) => {
+    setMessages((prev) => prev.map(m => m.id === msgId ? { ...m, content: "🚫 Mensagem apagada", is_deleted: true } : m));
     try {
       await api.delete(`/mensagens/${msgId}`);
     } catch (error) {
@@ -175,16 +200,13 @@ export const useChat = (conversationId, loggedUserId) => {
 
   const hideMessageForMe = (msgId) => {
     if (!loggedUserId) return;
-    
-    // 🔥 SALVA NO NAVEGADOR USANDO O ID DO USUÁRIO
     const hiddenIds = getHiddenMessages();
     if (!hiddenIds.includes(msgId)) {
       hiddenIds.push(msgId);
       localStorage.setItem(`openest_hidden_msgs_${loggedUserId}`, JSON.stringify(hiddenIds));
     }
-    
     setMessages((prev) => prev.filter(m => m.id !== msgId));
   };
 
-  return { messages, isConnected, sendMessage, deleteMessage, hideMessageForMe, setMessages, loading, loadMore, hasNext, isOtherUserTyping, handleTyping };
+  return { messages, isConnected, sendMessage, sendImage, deleteMessage, hideMessageForMe, setMessages, loading, loadMore, hasNext, isOtherUserTyping, handleTyping };
 };

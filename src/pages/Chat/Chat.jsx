@@ -13,6 +13,8 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   const previousScrollHeight = useRef(0);
+  
+  const fileInputRef = useRef(null);
 
   const [conversations, setConversations] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -22,12 +24,16 @@ const Chat = () => {
   
   const [menuAberto, setMenuAberto] = useState(null);
   const [mensagemRespondida, setMensagemRespondida] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  const [menuAnexos, setMenuAnexos] = useState(false);
 
   const modoDiscreto = true;
 
   const {
     messages,
     sendMessage,
+    sendImage, // 🔥 PUXAMOS A FUNÇÃO DE IMAGEM
     deleteMessage, 
     hideMessageForMe, 
     isOtherUserTyping,
@@ -35,7 +41,40 @@ const Chat = () => {
     loading: chatLoading,
     loadMore,
     hasNext,
-  } = useChat(conversationId, usuarioLogadoId); // 🔥 AGORA MANDAMOS O ID PARA O HOOK!
+  } = useChat(conversationId, usuarioLogadoId); 
+
+  const handleLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        const mapsLink = `📍 Localização partilhada:\nhttp://maps.google.com/maps?q=${latitude},${longitude}`;
+        
+        sendMessage(mapsLink, usuarioLogadoId, mensagemRespondida);
+        setMensagemRespondida(null);
+        setMenuAnexos(false);
+      }, () => {
+        alert("Não foi possível obter a sua localização. Verifique as permissões do navegador.");
+      });
+    }
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current.click(); 
+    setMenuAnexos(false);
+  };
+
+  const handleImageSelected = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // 🔥 CHAMA A FUNÇÃO QUE FAZ O UPLOAD PRO CLOUDINARY
+      sendImage(file, usuarioLogadoId);
+    }
+  };
+
+  const handleGifClick = () => {
+    alert("A gaveta de GIFs será implementada em breve!");
+    setMenuAnexos(false);
+  };
 
   const handleCopiar = (texto) => {
     navigator.clipboard.writeText(texto);
@@ -110,6 +149,10 @@ const Chat = () => {
 
   const activeChat = conversations.find((c) => String(c.id) === String(conversationId));
 
+  const filteredConversations = conversations.filter((conv) => 
+    conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="figma-container">
       <aside className="figma-sidebar">
@@ -121,15 +164,20 @@ const Chat = () => {
         <div className="search-container">
           <div className="search-box">
             <span className="search-icon">🔍</span>
-            <input type="text" placeholder="Pesquisar conversas..." />
+            <input 
+              type="text" 
+              placeholder="Pesquisar conversas..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="conversations-list">
           {loading ? (
             <div className="loading-sidebar-wrapper"><Loading /></div>
-          ) : conversations.length > 0 ? (
-            conversations.map((conv) => (
+          ) : filteredConversations.length > 0 ? (
+            filteredConversations.map((conv) => (
               <div key={conv.id} className={`conv-card ${conversationId === String(conv.id) ? "active" : ""}`} onClick={() => navigate(`/chat/${conv.id}`)}>
                 <div className="avatar-container">
                   <img src={conv.img} alt={conv.name} className="avatar-img" />
@@ -151,7 +199,9 @@ const Chat = () => {
               </div>
             ))
           ) : (
-            <div className="no-matches-msg">Nenhuma conversa ativa. Vá para a Discovery dar matches!</div>
+            <div className="no-matches-msg">
+              {searchQuery ? "Nenhuma conversa encontrada." : "Nenhuma conversa ativa. Vá para a Discovery dar matches!"}
+            </div>
           )}
         </div>
       </aside>
@@ -177,6 +227,9 @@ const Chat = () => {
 
               {messages.map((msg, index) => {
                 const foiApagada = msg.is_deleted || msg.content === "🚫 Mensagem apagada";
+                
+                // 🔥 DETECTA SE O TEXTO É UMA URL DE IMAGEM
+                const isImage = !foiApagada && (msg.content.includes('res.cloudinary.com') || msg.content.startsWith('blob:'));
 
                 return (
                   <div 
@@ -194,8 +247,16 @@ const Chat = () => {
                           </div>
                         )}
                         
+                        {/* 🔥 SE FOR IMAGEM, DESENHA O <img>, SENÃO, DESENHA O TEXTO NORMAL */}
                         {foiApagada ? (
                           <span style={{ fontStyle: 'italic' }}>{msg.content}</span>
+                        ) : isImage ? (
+                          <img 
+                            src={msg.content} 
+                            alt="Upload do chat" 
+                            style={{ maxWidth: "250px", borderRadius: "8px", cursor: "pointer" }} 
+                            onClick={() => window.open(msg.content, "_blank")} // Abre a foto maior em nova aba
+                          />
                         ) : (
                           msg.content
                         )}
@@ -209,8 +270,9 @@ const Chat = () => {
                         
                         {!foiApagada && (
                           <>
-                            <button onClick={() => handleResponder(msg)}>↩️ Responder</button>
-                            <button onClick={() => handleCopiar(msg.content)}>📋 Copiar</button>
+                            {/* Desabilita o copiar se for uma foto, para evitar erros */}
+                            {!isImage && <button onClick={() => handleResponder(msg)}>↩️ Responder</button>}
+                            {!isImage && <button onClick={() => handleCopiar(msg.content)}>📋 Copiar</button>}
                           </>
                         )}
 
@@ -240,6 +302,23 @@ const Chat = () => {
             </div>
 
             <footer className="chat-input-footer" style={{ flexDirection: 'column' }}>
+              
+              {menuAnexos && (
+                <div className="attachment-menu">
+                  <button type="button" onClick={handleImageClick}>📸 Enviar Foto</button>
+                  <button type="button" onClick={handleLocation}>📍 Partilhar Localização</button>
+                  <button type="button" onClick={handleGifClick}>🎬 Enviar GIF</button>
+                </div>
+              )}
+
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                style={{ display: "none" }} 
+                accept="image/*" 
+                onChange={handleImageSelected} 
+              />
+
               {mensagemRespondida && (
                 <div className="reply-banner">
                   <div className="reply-content">
@@ -251,7 +330,7 @@ const Chat = () => {
               )}
 
               <form className="input-form" onSubmit={handleSend} style={{ width: '100%', marginTop: mensagemRespondida ? '0' : 'auto' }}>
-                <button type="button" className="btn-plus">+</button>
+                <button type="button" className="btn-plus" onClick={() => setMenuAnexos(!menuAnexos)}>+</button>
                 <input type="text" placeholder="Envie uma mensagem..." value={newMessage} onChange={(e) => { setNewMessage(e.target.value); handleTyping(usuarioLogadoId); }} />
                 <button type="submit" className="btn-send">➤</button>
               </form>
