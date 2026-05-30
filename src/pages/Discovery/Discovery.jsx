@@ -269,7 +269,7 @@ const Discovery = () => {
     >
       <Toaster position="top-right" />
 
-      {/* ══ SIDEBAR ══ */}
+ {/* ══ SIDEBAR ══ */}
       <aside className="discovery-sidebar">
         <div
           className="avatar-wrapper"
@@ -299,14 +299,12 @@ const Discovery = () => {
             </span>
           </button>
         </div>
-
         <div className="sidebar-footer">
-          <button className="shield-btn-circle" onClick={() => navigate('/settings')}>
-            <span className="mono-icon-shield">🛡</span>
+          <button className="nav-btn-box active" onClick={() => navigate('/settings')}>
+            <span className="mono-icon">⚙</span>
           </button>
         </div>
-      </aside>
-
+          </aside>
       {/* ══ ÁREA PRINCIPAL ══ */}
       <main className="discovery-content-area">
         <div className="iphone-mockup-v2" style={{ position: 'relative' }}>
