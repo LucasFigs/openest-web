@@ -1,3 +1,6 @@
+/* ==============================================================
+   CONTAINER GERAL E SIDEBAR
+============================================================== */
 .figma-container {
   display: flex;
   height: 100vh;
@@ -6,7 +9,6 @@
   background-color: #fff;
 }
 
-/* Sidebar */
 .figma-sidebar {
   width: 380px;
   background: #FFF;
@@ -22,15 +24,17 @@
   align-items: center;
 }
 
-/* 1º Detalhe: Nome Openest em Roxo Escuro */
+/* Marca Openest em Roxo Escuro */
 .brand-title { 
-  color: #4A148C; 
+  color: #4A148C !important; 
   margin: 0; 
   font-size: 26px; 
   font-weight: 700; 
 }
 
-.icon-back { background: none; border: none; font-size: 28px; color: #4A148C; cursor: pointer; }
+.icon-back {
+  background: none; border: none; font-size: 28px; color: #4A148C; cursor: pointer;
+}
 
 .search-container { padding: 0 20px 20px; }
 .search-box {
@@ -40,90 +44,64 @@
   align-items: center;
   padding: 12px 15px;
 }
-
 .search-box input {
   background: none; border: none; outline: none;
   width: 100%; color: #9C27B0; margin-left: 10px;
 }
-
 .search-box input::placeholder { color: #BA68C8; }
 
+
+/* ==============================================================
+   LISTA DE CONVERSAS (SIDEBAR)
+============================================================== */
 .conversations-list { flex: 1; overflow-y: auto; }
 
 .conv-card {
   display: flex; padding: 15px 20px; gap: 15px; cursor: pointer;
   border-bottom: 1px solid #f9f9f9; transition: 0.2s;
 }
-
 .conv-card.active { background: #F3E5F5; }
 
+.avatar-container { position: relative; }
 .avatar-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; }
-.conv-info h4 { margin: 0; font-size: 15px; color: #333; }
-.conv-info p { margin: 5px 0 0; font-size: 13px; color: #757575; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.unread-badge {
+  position: absolute; top: -2px; right: -2px; background-color: #E91E63;
+  color: white; font-size: 10px; font-weight: bold; padding: 2px 6px;
+  border-radius: 10px; border: 2px solid #fff;
+}
 
-/* 2º Detalhe: Degradê Rosa -> Branco (De baixo para cima) */
+.conv-info { flex: 1; overflow: hidden; }
+.conv-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.conv-info h4 { margin: 0; font-size: 15px; color: #333; }
+.conv-time { font-size: 11px; color: #999; }
+.last-msg-text {
+  margin: 5px 0 0; font-size: 13px; color: #757575; overflow: hidden;
+  white-space: nowrap; text-overflow: ellipsis; max-width: 200px;
+}
+
+.loading-msg { padding: 20px; text-align: center; color: #7b1fa2; }
+.no-matches-msg { padding: 40px; text-align: center; color: #999; font-size: 14px; }
+
+
+/* ==============================================================
+   ÁREA PRINCIPAL DO CHAT
+============================================================== */
 .figma-chat-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  flex: 1; display: flex; flex-direction: column;
   background: linear-gradient(0deg, #F8BBD0 0%, #FFFFFF 100%);
   position: relative;
 }
 
 .chat-area-header {
   height: 75px; background: #fff; border-bottom: 1px solid #e0e0e0;
-  display: flex; align-items: center; padding: 0 25px; gap: 15px;
-  z-index: 10;
+  display: flex; align-items: center; padding: 0 25px; gap: 15px; z-index: 10;
 }
-
 .header-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+.header-info h4 { margin: 0; color: #333; }
 
 .chat-scroll-area {
   flex: 1; overflow-y: auto; padding: 30px; 
-  display: flex; flex-direction: column; gap: 15px;
-  position: relative;
-}
-
-/* 3º Detalhe: Logo transparente e sem cor original no fundo */
-.on-watermark-img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 400px;
-  height: auto;
-  pointer-events: none;
-  z-index: 0;
-  /* Transforma em preto e branco, aumenta brilho e reduz opacidade */
-  filter: grayscale(100%) brightness(1.2);
-  opacity: 0.08;
-}
-
-.msg-wrapper { display: flex; width: 100%; z-index: 1; }
-.msg-wrapper.me { justify-content: flex-end; }
-.msg-wrapper.them { justify-content: flex-start; }
-
-.msg-bubble {
-  max-width: 65%; padding: 12px 20px; border-radius: 20px; font-size: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.me .msg-bubble { background: #6A1B9A; color: #fff; border-bottom-right-radius: 5px; }
-.them .msg-bubble { background: #fff; color: #333; border: 1px solid #eee; border-bottom-left-radius: 5px; }
-
-.chat-input-footer { padding: 25px; z-index: 10; }
-.input-form {
-  background: #F3E5F5; border-radius: 20px; display: flex; 
-  align-items: center; padding: 8px 18px; gap: 12px;
-}
-
-.input-form input {
-  flex: 1; background: none; border: none; outline: none; padding: 10px; font-size: 15px;
-  color: #4A148C;
-}
-
-.btn-plus, .btn-send {
-  background: none; border: none; font-size: 26px; color: #6A1B9A; cursor: pointer;
+  display: flex; flex-direction: column; gap: 15px; position: relative;
 }
 
 .empty-state {
@@ -131,65 +109,170 @@
   color: #4A148C; font-weight: 500; position: relative;
 }
 
-/* ... (todo o resto igual) ... */
-
-.brand-title { 
-  color: #4A148C !important; /* Roxo Escuro */
-  margin: 0; 
-  font-size: 26px; 
-  font-weight: 700; 
+/* Logo transparente e sem cor original no fundo */
+.on-watermark-img {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 400px; height: auto; pointer-events: none; z-index: 0;
+  filter: grayscale(100%) brightness(1.2); opacity: 0.08;
 }
 
-.no-matches-msg {
-  padding: 40px;
-  text-align: center;
-  color: #999;
-  font-size: 14px;
+
+/* ==============================================================
+   BALÕES DE MENSAGEM
+============================================================== */
+.msg-wrapper { display: flex; width: 100%; z-index: 1; }
+.msg-wrapper.me { justify-content: flex-end; }
+.msg-wrapper.other { justify-content: flex-start; } 
+
+.msg-group { display: flex; align-items: center; gap: 8px; }
+.msg-group.me { flex-direction: row-reverse; }
+
+.msg-bubble {
+  display: flex; flex-direction: column; text-align: left !important; min-width: 100px;
+  max-width: 65%; padding: 12px 20px; border-radius: 20px; font-size: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* ... (Mantenha o que já tinha e adicione/ajuste estes abaixo) ... */
+.me .msg-bubble { background: #6A1B9A; color: #fff; border-bottom-right-radius: 5px; }
+.other .msg-bubble { background: #fff; color: #333; border: 1px solid #eee; border-bottom-left-radius: 5px; }
 
-.avatar-container {
-  position: relative;
+/* Estilo visual da mensagem deletada */
+.msg-bubble.deleted {
+  background-color: transparent !important;
+  border: 1px solid #ccc;
+  color: #666;
 }
 
-.unread-badge {
+
+/* ==============================================================
+   CAIXA DE RESPOSTA (MENSAGEM CITADA DENTRO DO BALÃO)
+============================================================== */
+/* 🟣 CAIXA DE RESPOSTA DENTRO DA SUA MENSAGEM (BALÃO ROXO ESCURO) */
+.msg-wrapper.me .quoted-msg {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-left: 4px solid #d8b4fe;
+  padding: 6px 10px; border-radius: 6px; margin-bottom: 6px;
+  display: flex; flex-direction: column;
+}
+.msg-wrapper.me .quoted-msg strong {
+  color: #d8b4fe; font-size: 13px; font-weight: 700; margin-bottom: 2px;
+}
+.msg-wrapper.me .quoted-msg p {
+  color: rgba(255, 255, 255, 0.85); font-size: 13px; margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;
+}
+
+/* ⚪ CAIXA DE RESPOSTA DENTRO DA MENSAGEM DO OUTRO (BALÃO CLARO) */
+.msg-wrapper.other .quoted-msg {
+  background-color: rgba(107, 33, 168, 0.08);
+  border-left: 4px solid #6b21a8;
+  padding: 6px 10px; border-radius: 6px; margin-bottom: 6px;
+  display: flex; flex-direction: column;
+}
+.msg-wrapper.other .quoted-msg strong {
+  color: #6b21a8; font-size: 13px; font-weight: 700; margin-bottom: 2px;
+}
+.msg-wrapper.other .quoted-msg p {
+  color: #555; font-size: 13px; margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;
+}
+
+
+/* ==============================================================
+   MENU DE OPÇÕES (3 PONTINHOS E DROPDOWN)
+============================================================== */
+.btn-msg-options {
+  background: transparent; border: none; font-size: 20px; color: #888;
+  cursor: pointer; opacity: 0; transition: opacity 0.2s; padding: 0 5px;
+}
+.msg-wrapper:hover .btn-msg-options { opacity: 1; }
+
+.options-dropdown {
+  position: absolute; top: 15px; background: #ffffff; border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15); display: flex;
+  flex-direction: column; z-index: 100; min-width: 120px; overflow: hidden;
+}
+.options-dropdown.me { right: 35px; }
+.options-dropdown.other { left: 35px; }
+
+.options-dropdown button {
+  padding: 10px 15px; border: none; background: none; text-align: left;
+  cursor: pointer; font-size: 14px; color: #333; border-bottom: 1px solid #f0f0f0;
+}
+.options-dropdown button:hover { background: #f9f9f9; }
+.options-dropdown button.delete-btn { color: #d32f2f; }
+
+
+/* ==============================================================
+   RODAPÉ (INPUT E FAIXA DE RESPONDER)
+============================================================== */
+.chat-input-footer {
+  padding: 25px; z-index: 10; display: flex; flex-direction: column;
+}
+
+/* FAIXA DO RESPONDER (ACIMA DO INPUT) */
+.reply-banner {
+  background: #f0e6fa; border-left: 4px solid #6b21a8; padding: 10px 15px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-radius: 8px 8px 0 0; margin-bottom: -15px; z-index: 10;
+}
+.reply-content strong { color: #6b21a8; font-size: 13px; }
+.reply-content p { margin: 2px 0 0; font-size: 14px; color: #555; }
+.close-reply { background: none; border: none; font-size: 16px; cursor: pointer; color: #888; }
+
+.input-form {
+  background: #F3E5F5; border-radius: 20px; display: flex;
+  align-items: center; padding: 8px 18px; gap: 12px; width: 100%;
+}
+.input-form input {
+  flex: 1; background: none; border: none; outline: none;
+  padding: 10px; font-size: 15px; color: #4A148C;
+}
+.btn-plus, .btn-send {
+  background: none; border: none; font-size: 26px; color: #6A1B9A; cursor: pointer;
+}
+/* ==============================================================
+   MENU DE ANEXOS (BOTÃO +)
+============================================================== */
+.chat-input-footer {
+  position: relative; /* Necessário para o menu flutuar a partir daqui */
+}
+
+.attachment-menu {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  background-color: #E91E63; /* Rosa vibrante para alerta */
-  color: white;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 10px;
-  border: 2px solid #fff;
-}
-
-.conv-header-row {
+  bottom: 80px; /* Flutua acima do input */
+  left: 25px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.2);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  padding: 10px;
+  z-index: 200;
+  min-width: 200px;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.attachment-menu button {
+  background: none;
+  border: none;
+  display: flex;
   align-items: center;
-  width: 100%;
+  text-align: left;
+  padding: 12px 15px;
+  cursor: pointer;
+  font-size: 15px;
+  color: #4A148C;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s;
 }
 
-.conv-time {
-  font-size: 11px;
-  color: #999;
-}
-
-.last-msg-text {
-  margin: 5px 0 0;
-  font-size: 13px;
-  color: #757575;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  max-width: 200px; /* Evita que a mensagem empurre o timestamp */
-}
-
-.loading-msg {
-  padding: 20px;
-  text-align: center;
-  color: #7b1fa2;
+.attachment-menu button:hover {
+  background: #F3E5F5;
 }

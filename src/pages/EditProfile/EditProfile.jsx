@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import userService from '../../services/userService';
 import './EditProfile.css';
 
-// ─── Calcula idade a partir de birth_date ───────────────────────────────────
 const calcularIdade = (birth_date) => {
   if (!birth_date) return '';
   const nascimento = new Date(birth_date);
@@ -18,8 +17,6 @@ const calcularIdade = (birth_date) => {
   return idade;
 };
 
-// ─── Converte idade (número) de volta para birth_date (YYYY-MM-DD) ──────────
-// Usa 1º de janeiro do ano de nascimento estimado (aproximação aceitável)
 const idadeParaBirthDate = (idade) => {
   if (!idade) return '';
   const anoNascimento = new Date().getFullYear() - parseInt(idade);
@@ -36,19 +33,17 @@ const EditProfile = () => {
 
   const [formData, setFormData] = useState({
     fullName:           '',
-    age:                '',   // exibido no formulário como número inteiro
-    birth_date:         '',   // enviado ao backend (coluna real do banco)
+    age:                '',   
+    birth_date:         '',   
     bio:                '',
     relationshipStatus: 'individual',
     discreteMode:       false,
   });
 
-  // ── 1. Carregar perfil do banco ────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
         const data = await userService.getProfile();
-        // O backend retorna birth_date; calculamos a idade para exibir no campo
         const idadeCalculada = calcularIdade(data.birth_date);
 
         setFormData({
@@ -71,12 +66,10 @@ const EditProfile = () => {
     load();
   }, []);
 
-  // ── 2. Upload de foto (Cloudinary) ─────────────────────────────────────────
   const handleAddPhoto = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validação básica no frontend
     const MAX_SIZE_MB = 5;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       alert(`A imagem deve ter no máximo ${MAX_SIZE_MB}MB.`);
@@ -97,42 +90,58 @@ const EditProfile = () => {
       alert('Erro ao realizar o upload da imagem. Verifique o console para detalhes.');
     } finally {
       setIsSaving(false);
-      // Limpa o input para permitir re-envio do mesmo arquivo
       e.target.value = '';
     }
   };
 
-  const handleDeletePhoto = (e, index) => {
-    e.stopPropagation();
-    if (photos.length <= 1) return;
-    const updated = photos.filter((_, i) => i !== index);
-    setPhotos(updated);
-    if (activePhoto >= updated.length) setActivePhoto(updated.length - 1);
+  const handleDeletePhoto = async (e, index) => {
+    e.stopPropagation(); // Evita clicar na miniatura sem querer
+
+    const confirmar = window.confirm("Tem a certeza que deseja apagar a sua foto de perfil?");
+    if (!confirmar) return;
+
+    try {
+      setIsSaving(true);
+
+      // 1. Envia a ordem para o Backend atualizar a foto para nulo
+      await userService.updateProfile({ foto_url: null });
+
+      // 2. Remove visualmente do React
+      const updated = photos.filter((_, i) => i !== index);
+      setPhotos(updated);
+
+      // 3. Ajusta o carrossel para não quebrar a tela
+      if (activePhoto >= updated.length) {
+        setActivePhoto(Math.max(0, updated.length - 1));
+      }
+      
+    } catch (err) {
+      console.error('Erro ao apagar foto:', err);
+      alert('Ocorreu um erro ao apagar a foto.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  // ── 3. Atualizar campo de idade e sincronizar birth_date ───────────────────
   const handleAgeChange = (e) => {
     const idade = e.target.value;
     setFormData(prev => ({
       ...prev,
       age:        idade,
-      birth_date: idadeParaBirthDate(idade), // sincroniza a data para o backend
+      birth_date: idadeParaBirthDate(idade), 
     }));
   };
 
-  // ── 4. Salvar perfil ───────────────────────────────────────────────────────
   const handleSave = async (e) => {
     e.preventDefault();
     setIsSaving(true);
 
-    // Mapeamento exato para as colunas do banco (model User)
     const dataToSave = {
       name:                  formData.fullName,
-      birth_date:            formData.birth_date,      // ✅ coluna real do banco
+      birth_date:            formData.birth_date,      
       bio:                   formData.bio,
       status_relacionamento: formData.relationshipStatus,
       modo_discreto:         formData.discreteMode,
-      // location e age NÃO existem no banco — removidos
     };
 
     try {
@@ -164,18 +173,20 @@ const EditProfile = () => {
 
         <form className="profile-edit-body" onSubmit={handleSave}>
 
-          {/* ── Coluna esquerda: fotos ── */}
           <div className="column-left">
+            {/* 🔥 BLOCO DA IMAGEM E INFO SEPARADOS! */}
             <div className="image-container-3x4">
               {photos.length > 0 ? (
                 <img src={photos[activePhoto]} alt="Perfil" className="img-render-3x4" />
               ) : (
                 <div className="img-placeholder">Sem fotos</div>
               )}
-              <div className="image-overlay-info">
-                <h3>{formData.fullName || 'Usuário'}, {formData.age || '?'}</h3>
-              </div>
             </div>
+            
+            <div className="image-info-below">
+              <h3>{formData.fullName || 'Usuário'}, {formData.age || '?'}</h3>
+            </div>
+            {/* -------------------------------------- */}
 
             <div className="carousel-mini-list">
               {photos.map((photo, index) => (
@@ -185,9 +196,11 @@ const EditProfile = () => {
                   onClick={() => setActivePhoto(index)}
                 >
                   <img src={photo} alt="Thumb" className="img-render-3x4" />
+                  
                   <span className="remove-item-btn" onClick={(e) => handleDeletePhoto(e, index)}>×</span>
                 </div>
               ))}
+              
               <div
                 className="add-item-btn"
                 onClick={() => document.getElementById('fileIn').click()}
@@ -206,7 +219,6 @@ const EditProfile = () => {
             />
           </div>
 
-          {/* ── Coluna direita: formulário ── */}
           <div className="column-right">
             <div className="input-field-premium">
               <label>NOME COMPLETO</label>

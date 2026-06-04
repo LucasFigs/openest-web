@@ -279,7 +279,7 @@ const Discovery = () => {
     >
       <Toaster position="top-right" />
 
-      {/* ══ SIDEBAR ══ */}
+ {/* ══ SIDEBAR ══ */}
       <aside className="discovery-sidebar">
         <div
           className="avatar-wrapper"
@@ -309,7 +309,6 @@ const Discovery = () => {
             </span>
           </button>
         </div>
-
         <div className="sidebar-footer">
           {/* Botão de Configurações */}
           <button className="settings-btn-circle" onClick={() => navigate('/settings')}>
@@ -323,10 +322,11 @@ const Discovery = () => {
             <svg className="sidebar-svg-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
             </svg>
+          <button className="nav-btn-box active" onClick={() => navigate('/settings')}>
+            <span className="mono-icon">⚙</span>
           </button>
         </div>
-      </aside>
-
+          </aside>
       {/* ══ ÁREA PRINCIPAL ══ */}
       <main className="discovery-content-area">
         <div className="iphone-mockup-v2" style={{ position: 'relative' }}>
