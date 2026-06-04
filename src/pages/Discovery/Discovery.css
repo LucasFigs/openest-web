@@ -1,4 +1,6 @@
-/* ANIMAÇÃO DE GRADIENTE MESH DINÂMICO */
+/* ==========================================================================
+   ANIMAÇÃO DE GRADIENTE MESH DINÂMICO
+   ========================================================================== */
 @keyframes meshGradientFlow {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -24,7 +26,9 @@ html, body, #root {
   animation: meshGradientFlow 15s ease infinite;
 }
 
-/* SIDEBAR ESQUERDA GLASSMOPHIRSM */
+/* ==========================================================================
+   SIDEBAR ESQUERDA GLASSMOPHIRSM
+   ========================================================================== */
 .discovery-sidebar {
   width: 85px; min-width: 85px;
   height: 100vh; 
@@ -51,12 +55,16 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   background: #e0c8f8;         /* fallback enquanto a foto carrega */
-  transition: border-color 0.2s, transform 0.15s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
  
 .avatar-wrapper:hover {
   border-color: #c060f0;
   transform: scale(1.06);
+}
+
+.avatar-wrapper:active {
+  transform: scale(0.93);
 }
  
 .avatar-wrapper img {
@@ -80,9 +88,19 @@ html, body, #root {
   background: transparent;
   border: none;
   width: 52px; height: 52px;
-  cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer; 
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex; justify-content: center; align-items: center;
   opacity: 0.5;
+}
+
+.nav-btn-box:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+.nav-btn-box:active {
+  transform: scale(0.93);
 }
 
 .nav-btn-box.active { 
@@ -91,6 +109,14 @@ html, body, #root {
   background: rgba(255, 255, 255, 0.8);
   border-radius: 18px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.nav-btn-box.active:hover {
+  transform: scale(1.15);
+}
+
+.nav-btn-box.active:active {
+  transform: scale(0.93);
 }
 
 .mono-icon { color: #4a148c; font-size: 26px; }
@@ -114,20 +140,73 @@ html, body, #root {
   box-shadow: 0 4px 8px rgba(255, 23, 68, 0.3);
 }
 
-.shield-btn-circle {
+/* ==========================================================================
+   RODAPÉ DA SIDEBAR (BOTÕES GÊMEOS EM VETOR)
+   ========================================================================== */
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+}
+
+/* ÍCONES INTERNOS EM SVG */
+.sidebar-svg-icon {
+  width: 24px;
+  height: 24px;
+  color: #4a148c; /* Aplica o roxo oficial do Openest nativamente */
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+/* BOTÃO DE CONFIGURAÇÕES (ENGRENAGEM) */
+.settings-btn-circle {
   border: 1px solid rgba(255, 255, 255, 0.8);
-  width: 50px; height: 50px; border-radius: 50%;
-  cursor: pointer; display: flex; justify-content: center; align-items: center;
-  transition: 0.3s;
-  color: #7b1fa2;
-  opacity: 2; 
+  width: 50px; height: 50px;
+  cursor: pointer; 
+  display: flex; justify-content: center; align-items: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(1.1);
   background: rgba(255, 255, 255, 0.8);
   border-radius: 18px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* ÁREA CENTRAL */
+.settings-btn-circle:hover {
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.settings-btn-circle:active {
+  transform: scale(0.93);
+}
+
+/* BOTÃO DE DENÚNCIA (ESCUDO) */
+.report-btn-circle {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  width: 50px; height: 50px;
+  cursor: pointer; 
+  display: flex; justify-content: center; align-items: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.report-btn-circle:hover {
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.report-btn-circle:active {
+  transform: scale(0.93);
+}
+
+/* ==========================================================================
+   ÁREA CENTRAL E VIEWPORTS (MOCKUP IPHONE)
+   ========================================================================== */
 .discovery-content-area {
   flex: 1; width: 0; height: 100%;
   display: flex; justify-content: center; align-items: center;
@@ -172,7 +251,7 @@ html, body, #root {
   display: flex; 
   flex-direction: column; 
   overflow: hidden; 
-  min-height: 0; /* Impede o card de empurrar os botões para fora */
+  min-height: 0;
 }
 
 .profile-card { 
@@ -217,11 +296,13 @@ html, body, #root {
   width: 65px; height: 65px; border-radius: 50%; 
   border: none; background: white; cursor: pointer; 
   display: flex; justify-content: center; align-items: center; 
-  font-size: 24px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+  font-size: 24px; 
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
   box-shadow: 0 10px 25px rgba(123, 31, 162, 0.1); 
 }
 
 .circle-btn:hover { transform: scale(1.1); }
+.circle-btn:active { transform: scale(0.93); }
 
 .x-btn { color: #ff5252; background: rgba(255, 255, 255, 0.9); }
 .star-btn { color: #ffca28; background: rgba(255, 255, 255, 0.9); }
@@ -284,4 +365,6 @@ html, body, #root {
   border: none; border-radius: 25px;
   cursor: pointer; font-weight: 700;
   box-shadow: 0 5px 15px rgba(123, 31, 162, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.btn-retry:active { transform: scale(0.93); }
