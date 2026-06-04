@@ -18,6 +18,7 @@ import Chat from './pages/Chat/Chat';
 import Admin from './pages/Admin/Admin'; 
 import TermsOfUse from './pages/Legal/TermsOfUse';
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy';
+import Events from './pages/Events/Events'; 
 
 import './App.css';
 
@@ -46,11 +47,7 @@ function App() {
         />
 
         <Routes>
-          {/* 
-            TASK #43: ROTAS PÚBLICAS UNIVERSAIS 
-            Colocadas fora do bloco condicional para que os botões da Navbar 
-            da Welcome funcionem sem exigir login.
-          */}
+          {/* TASK #43: ROTAS PÚBLICAS UNIVERSAIS */}
           <Route path="/termos-de-uso" element={<TermsOfUse />} />
           <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
 
@@ -75,10 +72,11 @@ function App() {
               <Route path="/chat/:conversationId?" element={<Chat />} />
               <Route path="/edit-profile" element={<EditProfile />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/events" element={<Events />} />
 
               <Route 
                 path="/admin" 
-                element={user?.role === 'admin' ? <Admin /> : <Navigate to="/discovery" />} 
+                element={user?.role === 'admin' ? <Admin /> : <Navigate to="/discovery" /> } 
               />
 
               <Route 

@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
-import calendarIcon from '../../assets/images/calendar.png';
 import './Discovery.css';
 
 import api from '../../services/api';
 import Loading from '../../components/Loading/Loading';
 import Filters from '../../components/Filters/Filters';
 import MatchPopup from '../../components/MatchPopup/MatchPopup';
+import ReportModal from '../../components/ReportModal/ReportModal';
 import logoOn from '../../assets/images/LOGO.png';
 
 const cloudinaryUrl = (publicIdOrUrl, opts = {}) => {
@@ -62,7 +62,7 @@ const normalizeLoggedUser = (user) => ({
 const Discovery = () => {
   const navigate = useNavigate();
 
-  const [profiles,         setProfiles]         = useState([]);
+  const [profiles,          setProfiles]         = useState([]);
   const [currentIndex,     setCurrentIndex]     = useState(0);
   const [loading,          setLoading]          = useState(true);
   const [loadingMore,      setLoadingMore]      = useState(false);
@@ -78,6 +78,9 @@ const Discovery = () => {
   });
   const [showMatch,         setShowMatch]         = useState(false);
   const [notificationBadge, setNotificationBadge] = useState(0);
+
+  // Estados de controle para o Popup de denúncia dinâmico
+  const [isReportOpen,     setIsReportOpen]     = useState(false);
 
   // Ref para evitar que o useEffect de pré-carga dispare infinitamente
   const fetchingMore = useRef(false);
@@ -111,12 +114,9 @@ const Discovery = () => {
     api.get('/users/perfil')
       .then(({ data }) => setLoggedUser(normalizeLoggedUser(data)))
       .catch(err => console.error('Perfil logado:', err?.response?.status, err?.response?.data));
-  }, []); // ✅ sem dependências — roda só uma vez ao montar
+  }, []);
 
   // ── Busca perfis ──────────────────────────────────────────────────────────
-  // FIX erro 1 e 2: activeFilters estava em falta nas deps de useCallback,
-  // causando warning. Agora recebe filters como parâmetro explícito para
-  // evitar stale closure sem precisar colocar activeFilters como dependência.
   const fetchProfiles = useCallback(async (pageNum, filters) => {
     if (pageNum === 1) setLoading(true); else setLoadingMore(true);
     fetchingMore.current = true;
@@ -154,16 +154,15 @@ const Discovery = () => {
       setLoadingMore(false);
       fetchingMore.current = false;
     }
-  }, []); // ✅ sem deps — parâmetros passados explicitamente
+  }, []);
 
   // Carga inicial
   useEffect(() => {
     fetchProfiles(1, activeFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ roda só uma vez
+  }, []);
 
   // Pré-carga da próxima página
-  // FIX erro 3: deps corretas [currentIndex, profiles.length, hasMore, loadingMore, page]
   useEffect(() => {
     if (!hasMore || loadingMore || fetchingMore.current) return;
     if (profiles.length - currentIndex <= 3) {
@@ -172,8 +171,6 @@ const Discovery = () => {
   }, [currentIndex, profiles.length, hasMore, loadingMore, page, fetchProfiles, activeFilters]);
 
   // ── Notificações de matches salvos ───────────────────────────────────────
-  // FIX erro 4: handleIncomingMessage estava sendo usada dentro do useEffect
-  // mas não estava nas dependências. Solução: mover a lógica para dentro do effect.
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('openest_matches') || '[]');
     if (!saved.length) return;
@@ -194,23 +191,36 @@ const Discovery = () => {
       ), { duration: 5000, id: `msg-${lastMatch.id}` });
     }, 4000);
     return () => clearTimeout(timer);
-  }, [navigate]); // ✅ navigate é estável, sem warning
+  }, [navigate]);
 
   // ── Navegação entre cards ─────────────────────────────────────────────────
   const next = useCallback(() => {
     setGroupMemberIndex(0);
     setExitX(0);
     setCurrentIndex(prev => prev + 1);
-  }, []); // ✅ sem deps externas
+  }, []);
 
   const current = profiles[currentIndex];
+
+  // ── Envio da Denúncia ─────────────────────────────────────────────────────
+  const handleReportSubmit = async (userId, reason) => {
+    try {
+      await api.post(`/denunciar/${userId}`, { motivo: reason });
+      toast.success('Denúncia enviada com sucesso. Nossa equipe vai analisar o perfil.');
+    } catch (err) {
+      console.error('Erro ao enviar denúncia:', err?.response?.status, err?.response?.data);
+      toast.error('Não foi possível registrar a denúncia agora.');
+    } finally {
+      setIsReportOpen(false);
+    }
+  };
 
   // ── Like ──────────────────────────────────────────────────────────────────
   const handleLike = useCallback(async () => {
     if (!current) return;
     setExitX(300);
     try {
-    const { data } = await api.post(`/curtir/${current.id}`);
+      const { data } = await api.post(`/curtir/${current.id}`);
       const isMatch = data.match || data.isMatch || data.resultado === 'match' || false;
       if (isMatch) {
         setShowMatch(true);
@@ -227,14 +237,14 @@ const Discovery = () => {
       console.error('Like:', err?.response?.status, err?.response?.data);
       setTimeout(next, 400);
     }
-  }, [current, next]); // ✅ deps corretas
+  }, [current, next]);
 
   // ── Dislike ───────────────────────────────────────────────────────────────
-  const handleDislike = useCallback(async () => {   //await api.post(`/interactions/passar/${current.id}`, {
+  const handleDislike = useCallback(async () => {
     if (!current) return;
     setExitX(-300);
     try {
-      await api.post(`/interactions/passar/${current.id}`, { // troquei para testar; await api.post('/interactions', { to_user_id: current.id, action: 'dislike',
+      await api.post(`/interactions/passar/${current.id}`, {
         to_user_id: current.id,
         action: 'dislike',
       });
@@ -243,7 +253,7 @@ const Discovery = () => {
     } finally {
       setTimeout(next, 400);
     }
-  }, [current, next]); // ✅ deps corretas
+  }, [current, next]);
 
   const toggleGroupMember = useCallback((e) => {
     e.stopPropagation();
@@ -289,17 +299,29 @@ const Discovery = () => {
             <span className="mono-icon">✉</span>
             {notificationBadge > 0 && <span className="sidebar-badge">{notificationBadge}</span>}
           </button>
-          <button className="nav-btn-box active"><span className="mono-icon">♥</span></button>
-          <button className="nav-btn-box active">
+          <button className="nav-btn-box active" onClick={() => navigate('/discovery')}><span className="mono-icon">♥</span></button>
+          
+          <button className="nav-btn-box active" onClick={() => navigate('/events')}>
             <span className="mono-icon">
-              <img
-                src={calendarIcon} alt="Calendário" className="calendar-dark-purple"
-                style={{ filter: 'invert(13%) sepia(94%) saturate(7451%) hue-rotate(277deg) brightness(94%) contrast(116%)' }}
-              />
+              <svg className="sidebar-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+              </svg>
             </span>
           </button>
         </div>
         <div className="sidebar-footer">
+          {/* Botão de Configurações */}
+          <button className="settings-btn-circle" onClick={() => navigate('/settings')}>
+            <svg className="sidebar-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+            </svg>
+          </button>
+
+          {/* Botão de Denúncia - Agora abre o modal local em vez de navegar */}
+          <button className="report-btn-circle" onClick={() => setIsReportOpen(true)}>
+            <svg className="sidebar-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </svg>
           <button className="nav-btn-box active" onClick={() => navigate('/settings')}>
             <span className="mono-icon">⚙</span>
           </button>
@@ -363,7 +385,7 @@ const Discovery = () => {
                   )}
 
                   <motion.div
-                    className={`group-badge ${current.type === 'Grupo' && current.img.length > 1 ? 'clickable' : ''}`}
+                    className="group-badge"
                     onClick={toggleGroupMember}
                     whileTap={{ scale: 0.9 }}
                   >
@@ -433,6 +455,22 @@ const Discovery = () => {
             loggedUserImg={loggedUser?.foto}
             onClose={() => { setShowMatch(false); next(); }}
             onChat={() => navigate(`/chat/${current?.id}`)}
+          />
+
+          {/* Modal de Denúncia dinâmico injetado no final do contêiner */}
+          <ReportModal 
+            isOpen={isReportOpen}
+            onClose={() => setIsReportOpen(false)}
+            targetUser={current ? {
+              id: current.id,
+              name: current.name,
+              img: current.img[groupMemberIndex]
+            } : {
+              id: 0,
+              name: "Ninguém selecionado",
+              img: "https://ui-avatars.com/api/?name=Openest"
+            }}
+            onSubmitReport={handleReportSubmit}
           />
         </div>
       </main>
