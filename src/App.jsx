@@ -18,6 +18,8 @@ import Chat from './pages/Chat/Chat';
 import Admin from './pages/Admin/Admin'; 
 import TermsOfUse from './pages/Legal/TermsOfUse';
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy';
+// 1º AJUSTE: Importação do componente com os caminhos que validamos na árvore
+import Events from './pages/Events/Events'; 
 
 import './App.css';
 
@@ -46,8 +48,7 @@ function App() {
         />
 
         <Routes>
-          {/* 
-            TASK #43: ROTAS PÚBLICAS UNIVERSAIS 
+          {/* TASK #43: ROTAS PÚBLICAS UNIVERSAIS 
             Colocadas fora do bloco condicional para que os botões da Navbar 
             da Welcome funcionem sem exigir login.
           */}
@@ -76,9 +77,12 @@ function App() {
               <Route path="/edit-profile" element={<EditProfile />} />
               <Route path="/settings" element={<Settings />} />
 
+              {/* 2º AJUSTE: Rota de eventos mapeada perfeitamente dentro do bloco autenticado */}
+              <Route path="/events" element={<Events />} />
+
               <Route 
                 path="/admin" 
-                element={user?.role === 'admin' ? <Admin /> : <Navigate to="/discovery" />} 
+                element={user?.role === 'admin' ? <Admin /> : <Navigate to="/discovery" /> } 
               />
 
               <Route 

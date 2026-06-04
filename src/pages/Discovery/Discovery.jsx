@@ -62,7 +62,7 @@ const normalizeLoggedUser = (user) => ({
 const Discovery = () => {
   const navigate = useNavigate();
 
-  const [profiles,         setProfiles]         = useState([]);
+  const [profiles,          setProfiles]         = useState([]);
   const [currentIndex,     setCurrentIndex]     = useState(0);
   const [loading,          setLoading]          = useState(true);
   const [loadingMore,      setLoadingMore]      = useState(false);
@@ -114,9 +114,6 @@ const Discovery = () => {
   }, []); // ✅ sem dependências — roda só uma vez ao montar
 
   // ── Busca perfis ──────────────────────────────────────────────────────────
-  // FIX erro 1 e 2: activeFilters estava em falta nas deps de useCallback,
-  // causando warning. Agora recebe filters como parâmetro explícito para
-  // evitar stale closure sem precisar colocar activeFilters como dependência.
   const fetchProfiles = useCallback(async (pageNum, filters) => {
     if (pageNum === 1) setLoading(true); else setLoadingMore(true);
     fetchingMore.current = true;
@@ -163,7 +160,6 @@ const Discovery = () => {
   }, []); // ✅ roda só uma vez
 
   // Pré-carga da próxima página
-  // FIX erro 3: deps corretas [currentIndex, profiles.length, hasMore, loadingMore, page]
   useEffect(() => {
     if (!hasMore || loadingMore || fetchingMore.current) return;
     if (profiles.length - currentIndex <= 3) {
@@ -172,8 +168,6 @@ const Discovery = () => {
   }, [currentIndex, profiles.length, hasMore, loadingMore, page, fetchProfiles, activeFilters]);
 
   // ── Notificações de matches salvos ───────────────────────────────────────
-  // FIX erro 4: handleIncomingMessage estava sendo usada dentro do useEffect
-  // mas não estava nas dependências. Solução: mover a lógica para dentro do effect.
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('openest_matches') || '[]');
     if (!saved.length) return;
@@ -230,11 +224,11 @@ const Discovery = () => {
   }, [current, next]); // ✅ deps corretas
 
   // ── Dislike ───────────────────────────────────────────────────────────────
-  const handleDislike = useCallback(async () => {   //await api.post(`/interactions/passar/${current.id}`, {
+  const handleDislike = useCallback(async () => {
     if (!current) return;
     setExitX(-300);
     try {
-      await api.post(`/interactions/passar/${current.id}`, { // troquei para testar; await api.post('/interactions', { to_user_id: current.id, action: 'dislike',
+      await api.post(`/interactions/passar/${current.id}`, {
         to_user_id: current.id,
         action: 'dislike',
       });
@@ -289,8 +283,10 @@ const Discovery = () => {
             <span className="mono-icon">✉</span>
             {notificationBadge > 0 && <span className="sidebar-badge">{notificationBadge}</span>}
           </button>
-          <button className="nav-btn-box active"><span className="mono-icon">♥</span></button>
-          <button className="nav-btn-box active">
+          <button className="nav-btn-box active" onClick={() => navigate('/discovery')}><span className="mono-icon">♥</span></button>
+          
+          {/* Integração exata da rota de Eventos / Calendário mantendo o padrão */}
+          <button className="nav-btn-box active" onClick={() => navigate('/events')}>
             <span className="mono-icon">
               <img
                 src={calendarIcon} alt="Calendário" className="calendar-dark-purple"
