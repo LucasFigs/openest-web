@@ -7,20 +7,43 @@ import './Events.css';
 import api from '../../services/api';
 import Loading from '../../components/Loading/Loading';
 
+const avatarFallback = (name = 'Usuário') =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=200`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Gera um link direto para o Google Calendar com o evento pré-preenchido.
+// O usuário clica, o Google abre com tudo já preenchido, e ele só salva.
+// Não precisa de OAuth, API Key nem nenhuma configuração extra.
+// ─────────────────────────────────────────────────────────────────────────────
+const gerarLinkGoogleCalendar = (evento) => {
+  const inicio = new Date(evento.data_encontro);
+  const fim    = new Date(inicio.getTime() + 60 * 60 * 1000); // +1 hora
+
+  // Formato exigido pelo Google: YYYYMMDDTHHmmssZ
+  const fmt = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  const params = new URLSearchParams({
+    action:   'TEMPLATE',
+    text:     evento.titulo,
+    dates:    `${fmt(inicio)}/${fmt(fim)}`,
+    details:  `Encontro gerado pelo Openest.\n${evento.bio ? `Sobre: ${evento.bio}` : ''}`.trim(),
+    location: evento.local,
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
+
 const Events = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [currentTime, setCurrentTime] = useState('');
-  const [events, setEvents] = useState([]);
-  
-  // Controle do calendário dinâmico
-  const [currentDate, setCurrentDate] = useState(new Date());
-
-  // Controle do Popup Modal
+  const [loading,       setLoading]       = useState(true);
+  const [currentTime,   setCurrentTime]   = useState('');
+  const [events,        setEvents]        = useState([]);
+  const [loggedUser,    setLoggedUser]    = useState(null);
+  const [currentDate,   setCurrentDate]   = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen,   setIsModalOpen]   = useState(false);
 
-  // ── Relógio em Tempo Real ─────────────────────────────────────────────────
+  // ── Relógio ────────────────────────────────────────────────────────────────
   useEffect(() => {
     const tick = () => {
       const now = new Date();
@@ -33,117 +56,103 @@ const Events = () => {
     return () => clearInterval(id);
   }, []);
 
-  // ── Integração Real com a API ─────────────────────────────────────────────
+  // ── Foto do usuário logado (sidebar) ──────────────────────────────────────
+  useEffect(() => {
+    api.get('/users/perfil')
+      .then(({ data }) => setLoggedUser({ name: data.name, foto: data.foto_url || null }))
+      .catch(err => console.error('Perfil sidebar:', err?.response?.status));
+  }, []);
+
+  // ── Busca eventos da API ───────────────────────────────────────────────────
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
       try {
-        // Rota que a equipe vai expor no Back-end
         const { data } = await api.get('/events/meus-encontros', {
           params: {
             mes: currentDate.getMonth() + 1,
-            ano: currentDate.getFullYear()
-          }
+            ano: currentDate.getFullYear(),
+          },
         });
-        
-        // Espera um array de eventos vindos do Back-end no formato correto
         setEvents(data || []);
       } catch (err) {
-        console.error('Erro ao buscar eventos da API:', err?.response?.status, err?.response?.data);
+        console.error('Erro ao buscar eventos:', err?.response?.status, err?.response?.data);
+        setEvents([]);
       } finally {
         setLoading(false);
       }
     };
-
     fetchEvents();
   }, [currentDate]);
 
-  // ── Lógica do Calendário Dinâmico ─────────────────────────────────────────
-  const year = currentDate.getFullYear();
+  // ── Calendário dinâmico ────────────────────────────────────────────────────
+  const year  = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
   const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
 
-  const openEventModal = (eventObj) => {
-    setSelectedEvent(eventObj);
-    setIsModalOpen(true);
-  };
-
   const handleDayClick = (dayObj) => {
     if (!dayObj.isCurrentMonth) return;
-    
-    // Procura se a data do evento coincide com o dia clicado
-    const foundEvent = events.find(e => {
-      const eDate = new Date(e.data_encontro);
-      return eDate.getDate() === dayObj.day && eDate.getMonth() === month && eDate.getFullYear() === year;
+    const found = events.find(e => {
+      const d = new Date(e.data_encontro);
+      return d.getDate() === dayObj.day && d.getMonth() === month && d.getFullYear() === year;
     });
-
-    if (foundEvent) openEventModal(foundEvent);
+    if (found) { setSelectedEvent(found); setIsModalOpen(true); }
   };
 
   const generateCalendarGrid = () => {
-    const firstDayIndex = new Date(year, month, 1).getDay(); 
-    const totalDays = new Date(year, month + 1, 0).getDate(); 
-    const totalDaysPrevMonth = new Date(year, month, 0).getDate(); 
+    const firstDayIndex      = new Date(year, month, 1).getDay();
+    const totalDays          = new Date(year, month + 1, 0).getDate();
+    const totalDaysPrevMonth = new Date(year, month, 0).getDate();
+    const startOffset        = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
 
-    const startOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
     const grid = [];
-    let currentWeek = [];
+    let week   = [];
 
-    for (let i = startOffset; i > 0; i--) {
-      currentWeek.push({ day: totalDaysPrevMonth - i + 1, isCurrentMonth: false });
-    }
+    for (let i = startOffset; i > 0; i--)
+      week.push({ day: totalDaysPrevMonth - i + 1, isCurrentMonth: false });
 
     for (let day = 1; day <= totalDays; day++) {
-      if (currentWeek.length === 7) {
-        grid.push(currentWeek);
-        currentWeek = [];
-      }
-
-      // Verifica se a API retornou algum evento para este dia específico
-      const hasEvent = events.some(e => {
-        const eDate = new Date(e.data_encontro);
-        return eDate.getDate() === day && eDate.getMonth() === month && eDate.getFullYear() === year;
+      if (week.length === 7) { grid.push(week); week = []; }
+      const hasEvent    = events.some(e => {
+        const d = new Date(e.data_encontro);
+        return d.getDate() === day && d.getMonth() === month && d.getFullYear() === year;
       });
-      
       const statusClass = hasEvent ? (day % 2 === 0 ? 'purple-dark' : 'pink') : null;
-      currentWeek.push({ day, isCurrentMonth: true, status: statusClass });
+      week.push({ day, isCurrentMonth: true, status: statusClass });
     }
 
-    let nextMonthDay = 1;
-    while (currentWeek.length < 7) {
-      currentWeek.push({ day: nextMonthDay++, isCurrentMonth: false });
-    }
-    grid.push(currentWeek);
+    let nextDay = 1;
+    while (week.length < 7) week.push({ day: nextDay++, isCurrentMonth: false });
+    grid.push(week);
     return grid;
   };
 
-  // Formatador de data amigável para os cards e popup
-  const formatEventTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
+  const formatEventTime = (dateString) =>
+    new Date(dateString).toLocaleDateString('pt-BR', {
+      weekday: 'long', day: 'numeric', month: 'long',
+      hour: '2-digit', minute: '2-digit',
     });
-  };
 
-  const calendarWeeks = generateCalendarGrid();
+  const calendarWeeks    = generateCalendarGrid();
   const daysOfWeekLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const monthName = currentDate.toLocaleString('pt-BR', { month: 'long' });
+  const monthName        = currentDate.toLocaleString('pt-BR', { month: 'long' });
 
   if (loading) return <Loading />;
 
   return (
     <div className="events-main-container">
-      
-      {/* ══ SIDEBAR ESQUERDA (IDÊNTICA À DISCOVERY) ══ */}
+
+      {/* ══ SIDEBAR ══ */}
       <aside className="events-sidebar">
-        <div className="avatar-wrapper" onClick={() => navigate('/edit-profile')}>
-          <img src="https://github.com/edudouraado.png" alt="Profile" />
+        <div className="avatar-wrapper" onClick={() => navigate('/edit-profile')} title="Editar perfil">
+          <img
+            src={loggedUser?.foto || avatarFallback(loggedUser?.name)}
+            alt={loggedUser?.name || 'Perfil'}
+            style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '50%' }}
+            onError={e => { e.target.onerror = null; e.target.src = avatarFallback(loggedUser?.name); }}
+          />
         </div>
         <div className="nav-menu">
           <button className="nav-btn-box" onClick={() => navigate('/chat/lista')}>
@@ -167,8 +176,8 @@ const Events = () => {
 
       {/* ══ ÁREA CENTRAL ══ */}
       <main className="events-content-area">
-        
-        {/* COLUNA ESQUERDA: LISTAGEM DE EVENTOS */}
+
+        {/* Lista de eventos */}
         <section className="events-list-section">
           <div className="events-header-row">
             <h1 className="events-title">SEUS EVENTOS</h1>
@@ -178,15 +187,20 @@ const Events = () => {
           <div className="events-scroll-container">
             {events.length > 0 ? (
               events.map((event) => (
-                <div 
-                  key={event.id} 
-                  className="event-card clickable-card" 
-                  onClick={() => openEventModal(event)}
+                <div
+                  key={event.id}
+                  className="event-card clickable-card"
+                  onClick={() => { setSelectedEvent(event); setIsModalOpen(true); }}
                 >
                   <div className="event-avatars-row">
-                    {Array.isArray(event.fotos) && event.fotos.map((avatar, idx) => (
-                      <img key={idx} src={avatar} alt="Avatar" className="event-user-avatar" />
-                    ))}
+                    {event.fotos.length > 0
+                      ? event.fotos.map((avatar, idx) => (
+                          <img key={idx} src={avatar} alt="Avatar" className="event-user-avatar"
+                            onError={e => { e.target.onerror = null; e.target.src = avatarFallback(event.matchName); }}
+                          />
+                        ))
+                      : <img src={avatarFallback(event.matchName)} alt="Avatar" className="event-user-avatar" />
+                    }
                   </div>
                   <h3 className="event-card-title">{event.titulo}</h3>
                   <div className="event-detail-item">
@@ -197,6 +211,21 @@ const Events = () => {
                     <span className="event-icon">📍</span>
                     <p>{event.local}</p>
                   </div>
+
+                  {/* Botão Google Calendar direto no card */}
+                  <a
+                    href={gerarLinkGoogleCalendar(event)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="gcal-btn-card"
+                    onClick={e => e.stopPropagation()}
+                    title="Adicionar ao Google Agenda"
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                      <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                    </svg>
+                    Salvar no Google Agenda
+                  </a>
                 </div>
               ))
             ) : (
@@ -209,10 +238,9 @@ const Events = () => {
           </div>
         </section>
 
-        {/* COLUNA DIREITA: CALENDÁRIO */}
+        {/* Calendário */}
         <section className="calendar-section">
           <div className="calendar-container-card">
-            
             <header className="calendar-header">
               <button className="calendar-nav-btn" onClick={handlePrevMonth}>«</button>
               <h2 className="calendar-month-title">
@@ -223,20 +251,19 @@ const Events = () => {
 
             <div className="calendar-grid">
               <div className="calendar-week-days">
-                {daysOfWeekLabels.map((day, idx) => (
-                  <div key={idx} className="week-day-label">{day}</div>
+                {daysOfWeekLabels.map((d, i) => (
+                  <div key={i} className="week-day-label">{d}</div>
                 ))}
               </div>
-
               <div className="calendar-month-days">
-                {calendarWeeks.map((week, weekIdx) => (
-                  <div key={weekIdx} className="calendar-row">
-                    {week.map((date, dateIdx) => (
-                      <div 
-                        key={dateIdx} 
+                {calendarWeeks.map((week, wi) => (
+                  <div key={wi} className="calendar-row">
+                    {week.map((date, di) => (
+                      <div
+                        key={di}
                         onClick={() => handleDayClick(date)}
-                        className={`calendar-day-cell 
-                          ${!date.isCurrentMonth ? 'other-month' : ''} 
+                        className={`calendar-day-cell
+                          ${!date.isCurrentMonth ? 'other-month' : ''}
                           ${date.status ? `status-${date.status} has-event-day` : ''}
                         `}
                       >
@@ -247,55 +274,41 @@ const Events = () => {
                 ))}
               </div>
             </div>
-
           </div>
         </section>
 
       </main>
 
-      {/* ══ POPUP MODAL EM TELA CHEIA (ESTILO CARROSSEL PREMIUM) ══ */}
+      {/* ══ MODAL DE EVENTO ══ */}
       {isModalOpen && selectedEvent && (
         <div className="event-modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="event-modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="event-modal-card" onClick={e => e.stopPropagation()}>
             <button className="event-modal-close-btn" onClick={() => setIsModalOpen(false)}>✕</button>
-            
+
             <div className="event-modal-media">
-              {/* Usa unicamente a primeira foto como plano de fundo principal */}
-              {Array.isArray(selectedEvent.fotos) && selectedEvent.fotos.length > 0 && (
-                <img 
-                  src={selectedEvent.fotos[0]} 
-                  alt="Banner do Encontro" 
+              {selectedEvent.fotos.length > 0 ? (
+                <img
+                  src={selectedEvent.fotos[0]}
+                  alt="Banner do Encontro"
                   className="event-modal-img"
+                  onError={e => { e.target.onerror = null; e.target.src = avatarFallback(selectedEvent.matchName); }}
                 />
+              ) : (
+                <img src={avatarFallback(selectedEvent.matchName)} alt="Avatar" className="event-modal-img" />
               )}
-              
               <div className="event-modal-img-overlay">
                 <h2>{selectedEvent.matchName}</h2>
-                
-                {/* Carrossel de avatares com efeito flutuante se houver mais de um usuário */}
-                {Array.isArray(selectedEvent.fotos) && selectedEvent.fotos.length > 1 && (
-                  <div className="modal-avatar-stack">
-                    {selectedEvent.fotos.map((avatar, idx) => (
-                      <img 
-                        key={idx} 
-                        src={avatar} 
-                        alt={`Participante ${idx + 1}`} 
-                        className="modal-stack-avatar-item" 
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 
             <div className="event-modal-info">
-              <span className="event-modal-badge">Confirmado 🔥</span>
+              <span className="event-modal-badge">Match confirmado 🔥</span>
               <h1 className="event-modal-title">{selectedEvent.titulo}</h1>
-              
+
               <div className="event-modal-meta-row">
                 <div className="meta-icon-box">📅</div>
                 <div className="meta-text-box">
-                  <label>Data e Horário</label>
+                  <label>Data do Match</label>
                   <p>{formatEventTime(selectedEvent.data_encontro)}</p>
                 </div>
               </div>
@@ -303,14 +316,45 @@ const Events = () => {
               <div className="event-modal-meta-row">
                 <div className="meta-icon-box">📍</div>
                 <div className="meta-text-box">
-                  <label>Localização do Encontro</label>
+                  <label>Localização</label>
                   <p>{selectedEvent.local}</p>
                 </div>
               </div>
 
-              <button className="event-modal-chat-btn" onClick={() => navigate(`/chat/${selectedEvent.matchId}`)}>
-                Enviar mensagem no Chat ✉
-              </button>
+              {selectedEvent.bio && (
+                <div className="event-modal-meta-row">
+                  <div className="meta-icon-box">👤</div>
+                  <div className="meta-text-box">
+                    <label>Sobre</label>
+                    <p>{selectedEvent.bio}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Botões de ação ── */}
+              <div className="event-modal-actions">
+                {/* Abre o Google Agenda com evento pré-preenchido */}
+                <a
+                  href={gerarLinkGoogleCalendar(selectedEvent)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="gcal-btn-modal"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ flexShrink: 0 }}>
+                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/>
+                  </svg>
+                  Salvar no Google Agenda
+                </a>
+
+                {selectedEvent.matchId && (
+                  <button
+                    className="event-modal-chat-btn"
+                    onClick={() => navigate(`/chat/${selectedEvent.matchId}`)}
+                  >
+                    Enviar mensagem no Chat ✉
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
