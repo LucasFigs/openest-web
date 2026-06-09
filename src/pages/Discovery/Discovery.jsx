@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
 import './Discovery.css';
@@ -12,6 +11,7 @@ import MatchPopup from '../../components/MatchPopup/MatchPopup';
 import ReportModal from '../../components/ReportModal/ReportModal';
 import logoOn from '../../assets/images/LOGO.png';
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
 const cloudinaryUrl = (publicIdOrUrl, opts = {}) => {
   if (!publicIdOrUrl) return null;
   if (publicIdOrUrl.startsWith('http')) return publicIdOrUrl;
@@ -27,15 +27,15 @@ const avatarFallback = (name = 'Usuário') =>
 const normalizeProfile = (user) => {
   let images = [];
   if (Array.isArray(user.fotos) && user.fotos.length > 0) {
-    images = user.fotos.map(f =>
-      typeof f === 'string'
+    images = user.fotos
+      .map(f => typeof f === 'string'
         ? (f.startsWith('http') ? f : cloudinaryUrl(f))
-        : cloudinaryUrl(f.url || f.public_id)
-    ).filter(Boolean);
+        : cloudinaryUrl(f.url || f.public_id))
+      .filter(Boolean);
   }
-  if (images.length === 0 && user.foto_url) images = [user.foto_url];
+  if (images.length === 0 && user.foto_url)       images = [user.foto_url];
   if (images.length === 0 && user.foto_public_id) images = [cloudinaryUrl(user.foto_public_id)];
-  if (images.length === 0) images = [avatarFallback(user.name || user.nome)];
+  if (images.length === 0)                         images = [avatarFallback(user.name || user.nome)];
 
   return {
     id:       user.id,
@@ -58,39 +58,36 @@ const normalizeLoggedUser = (user) => ({
      || null,
 });
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
 const Discovery = () => {
   const navigate = useNavigate();
 
   const [profiles,          setProfiles]         = useState([]);
-  const [currentIndex,     setCurrentIndex]     = useState(0);
-  const [loading,          setLoading]          = useState(true);
-  const [loadingMore,      setLoadingMore]      = useState(false);
-  const [page,             setPage]             = useState(1);
-  const [hasMore,          setHasMore]          = useState(true);
-  const [loggedUser,       setLoggedUser]       = useState(null);
-  const [currentTime,      setCurrentTime]      = useState('');
-  const [groupMemberIndex, setGroupMemberIndex] = useState(0);
-  const [exitX,            setExitX]            = useState(0);
-  const [isFilterOpen,     setIsFilterOpen]     = useState(false);
-  const [activeFilters,    setActiveFilters]    = useState({
+  const [currentIndex,      setCurrentIndex]     = useState(0);
+  const [loading,           setLoading]          = useState(true);
+  const [loadingMore,       setLoadingMore]      = useState(false);
+  const [page,              setPage]             = useState(1);
+  const [hasMore,           setHasMore]          = useState(true);
+  const [loggedUser,        setLoggedUser]       = useState(null);
+  const [currentTime,       setCurrentTime]      = useState('');
+  const [groupMemberIndex,  setGroupMemberIndex] = useState(0);
+  const [exitX,             setExitX]            = useState(0);
+  const [isFilterOpen,      setIsFilterOpen]     = useState(false);
+  const [activeFilters,     setActiveFilters]    = useState({
     distance: 50, ageRange: [18, 40], relationshipStatus: [], interests: [],
   });
-  const [showMatch,         setShowMatch]         = useState(false);
-  const [notificationBadge, setNotificationBadge] = useState(0);
+  const [showMatch,          setShowMatch]        = useState(false);
+  const [notificationBadge,  setNotificationBadge] = useState(0);
+  const [isReportOpen,       setIsReportOpen]     = useState(false);
 
-  // Estados de controle para o Popup de denúncia dinâmico
-  const [isReportOpen,     setIsReportOpen]     = useState(false);
-
-  // Ref para evitar que o useEffect de pré-carga dispare infinitamente
   const fetchingMore = useRef(false);
 
-  // ── Relógio ──────────────────────────────────────────────────────────────
+  // ── Relógio ────────────────────────────────────────────────────────────────
   useEffect(() => {
     const tick = () => {
       const now = new Date();
       setCurrentTime(
-        `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`
+        `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
       );
     };
     tick();
@@ -98,7 +95,7 @@ const Discovery = () => {
     return () => clearInterval(id);
   }, []);
 
-  // ── Badge no título ───────────────────────────────────────────────────────
+  // ── Badge piscante no título ───────────────────────────────────────────────
   useEffect(() => {
     if (notificationBadge <= 0) return;
     const original = 'Openest';
@@ -109,14 +106,14 @@ const Discovery = () => {
     return () => { clearInterval(id); document.title = original; };
   }, [notificationBadge]);
 
-  // ── Usuário logado ────────────────────────────────────────────────────────
+  // ── Usuário logado (sidebar) ───────────────────────────────────────────────
   useEffect(() => {
     api.get('/users/perfil')
       .then(({ data }) => setLoggedUser(normalizeLoggedUser(data)))
       .catch(err => console.error('Perfil logado:', err?.response?.status, err?.response?.data));
   }, []);
 
-  // ── Busca perfis ──────────────────────────────────────────────────────────
+  // ── Busca de perfis (paginada) ─────────────────────────────────────────────
   const fetchProfiles = useCallback(async (pageNum, filters) => {
     if (pageNum === 1) setLoading(true); else setLoadingMore(true);
     fetchingMore.current = true;
@@ -157,12 +154,10 @@ const Discovery = () => {
   }, []);
 
   // Carga inicial
-  useEffect(() => {
-    fetchProfiles(1, activeFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { fetchProfiles(1, activeFilters); }, []);
 
-  // Pré-carga da próxima página
+  // Pré-carga quando restam ≤ 3 cards
   useEffect(() => {
     if (!hasMore || loadingMore || fetchingMore.current) return;
     if (profiles.length - currentIndex <= 3) {
@@ -170,7 +165,7 @@ const Discovery = () => {
     }
   }, [currentIndex, profiles.length, hasMore, loadingMore, page, fetchProfiles, activeFilters]);
 
-  // ── Notificações de matches salvos ───────────────────────────────────────
+  // ── Notificação de matches salvos ──────────────────────────────────────────
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('openest_matches') || '[]');
     if (!saved.length) return;
@@ -193,7 +188,7 @@ const Discovery = () => {
     return () => clearTimeout(timer);
   }, [navigate]);
 
-  // ── Navegação entre cards ─────────────────────────────────────────────────
+  // ── Helpers de navegação ───────────────────────────────────────────────────
   const next = useCallback(() => {
     setGroupMemberIndex(0);
     setExitX(0);
@@ -202,20 +197,14 @@ const Discovery = () => {
 
   const current = profiles[currentIndex];
 
-  // ── Envio da Denúncia ─────────────────────────────────────────────────────
-  const handleReportSubmit = async (userId, reason) => {
-    try {
-      await api.post(`/denunciar/${userId}`, { motivo: reason });
-      toast.success('Denúncia enviada com sucesso. Nossa equipe vai analisar o perfil.');
-    } catch (err) {
-      console.error('Erro ao enviar denúncia:', err?.response?.status, err?.response?.data);
-      toast.error('Não foi possível registrar a denúncia agora.');
-    } finally {
-      setIsReportOpen(false);
+  const toggleGroupMember = useCallback((e) => {
+    e.stopPropagation();
+    if (current?.type === 'Grupo' && current.img.length > 1) {
+      setGroupMemberIndex(prev => prev === 0 ? 1 : 0);
     }
-  };
+  }, [current]);
 
-  // ── Like ──────────────────────────────────────────────────────────────────
+  // ── Like ───────────────────────────────────────────────────────────────────
   const handleLike = useCallback(async () => {
     if (!current) return;
     setExitX(300);
@@ -239,7 +228,7 @@ const Discovery = () => {
     }
   }, [current, next]);
 
-  // ── Dislike ───────────────────────────────────────────────────────────────
+  // ── Dislike ────────────────────────────────────────────────────────────────
   const handleDislike = useCallback(async () => {
     if (!current) return;
     setExitX(-300);
@@ -255,13 +244,20 @@ const Discovery = () => {
     }
   }, [current, next]);
 
-  const toggleGroupMember = useCallback((e) => {
-    e.stopPropagation();
-    if (current?.type === 'Grupo' && current.img.length > 1) {
-      setGroupMemberIndex(prev => prev === 0 ? 1 : 0);
+  // ── Denúncia ───────────────────────────────────────────────────────────────
+  const handleReportSubmit = useCallback(async (userId, reason) => {
+    try {
+      await api.post(`/denunciar/${userId}`, { motivo: reason });
+      toast.success('Denúncia enviada com sucesso. Nossa equipe vai analisar o perfil.');
+    } catch (err) {
+      console.error('Denúncia:', err?.response?.status, err?.response?.data);
+      toast.error('Não foi possível registrar a denúncia agora.');
+    } finally {
+      setIsReportOpen(false);
     }
-  }, [current]);
+  }, []);
 
+  // ── Filtros ────────────────────────────────────────────────────────────────
   const handleApplyFilters = useCallback((newFilters) => {
     setActiveFilters(newFilters);
     setIsFilterOpen(false);
@@ -279,8 +275,10 @@ const Discovery = () => {
     >
       <Toaster position="top-right" />
 
- {/* ══ SIDEBAR ══ */}
+      {/* ══ SIDEBAR ══ */}
       <aside className="discovery-sidebar">
+
+        {/* Avatar do usuário logado */}
         <div
           className="avatar-wrapper"
           onClick={() => navigate('/edit-profile')}
@@ -294,13 +292,17 @@ const Discovery = () => {
           />
         </div>
 
+        {/* Menu de navegação */}
         <div className="nav-menu">
           <button className="nav-btn-box active" onClick={() => navigate('/chat/lista')}>
             <span className="mono-icon">✉</span>
             {notificationBadge > 0 && <span className="sidebar-badge">{notificationBadge}</span>}
           </button>
-          <button className="nav-btn-box active" onClick={() => navigate('/discovery')}><span className="mono-icon">♥</span></button>
-          
+
+          <button className="nav-btn-box active" onClick={() => navigate('/discovery')}>
+            <span className="mono-icon">♥</span>
+          </button>
+
           <button className="nav-btn-box active" onClick={() => navigate('/events')}>
             <span className="mono-icon">
               <svg className="sidebar-svg-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -309,42 +311,57 @@ const Discovery = () => {
             </span>
           </button>
         </div>
+
+        {/* Rodapé da sidebar: configurações + denúncia */}
         <div className="sidebar-footer">
-          {/* Botão de Configurações */}
           <button className="settings-btn-circle" onClick={() => navigate('/settings')}>
             <svg className="sidebar-svg-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
             </svg>
           </button>
 
-          {/* Botão de Denúncia - Agora abre o modal local em vez de navegar */}
           <button className="report-btn-circle" onClick={() => setIsReportOpen(true)}>
             <svg className="sidebar-svg-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
             </svg>
-          <button className="nav-btn-box active" onClick={() => navigate('/settings')}>
-            <span className="mono-icon">⚙</span>
           </button>
         </div>
-          </aside>
+
+      </aside>
+
       {/* ══ ÁREA PRINCIPAL ══ */}
       <main className="discovery-content-area">
         <div className="iphone-mockup-v2" style={{ position: 'relative' }}>
 
+          {/* Header mockup de celular */}
           <header className="iphone-header">
-            <div className="header-left"><span className="live-clock">{currentTime}</span></div>
+            <div className="header-left">
+              <span className="live-clock">{currentTime}</span>
+            </div>
             <div className="header-center">
               <div className="mini-logo-container">
                 <img src={logoOn} alt="Logo" className="phone-logo-img" />
               </div>
             </div>
             <div className="header-right">
-              <div className="signal-bars">{[1,2,3,4].map(b => <div key={b} className={`bar b${b}`}/>)}</div>
-              <div className="wifi-css"><div className="w-dot"/><div className="w-arc a1"/><div className="w-arc a2"/></div>
-              <div className="battery-container"><div className="battery-shell"><div className="battery-level"/></div><div className="battery-tip"/></div>
+              <div className="signal-bars">
+                {[1, 2, 3, 4].map(b => <div key={b} className={`bar b${b}`} />)}
+              </div>
+              <div className="wifi-css">
+                <div className="w-dot" />
+                <div className="w-arc a1" />
+                <div className="w-arc a2" />
+              </div>
+              <div className="battery-container">
+                <div className="battery-shell">
+                  <div className="battery-level" />
+                </div>
+                <div className="battery-tip" />
+              </div>
             </div>
           </header>
 
+          {/* Cards de perfil */}
           <div className="card-container">
             <AnimatePresence mode="wait">
               {current ? (
@@ -433,10 +450,31 @@ const Discovery = () => {
             )}
           </div>
 
+          {/* Botões de ação */}
           <div className="actions-footer">
-            <motion.button whileTap={{ scale: 0.8 }} className="circle-btn x-btn"     onClick={handleDislike} disabled={!current}>✕</motion.button>
-            <motion.button whileTap={{ scale: 0.8 }} className="circle-btn star-btn"  onClick={() => setIsFilterOpen(true)}>⭐</motion.button>
-            <motion.button whileTap={{ scale: 0.8 }} className="circle-btn heart-btn" onClick={handleLike}    disabled={!current}>♥</motion.button>
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              className="circle-btn x-btn"
+              onClick={handleDislike}
+              disabled={!current}
+            >
+              ✕
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              className="circle-btn star-btn"
+              onClick={() => setIsFilterOpen(true)}
+            >
+              ⭐
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              className="circle-btn heart-btn"
+              onClick={handleLike}
+              disabled={!current}
+            >
+              ♥
+            </motion.button>
           </div>
 
           <div className="home-indicator" />
@@ -457,21 +495,16 @@ const Discovery = () => {
             onChat={() => navigate(`/chat/${current?.id}`)}
           />
 
-          {/* Modal de Denúncia dinâmico injetado no final do contêiner */}
-          <ReportModal 
+          <ReportModal
             isOpen={isReportOpen}
             onClose={() => setIsReportOpen(false)}
-            targetUser={current ? {
-              id: current.id,
-              name: current.name,
-              img: current.img[groupMemberIndex]
-            } : {
-              id: 0,
-              name: "Ninguém selecionado",
-              img: "https://ui-avatars.com/api/?name=Openest"
-            }}
+            targetUser={current
+              ? { id: current.id, name: current.name, img: current.img[groupMemberIndex] }
+              : { id: 0, name: 'Ninguém selecionado', img: avatarFallback('Openest') }
+            }
             onSubmitReport={handleReportSubmit}
           />
+
         </div>
       </main>
     </motion.div>

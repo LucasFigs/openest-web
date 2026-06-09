@@ -507,3 +507,57 @@
   from { transform: translateY(30px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* ── Botão Google Agenda — card da lista ── */
+.gcal-btn-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #4285F4;
+  background: transparent;
+  color: #4285F4;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.gcal-btn-card:hover {
+  background: #4285F4;
+  color: #fff;
+}
+ 
+/* ── Botão Google Agenda — modal ── */
+.gcal-btn-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid #4285F4;
+  background: transparent;
+  color: #4285F4;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 10px;
+}
+.gcal-btn-modal:hover {
+  background: #4285F4;
+  color: #fff;
+}
+ 
+/* ── Container dos botões no modal ── */
+.event-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
