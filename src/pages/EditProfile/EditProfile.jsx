@@ -23,6 +23,9 @@ const idadeParaBirthDate = (idade) => {
   return `${anoNascimento}-01-01`;
 };
 
+// T021 — limite da galeria de fotos de perfil (mesmo N do mobile e da API).
+const MAX_PROFILE_PHOTOS = 6;
+
 const EditProfile = () => {
   const navigate = useNavigate();
 
@@ -55,7 +58,11 @@ const EditProfile = () => {
           discreteMode:       data.modo_discreto     || false,
         });
 
-        if (data.foto_url) setPhotos([data.foto_url]);
+        // T021: a galeria ordenada vem em `photos`; `foto_url` é o fallback
+        // dos perfis antigos (T020 — foto única).
+        const fotosApi = Array.isArray(data.photos) ? data.photos.filter(Boolean) : [];
+        if (fotosApi.length > 0) setPhotos(fotosApi);
+        else if (data.foto_url) setPhotos([data.foto_url]);
       } catch (err) {
         console.error('Erro ao carregar perfil:', err?.response?.status, err?.response?.data);
         alert('Erro ao carregar dados do perfil.');
@@ -79,23 +86,70 @@ const EditProfile = () => {
       alert('Selecione um arquivo de imagem válido.');
       return;
     }
+    if (photos.length >= MAX_PROFILE_PHOTOS) {
+      alert(`Seu perfil permite no máximo ${MAX_PROFILE_PHOTOS} fotos.`);
+      return;
+    }
 
     try {
       setIsSaving(true);
       const photoUrl = await userService.uploadPhoto(file);
-      setPhotos(prev => [...prev, photoUrl]);
-      setActivePhoto(photos.length);
+      // T021: entra no fim da galeria (sem virar a principal) e a ordem é
+      // salva imediatamente para valer no Card de Descoberta.
+      const updated = [...photos, photoUrl];
+      await userService.updateProfile({ photos: updated, foto_url: updated[0] });
+      setPhotos(updated);
+      setActivePhoto(updated.length - 1);
     } catch (err) {
       console.error('Erro no upload:', err?.response?.status, err?.response?.data);
-      alert('Erro ao realizar o upload da imagem. Verifique o console para detalhes.');
+      alert('Erro ao adicionar a foto. Verifique o console para detalhes.');
     } finally {
       setIsSaving(false);
       e.target.value = '';
     }
   };
 
+  // T021 — persiste a nova ordem da galeria (posição 0 = foto principal).
+  const savePhotoOrder = async (nextPhotos, nextActive = 0) => {
+    try {
+      setIsSaving(true);
+      await userService.updateProfile({
+        photos: nextPhotos,
+        foto_url: nextPhotos[0] || null,
+      });
+      setPhotos(nextPhotos);
+      setActivePhoto(Math.min(nextActive, Math.max(0, nextPhotos.length - 1)));
+    } catch (err) {
+      console.error('Erro ao salvar a ordem das fotos:', err?.response?.status, err?.response?.data);
+      alert('Não foi possível salvar a ordem das fotos.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleMovePhoto = (e, from, to) => {
+    e.stopPropagation();
+    if (to < 0 || to >= photos.length || from === to) return;
+    const updated = [...photos];
+    const [moved] = updated.splice(from, 1);
+    updated.splice(to, 0, moved);
+    savePhotoOrder(updated, to);
+  };
+
+  const handleSetMainPhoto = (e, index) => {
+    e.stopPropagation();
+    if (index === 0) return;
+    const updated = [photos[index], ...photos.filter((_, i) => i !== index)];
+    savePhotoOrder(updated, 0);
+  };
+
   const handleDeletePhoto = async (e, index) => {
     e.stopPropagation(); // Evita clicar na miniatura sem querer
+
+    if (photos.length <= 1) {
+      alert('Seu perfil precisa manter pelo menos uma foto.');
+      return;
+    }
 
     const confirmar = window.confirm("Tem a certeza que deseja apagar a sua foto de perfil?");
     if (!confirmar) return;
@@ -103,16 +157,20 @@ const EditProfile = () => {
     try {
       setIsSaving(true);
 
-      // 1. Envia a ordem para o Backend atualizar a foto para nulo
-      await userService.updateProfile({ foto_url: null });
-
-      // 2. Remove visualmente do React
+      // T021: remove da lista e salva a ordem restante no backend
+      // (em vez de zerar só o foto_url, como fazia a versão antiga).
       const updated = photos.filter((_, i) => i !== index);
+      await userService.updateProfile({
+        photos: updated,
+        foto_url: updated[0] || null,
+      });
       setPhotos(updated);
 
-      // 3. Ajusta o carrossel para não quebrar a tela
+      // Ajusta o carrossel para não quebrar a tela
       if (activePhoto >= updated.length) {
         setActivePhoto(Math.max(0, updated.length - 1));
+      } else if (index < activePhoto) {
+        setActivePhoto(activePhoto - 1);
       }
       
     } catch (err) {
@@ -142,6 +200,9 @@ const EditProfile = () => {
       bio:                   formData.bio,
       status_relacionamento: formData.relationshipStatus,
       modo_discreto:         formData.discreteMode,
+      // T021: a ordem da galeria é salva junto do perfil (posição 0 = principal)
+      photos,
+      foto_url:              photos[0] || null,
     };
 
     try {
@@ -196,18 +257,46 @@ const EditProfile = () => {
                   onClick={() => setActivePhoto(index)}
                 >
                   <img src={photo} alt="Thumb" className="img-render-3x4" />
-                  
+
+                  {index === 0 && (
+                    <span className="main-photo-badge" title="Foto principal">★</span>
+                  )}
+
                   <span className="remove-item-btn" onClick={(e) => handleDeletePhoto(e, index)}>×</span>
+
+                  {/* T021 — reordenar e definir a foto principal (posição 0) */}
+                  <span className="photo-controls">
+                    <button
+                      type="button"
+                      title="Mover para a esquerda"
+                      disabled={index === 0}
+                      onClick={(e) => handleMovePhoto(e, index, index - 1)}
+                    >←</button>
+                    <button
+                      type="button"
+                      title="Definir como foto principal"
+                      disabled={index === 0}
+                      onClick={(e) => handleSetMainPhoto(e, index)}
+                    >★</button>
+                    <button
+                      type="button"
+                      title="Mover para a direita"
+                      disabled={index === photos.length - 1}
+                      onClick={(e) => handleMovePhoto(e, index, index + 1)}
+                    >→</button>
+                  </span>
                 </div>
               ))}
               
-              <div
-                className="add-item-btn"
-                onClick={() => document.getElementById('fileIn').click()}
-                title="Adicionar foto"
-              >
-                {isSaving ? '...' : '+'}
-              </div>
+              {photos.length < MAX_PROFILE_PHOTOS && (
+                <div
+                  className="add-item-btn"
+                  onClick={() => document.getElementById('fileIn').click()}
+                  title="Adicionar foto"
+                >
+                  {isSaving ? '...' : '+'}
+                </div>
+              )}
             </div>
 
             <input
