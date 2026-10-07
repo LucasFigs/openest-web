@@ -101,11 +101,24 @@ export const useChat = (conversationId, loggedUserId) => {
       ));
     }
 
+    // Escuta quando um convite for aceite ou recusado
+    function onInviteUpdated(data) {
+      setMessages(prev => prev.map(m => {
+        if (m.content && m.content.includes(data.eventId)) {
+           // Troca o JSON do convite por uma mensagem de aviso normal
+           const statusText = data.status === 'aceite' ? '✅ Convite Aceite!' : '❌ Convite Recusado';
+           return { ...m, content: statusText };
+        }
+        return m;
+      }));
+    }
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('new_message', onNewMessage);
     socket.on('user_typing', onUserTyping); 
     socket.on('message_deleted', onMessageDeleted); 
+    socket.on('invite_updated', onInviteUpdated); 
 
     return () => {
       socket.off('connect', onConnect);
@@ -113,6 +126,7 @@ export const useChat = (conversationId, loggedUserId) => {
       socket.off('new_message', onNewMessage);
       socket.off('user_typing', onUserTyping); 
       socket.off('message_deleted', onMessageDeleted); 
+      socket.off('invite_updated', onInviteUpdated); 
       
       socket.emit('leave_conversation', conversationId);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -151,12 +165,21 @@ export const useChat = (conversationId, loggedUserId) => {
     }
   };
 
-  // 🔥 NOVA FUNÇÃO PARA ENVIAR IMAGEM
+  // 🔥 NOVA FUNÇÃO PARA ENVIAR CONVITE COMO JSON INVISÍVEL
+  const sendInvite = async (evento, senderId) => {
+    if (!conversationId || isNaN(conversationId)) return;
+    
+    // Cria a string com a TAG secreta
+    const invitePayload = `[CONVITE_EVENTO]${JSON.stringify(evento)}`;
+    
+    // Manda isso como se fosse uma mensagem de texto normal
+    await sendMessage(invitePayload, senderId);
+  };
+
   const sendImage = async (file, senderId) => {
     if (!conversationId) return;
 
     const fakeId = Date.now();
-    // Cria um link temporário direto do seu PC para mostrar na tela na hora
     const localUrlPreview = URL.createObjectURL(file); 
 
     const tempMessage = {
@@ -174,16 +197,13 @@ export const useChat = (conversationId, loggedUserId) => {
     formData.append('conversation_id', conversationId);
 
     try {
-      // Bate na rota nova enviando o FormData (Multipart)
       const response = await api.post('/mensagens/imagem', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // Quando o Cloudinary responder, trocamos o ID e a imagem temporária pela imagem real da nuvem
       setMessages((prev) => prev.map(m => m.id === fakeId ? { ...m, id: response.data.id, content: response.data.content } : m));
     } catch (error) {
       console.error("Erro ao fazer upload da imagem:", error);
-      // Se falhar, você pode remover a mensagem falsa aqui
       setMessages((prev) => prev.filter(m => m.id !== fakeId));
       alert("Erro ao enviar imagem. Tente novamente.");
     }
@@ -208,5 +228,5 @@ export const useChat = (conversationId, loggedUserId) => {
     setMessages((prev) => prev.filter(m => m.id !== msgId));
   };
 
-  return { messages, isConnected, sendMessage, sendImage, deleteMessage, hideMessageForMe, setMessages, loading, loadMore, hasNext, isOtherUserTyping, handleTyping };
+  return { messages, isConnected, sendMessage, sendInvite, sendImage, deleteMessage, hideMessageForMe, setMessages, loading, loadMore, hasNext, isOtherUserTyping, handleTyping };
 };

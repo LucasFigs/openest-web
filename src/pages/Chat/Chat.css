@@ -49,7 +49,7 @@
   width: 100%; color: #9C27B0; margin-left: 10px;
 }
 .search-box input::placeholder { color: #BA68C8; }
-
+.search-icon { color: #BA68C8; display: flex; align-items: center; }
 
 /* ==============================================================
    LISTA DE CONVERSAS (SIDEBAR)
@@ -109,13 +109,11 @@
   color: #4A148C; font-weight: 500; position: relative;
 }
 
-/* Logo transparente e sem cor original no fundo */
 .on-watermark-img {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 400px; height: auto; pointer-events: none; z-index: 0;
   filter: grayscale(100%) brightness(1.2); opacity: 0.08;
 }
-
 
 /* ==============================================================
    BALÕES DE MENSAGEM
@@ -136,18 +134,15 @@
 .me .msg-bubble { background: #6A1B9A; color: #fff; border-bottom-right-radius: 5px; }
 .other .msg-bubble { background: #fff; color: #333; border: 1px solid #eee; border-bottom-left-radius: 5px; }
 
-/* Estilo visual da mensagem deletada */
 .msg-bubble.deleted {
   background-color: transparent !important;
   border: 1px solid #ccc;
   color: #666;
 }
 
-
 /* ==============================================================
    CAIXA DE RESPOSTA (MENSAGEM CITADA DENTRO DO BALÃO)
 ============================================================== */
-/* 🟣 CAIXA DE RESPOSTA DENTRO DA SUA MENSAGEM (BALÃO ROXO ESCURO) */
 .msg-wrapper.me .quoted-msg {
   background-color: rgba(0, 0, 0, 0.25);
   border-left: 4px solid #d8b4fe;
@@ -162,7 +157,6 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;
 }
 
-/* ⚪ CAIXA DE RESPOSTA DENTRO DA MENSAGEM DO OUTRO (BALÃO CLARO) */
 .msg-wrapper.other .quoted-msg {
   background-color: rgba(107, 33, 168, 0.08);
   border-left: 4px solid #6b21a8;
@@ -177,40 +171,50 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;
 }
 
-
 /* ==============================================================
-   MENU DE OPÇÕES (3 PONTINHOS E DROPDOWN)
+   MENU DE OPÇÕES (3 PONTINHOS E DROPDOWN GLASSMORPHISM)
 ============================================================== */
 .btn-msg-options {
-  background: transparent; border: none; font-size: 20px; color: #888;
+  background: transparent; border: none; font-size: 20px; color: #888; display: flex; align-items: center;
   cursor: pointer; opacity: 0; transition: opacity 0.2s; padding: 0 5px;
 }
 .msg-wrapper:hover .btn-msg-options { opacity: 1; }
 
 .options-dropdown {
-  position: absolute; top: 15px; background: #ffffff; border-radius: 8px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15); display: flex;
-  flex-direction: column; z-index: 100; min-width: 120px; overflow: hidden;
+  position: absolute; top: 15px; 
+  background: rgba(255, 255, 255, 0.85); /* Fundo de Vidro */
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.15); display: flex;
+  flex-direction: column; z-index: 100; min-width: 170px; overflow: hidden;
+  animation: popIn 0.2s ease-out;
 }
 .options-dropdown.me { right: 35px; }
 .options-dropdown.other { left: 35px; }
 
 .options-dropdown button {
-  padding: 10px 15px; border: none; background: none; text-align: left;
-  cursor: pointer; font-size: 14px; color: #333; border-bottom: 1px solid #f0f0f0;
+  padding: 12px 15px; border: none; background: none; text-align: left;
+  cursor: pointer; font-size: 14px; color: #333; border-bottom: 1px solid rgba(0,0,0,0.05);
+  display: flex; align-items: center; transition: all 0.2s;
 }
-.options-dropdown button:hover { background: #f9f9f9; }
+.options-dropdown button:hover { 
+  background: rgba(106, 27, 154, 0.08); 
+  color: #6A1B9A; 
+}
 .options-dropdown button.delete-btn { color: #d32f2f; }
-
+.options-dropdown button.delete-btn:hover {
+  background: rgba(211, 47, 47, 0.08); 
+  color: #c62828; 
+}
 
 /* ==============================================================
    RODAPÉ (INPUT E FAIXA DE RESPONDER)
 ============================================================== */
 .chat-input-footer {
-  padding: 25px; z-index: 10; display: flex; flex-direction: column;
+  padding: 25px; z-index: 10; display: flex; flex-direction: column; position: relative;
 }
 
-/* FAIXA DO RESPONDER (ACIMA DO INPUT) */
 .reply-banner {
   background: #f0e6fa; border-left: 4px solid #6b21a8; padding: 10px 15px;
   display: flex; justify-content: space-between; align-items: center;
@@ -228,34 +232,52 @@
   flex: 1; background: none; border: none; outline: none;
   padding: 10px; font-size: 15px; color: #4A148C;
 }
-.btn-plus, .btn-send {
-  background: none; border: none; font-size: 26px; color: #6A1B9A; cursor: pointer;
-}
+
 /* ==============================================================
-   MENU DE ANEXOS (BOTÃO +)
+   BOTÕES DO INPUT (Corrigidos com a cor Roxa)
 ============================================================== */
-.chat-input-footer {
-  position: relative; /* Necessário para o menu flutuar a partir daqui */
+.btn-plus, .btn-send {
+  background: none; border: none; font-size: 26px; color: #6A1B9A; cursor: pointer; display: flex; align-items: center;
 }
 
+.btn-schedule {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #6A1B9A; /* 🎨 A COR QUE FALTAVA FOI ADICIONADA AQUI! */
+  cursor: pointer;
+  padding: 0 6px;
+  opacity: 0.85;
+  transition: opacity 0.2s, transform 0.15s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.btn-schedule:hover { opacity: 1; transform: scale(1.15); }
+
+/* ==============================================================
+   MENU DE ANEXOS GLASSMORPHISM (BOTÃO +)
+============================================================== */
 .attachment-menu {
   position: absolute;
-  bottom: 80px; /* Flutua acima do input */
+  bottom: 80px; 
   left: 25px;
-  background: white;
+  background: rgba(255, 255, 255, 0.85); /* Fundo de vidro */
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 12px;
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  padding: 8px;
   z-index: 200;
-  min-width: 200px;
-  animation: slideUp 0.2s ease-out;
+  min-width: 220px;
+  animation: popIn 0.2s ease-out;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .attachment-menu button {
@@ -266,7 +288,7 @@
   text-align: left;
   padding: 12px 15px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
   color: #4A148C;
   border-radius: 8px;
   font-weight: 500;
@@ -274,5 +296,118 @@
 }
 
 .attachment-menu button:hover {
-  background: #F3E5F5;
+  background: rgba(106, 27, 154, 0.08);
 }
+
+
+/* ==============================================================
+   MODAL DE AGENDAMENTO (PREMIUM DARK)
+============================================================== */
+.schedule-modal-overlay {
+  position: fixed; inset: 0; background: rgba(20, 10, 50, 0.7);
+  backdrop-filter: blur(6px); display: flex; align-items: center;
+  justify-content: center; z-index: 1000; padding: 16px;
+}
+
+.schedule-modal-card {
+  background: linear-gradient(160deg, #1e1040 0%, #2d1b6e 100%);
+  border: 1px solid rgba(150, 100, 255, 0.3); border-radius: 24px;
+  width: 100%; max-width: 440px; padding: 28px 26px 26px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5); animation: popIn 0.25s ease;
+}
+
+.schedule-modal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.schedule-modal-icon { display: flex; align-items: center; color: #c084fc; }
+.schedule-modal-header h3 { flex: 1; margin: 0; font-size: 20px; font-weight: 700; color: #fff; }
+.schedule-modal-close {
+  background: rgba(255,255,255,0.1); border: none; font-size: 15px; cursor: pointer; color: #ccc;
+  width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.schedule-modal-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+.schedule-modal-subtitle { font-size: 13px; color: rgba(255,255,255,0.5); margin: 2px 0 22px; }
+.schedule-modal-subtitle strong { color: #c084fc; }
+
+.schedule-form { display: flex; flex-direction: column; gap: 16px; }
+.schedule-field { display: flex; flex-direction: column; gap: 6px; }
+
+.schedule-field label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; color: rgba(255,255,255,0.55);
+}
+.required { color: #f472b6; margin-left: 2px; }
+
+.schedule-field input, .schedule-field textarea {
+  background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(150, 100, 255, 0.35);
+  border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #fff;
+  outline: none; transition: border-color 0.2s, background 0.2s; resize: none;
+  font-family: inherit; caret-color: #c084fc;
+}
+.schedule-field input::placeholder, .schedule-field textarea::placeholder { color: rgba(255, 255, 255, 0.3); }
+.schedule-field input[type="datetime-local"] { color-scheme: dark; }
+.schedule-field input:focus, .schedule-field textarea:focus {
+  border-color: #a855f7; background: rgba(255, 255, 255, 0.12);
+}
+
+.schedule-submit-btn {
+  background: linear-gradient(135deg, #7c3aed, #c026d3); color: #fff;
+  border: none; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  margin-top: 4px; box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4); letter-spacing: 0.3px;
+}
+.schedule-submit-btn:hover:not(:disabled) {
+  opacity: 0.92; transform: scale(1.01); box-shadow: 0 6px 28px rgba(168, 85, 247, 0.55);
+}
+.schedule-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.success-card { text-align: center; }
+.schedule-success-icon { display: flex; justify-content: center; margin-bottom: 14px; }
+.success-card h3 { font-size: 22px; color: #fff; margin: 0 0 8px; }
+.success-card p  { color: rgba(255,255,255,0.6); font-size: 14px; margin: 0 0 24px; }
+
+.gcal-btn-modal {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(255,255,255,0.08); border: 1.5px solid rgba(150,100,255,0.4);
+  color: #c084fc; border-radius: 12px; padding: 12px 18px; font-size: 14px;
+  font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s;
+  margin-bottom: 10px; width: 100%; box-sizing: border-box;
+}
+.gcal-btn-modal:hover { background: rgba(150,100,255,0.2); border-color: #a855f7; color: #fff; }
+
+.schedule-close-btn {
+  background: none; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 10px;
+  padding: 10px 20px; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 14px;
+  width: 100%; transition: all 0.2s; box-sizing: border-box;
+}
+.schedule-close-btn:hover { border-color: rgba(255,255,255,0.4); color: rgba(255,255,255,0.8); }
+
+.event-created-toast {
+  position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, #7c3aed, #c026d3); color: #fff;
+  border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 12px;
+  font-size: 14px; box-shadow: 0 6px 24px rgba(124,58,237,0.4);
+  animation: popIn 0.3s ease; white-space: nowrap; z-index: 50;
+}
+.event-created-toast button {
+  background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 20px;
+  padding: 4px 12px; font-size: 13px; cursor: pointer; transition: background 0.15s; font-weight: 600;
+}
+.event-created-toast button:hover { background: rgba(255,255,255,0.35); }
+
+/* ==============================================================
+   CARD DE CONVITE NO CHAT
+============================================================== */
+.invite-bubble { background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; }
+.invite-card-ui { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(161, 0, 255, 0.3); border-radius: 16px; width: 260px; overflow: hidden; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); color: #333; }
+.invite-header { background: linear-gradient(135deg, #7c3aed, #c026d3); color: white; padding: 10px 15px; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.invite-body { padding: 15px; display: flex; flex-direction: column; gap: 6px; }
+.invite-body strong { font-size: 15px; color: #4a148c; }
+.invite-body p { margin: 0; font-size: 13px; color: #666; font-weight: 500; }
+.invite-actions { display: flex; border-top: 1px solid #eee; }
+.invite-actions button { flex: 1; padding: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.btn-accept { background: #fff; color: #2e7d32; }
+.btn-accept:hover { background: #e8f5e9; }
+.btn-reject { background: #fff; color: #d32f2f; border-left: 1px solid #eee !important; }
+.btn-reject:hover { background: #ffebee; }
+.waiting-text { padding: 12px; font-size: 12px; color: #888; text-align: center; width: 100%; font-style: italic; }
