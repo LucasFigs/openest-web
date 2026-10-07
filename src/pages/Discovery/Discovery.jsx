@@ -26,8 +26,15 @@ const avatarFallback = (name = 'Usuário') =>
 
 const normalizeProfile = (user) => {
   let images = [];
-  if (Array.isArray(user.fotos) && user.fotos.length > 0) {
-    images = user.fotos
+  // T021: a API devolve a galeria ordenada em `photos` (posição 0 = foto
+  // principal). `fotos` continua como formato legado — a ordem é preservada,
+  // então o Card sempre começa pela foto principal escolhida no perfil.
+  const orderedPhotos = [
+    ...(Array.isArray(user.photos) ? user.photos : []),
+    ...(Array.isArray(user.fotos) ? user.fotos : []),
+  ];
+  if (orderedPhotos.length > 0) {
+    images = orderedPhotos
       .map(f => typeof f === 'string'
         ? (f.startsWith('http') ? f : cloudinaryUrl(f))
         : cloudinaryUrl(f.url || f.public_id))

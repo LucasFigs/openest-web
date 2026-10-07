@@ -80,7 +80,7 @@
 
 .carousel-mini-list { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 .mini-item { 
-  width: 55px; height: 55px; border-radius: 12px; overflow: hidden;
+  width: 80px; height: 80px; border-radius: 12px; overflow: hidden;
   position: relative; cursor: pointer; border: 2px solid transparent; 
 }
 .mini-item.active { border-color: #a100ff; box-shadow: 0 0 15px rgba(161, 0, 255, 0.4); }
@@ -91,8 +91,28 @@
   display: flex; justify-content: center; align-items: center; font-weight: bold;
 }
 
+/* T021 — badge da foto principal (posição 0 da galeria) */
+.main-photo-badge {
+  position: absolute; top: 2px; left: 2px; background: #a100ff; color: #fff;
+  width: 18px; height: 18px; border-radius: 50%; font-size: 10px;
+  display: flex; justify-content: center; align-items: center; font-weight: bold;
+}
+
+/* T021 — controles de reordenar / definir foto principal */
+.photo-controls {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(0, 0, 0, 0.6); padding: 2px 4px;
+}
+.photo-controls button {
+  background: none; border: none; color: #fff; font-size: 12px;
+  cursor: pointer; padding: 0 4px; line-height: 1.4;
+}
+.photo-controls button:disabled { opacity: 0.3; cursor: not-allowed; }
+.photo-controls button:not(:disabled):hover { color: #a100ff; }
+
 .add-item-btn {
-  width: 55px; height: 55px; background: rgba(161, 0, 255, 0.15); 
+  width: 80px; height: 80px; background: rgba(161, 0, 255, 0.15); 
   color: #a100ff; border: 1px dashed rgba(161, 0, 255, 0.5);
   border-radius: 12px; display: flex; justify-content: center; align-items: center; 
   font-size: 24px; cursor: pointer;
