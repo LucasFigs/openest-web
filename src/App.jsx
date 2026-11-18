@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 
 // Componentes Universais
 import Loading from './components/Loading/Loading';
+import NotificationListener from './components/NotificationListener/NotificationListener';
 
 // Páginas
 import Welcome from "./pages/welcome/Welcome";
@@ -45,6 +46,9 @@ function App() {
             }
           }}
         />
+
+        {/* Front-1 — toast de nova mensagem/match (só logado) */}
+        {authenticated && <NotificationListener />}
 
         <Routes>
           {/* TASK #43: ROTAS PÚBLICAS UNIVERSAIS */}
