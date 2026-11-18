@@ -9,6 +9,23 @@ import Loading from '../../components/Loading/Loading';
 const avatarFallback = (name = 'Usuário') =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=200`;
 
+// Deduplica por par de usuários: cada pessoa aparece UMA vez. Um encontro
+// AGENDADO substitui o card "A combinar" (match) do mesmo par. (A API já
+// deduplica; esta é uma trava extra no cliente contra cards duplicados.)
+const dedupeEventos = (lista = []) => {
+  const porPar = new Map();
+  for (const ev of lista) {
+    const chave = ev.otherUserId
+      ? String(ev.otherUserId)
+      : ev.matchId != null ? `conv-${ev.matchId}` : ev.id;
+    const atual = porPar.get(chave);
+    if (!atual || (atual.tipo !== 'agendado' && ev.tipo === 'agendado')) {
+      porPar.set(chave, ev);
+    }
+  }
+  return Array.from(porPar.values());
+};
+
 const gerarLinkGoogleCalendar = (evento) => {
   if (!evento || !evento.data_encontro) return '#';
   const inicio = new Date(evento.data_encontro);
@@ -62,7 +79,7 @@ const Events = () => {
         const { data } = await api.get('/events/meus-encontros', {
           params: { mes: currentDate.getMonth() + 1, ano: currentDate.getFullYear() },
         });
-        setEvents(data || []);
+        setEvents(dedupeEventos(data || []));
       } catch (err) {
         console.error(err);
         setEvents([]);
