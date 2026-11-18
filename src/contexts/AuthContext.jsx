@@ -1,5 +1,9 @@
 import React, { createContext, useState, useEffect } from 'react';
 import api from '../services/api'; 
+import { connectSocket, disconnectSocket } from '../services/socket';
+
+// Token do admin offline (não existe no backend): não abre socket com ele.
+const OFFLINE_ADMIN_TOKEN = 'fake-jwt-token-admin';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null); 
@@ -25,6 +29,18 @@ export const AuthProvider = ({ children }) => {
     };
     initializeAuth();
   }, []);
+
+  // Chat em tempo real: conecta o Socket.IO com o JWT sempre que há sessão
+  // (o servidor valida o token no handshake) e desconecta no logout.
+  // Sem isso, mensagens enviadas pelo app mobile só apareciam após recarregar.
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (user && token && token !== OFFLINE_ADMIN_TOKEN) {
+      connectSocket(token);
+    } else {
+      disconnectSocket();
+    }
+  }, [user]);
 
   const login = async (email, password) => {
     // REGRA ADMIN OFFLINE

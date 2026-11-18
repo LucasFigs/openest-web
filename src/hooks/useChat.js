@@ -79,7 +79,11 @@ export const useChat = (conversationId, loggedUserId) => {
     fetchMessages(1);
     socket.emit('join_conversation', conversationId);
 
-    function onConnect() { setIsConnected(true); }
+    // Ao (re)conectar, o servidor esquece as salas: entra de novo na conversa.
+    function onConnect() {
+      setIsConnected(true);
+      socket.emit('join_conversation', conversationId);
+    }
     function onDisconnect() { setIsConnected(false); }
     function onNewMessage(message) { 
       const hiddenIds = getHiddenMessages();

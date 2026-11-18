@@ -10,7 +10,8 @@ export const connectSocket = (token) => {
 };
 
 export const disconnectSocket = () => {
-  if (socket.connected) socket.disconnect();
+  // Também cancela tentativas de reconexão em andamento (não só a conexão ativa).
+  socket.disconnect();
 };
 
 export default socket;
