@@ -77,9 +77,18 @@
   border: none;
   width: 52px; height: 52px;
   cursor: pointer; 
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex; justify-content: center; align-items: center;
   opacity: 0.5;
+}
+
+.nav-btn-box:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+.nav-btn-box:active {
+  transform: scale(0.93);
 }
 
 .nav-btn-box.active { 
@@ -90,28 +99,77 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
 
-.mono-icon { color: #4a148c; font-size: 26px; }
-
-.calendar-active-icon {
-  filter: invert(13%) sepia(94%) saturate(7451%) hue-rotate(277deg) brightness(94%) contrast(116%);
-  width: 24px; height: 24px;
+.nav-btn-box.active:hover {
+  transform: scale(1.15);
 }
 
-.shield-btn-circle {
+.nav-btn-box.active:active {
+  transform: scale(0.93);
+}
+
+.mono-icon { color: #4a148c; font-size: 26px; }
+
+/* ==========================================================================
+   RODAPÉ DA SIDEBAR E BOTÕES GÊMEOS EM VETOR
+   ========================================================================== */
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+}
+
+.sidebar-svg-icon {
+  width: 24px;
+  height: 24px;
+  color: #4a148c;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+/* BOTÃO DE CONFIGURAÇÕES (ENGRENAGEM) */
+.settings-btn-circle {
   border: 1px solid rgba(255, 255, 255, 0.8);
   width: 50px; height: 50px;
-  cursor: pointer; display: flex; justify-content: center; align-items: center;
-  transition: 0.3s;
-  color: #7b1fa2;
+  cursor: pointer; 
+  display: flex; justify-content: center; align-items: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(1.1);
   background: rgba(255, 255, 255, 0.8);
   border-radius: 18px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
 
-.mono-icon-shield {
-  color: #4a148c;
-  font-size: 24px;
+.settings-btn-circle:hover {
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.settings-btn-circle:active {
+  transform: scale(0.93);
+}
+
+/* BOTÃO DE DENÚNCIA (ESCUDO) */
+.report-btn-circle {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  width: 50px; height: 50px;
+  cursor: pointer; 
+  display: flex; justify-content: center; align-items: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.report-btn-circle:hover {
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.report-btn-circle:active {
+  transform: scale(0.93);
 }
 
 /* ==========================================================================
@@ -311,7 +369,7 @@
   color: rgba(255, 255, 255, 0.2);
 }
 
-/* DESTAQUES DE EVENTOS (STYLING FIEL AO FIGMA) */
+/* DESTAQUES DE EVENTOS */
 .calendar-day-cell.status-purple-dark {
   background: #2D0C57;
   color: #ffffff;
@@ -327,7 +385,7 @@
 }
 
 /* ==========================================================================
-   NÚCLEO DO POPUP MODAL (FIX DE EMPILHAMENTO DE MÚLTIPLOS USUÁRIOS)
+   NÚCLEO DO POPUP MODAL 
    ========================================================================== */
 .clickable-card, .has-event-day {
   cursor: pointer;
@@ -508,28 +566,72 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* ==========================================================================
+   BOTÕES DE AÇÃO DOS EVENTOS (GOOGLE AGENDA & CANCELAR)
+   ========================================================================== */
+
+/* Container para alinhar os botões lado a lado no Card */
+.event-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap; /* Se a tela for muito pequena, o botão vermelho desce com elegância */
+  align-items: center; /* Impede que os botões estiquem na vertical */
+}
+
 /* ── Botão Google Agenda — card da lista ── */
 .gcal-btn-card {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
   padding: 6px 12px;
   border-radius: 20px;
   border: 1.5px solid #4285F4;
   background: transparent;
   color: #4285F4;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
   transition: background 0.15s, color 0.15s;
+  white-space: nowrap; /* Proíbe o texto de quebrar em duas linhas */
 }
+
 .gcal-btn-card:hover {
   background: #4285F4;
   color: #fff;
 }
- 
+
+/* ── Botão Desistir — card da lista ── */
+.btn-cancel-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #ff5252;
+  background: transparent;
+  color: #ff5252;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap; /* Proíbe o texto de quebrar */
+}
+
+.btn-cancel-event:hover {
+  background: #ff5252;
+  color: #fff;
+}
+
+/* ── Container dos botões no Modal Gigante ── */
+.event-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
 /* ── Botão Google Agenda — modal ── */
 .gcal-btn-modal {
   display: flex;
@@ -537,27 +639,68 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   border-radius: 12px;
   border: 1.5px solid #4285F4;
   background: transparent;
   color: #4285F4;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
   transition: background 0.15s, color 0.15s;
-  margin-bottom: 10px;
 }
 .gcal-btn-modal:hover {
   background: #4285F4;
   color: #fff;
 }
- 
-/* ── Container dos botões no modal ── */
-.event-modal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
+
+/* ── Botão Desistir — modal ── */
+.event-modal-cancel-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1.5px solid #ff5252;
+  background: transparent;
+  color: #ff5252;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.event-modal-cancel-btn:hover {
+  background: #ff5252;
+  color: #fff;
+}
+
+/* ==========================================================================
+   INTERAÇÃO DE CLIQUE E FILTRO DO CALENDÁRIO
+   ========================================================================== */
+
+/* Efeito luminoso e destaque para o dia clicado na agenda */
+.calendar-day-cell.selected-day {
+  border: 2px solid #fff;
+  transform: scale(1.15) !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15) !important;
+  z-index: 10;
+}
+
+/* Botão pequeno para remover o filtro e ver todos os dias */
+.clear-filter-btn {
+  background: rgba(123, 31, 162, 0.1);
+  border: 1px solid rgba(123, 31, 162, 0.3);
+  color: #7b1fa2;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.2s ease;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(123, 31, 162, 0.2);
+  color: #4a148c;
 }
