@@ -229,7 +229,7 @@ const Chat = () => {
                 const foiApagada = msg.is_deleted || msg.content === "🚫 Mensagem apagada";
                 
                 // 🔥 DETECTA SE O TEXTO É UMA URL DE IMAGEM
-                const isImage = !foiApagada && (msg.content.includes('res.cloudinary.com') || msg.content.startsWith('blob:'));
+                const isImage = !foiApagada && (msg.content.includes('res.cloudinary.com') || msg.content.startsWith('blob:') || /(giphy|tenor)\.com/i.test(msg.content) || /^https?:\/\/\S+\.(png|jpe?g|gif|webp)(\?\S*)?$/i.test(msg.content));
 
                 return (
                   <div 
