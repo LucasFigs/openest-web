@@ -16,6 +16,44 @@ const IconLocation = () => <svg width="18" height="18" viewBox="0 0 24 24" fill=
 const IconGif = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'10px'}}><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>;
 const IconDots = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>;
 
+// --- Confirmação de envio/entrega/leitura (estilo WhatsApp) ---------------
+// 1 check cinza = enviada · 2 checks cinzas = entregue · 2 checks AZUIS = lida.
+// O azul só chega aqui quando NENHUM dos dois participantes está em Modo
+// Discreto — essa trava é aplicada no servidor, que nunca emite `read` nesse
+// caso (o status para em `delivered`).
+const READ_TICK_COLOR = "#38BDF8";
+
+const MessageTicks = ({ status }) => {
+  const lido = status === "read";
+  const duplo = lido || status === "delivered";
+  const cor = lido ? READ_TICK_COLOR : "rgba(255,255,255,0.6)";
+  const label = lido ? "Visualizada" : duplo ? "Entregue" : "Enviada";
+  return (
+    <span className={`msg-ticks ${lido ? "read" : ""}`} title={label} aria-label={label} data-status={status || "sent"}>
+      <svg width="16" height="11" viewBox="0 0 18 12" fill="none" stroke={cor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="1,6.5 4.5,10 11,2" />
+        {duplo && <polyline points="7,10 13.5,2" />}
+      </svg>
+    </span>
+  );
+};
+
+// Status da mensagem tolerando payloads antigos (só com read_at).
+const statusDaMensagem = (msg) => {
+  if (!msg) return "sent";
+  if (msg.status === "read" || msg.status === "delivered" || msg.status === "sent") return msg.status;
+  if (msg.read_at) return "read";
+  if (msg.delivered_at) return "delivered";
+  return "sent";
+};
+
+const formatHoraMsg = (valor) => {
+  if (!valor) return "";
+  const d = new Date(valor);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+};
+
 const ScheduleModal = ({ activeChat, conversationId, onClose, onSuccess }) => {
   const today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
   const minDate = today.toISOString().slice(0, 16);
@@ -65,7 +103,9 @@ const Chat = () => {
   const [lastCreatedEvent, setLastCreatedEvent] = useState(null);
 
   const usuarioLogadoId = loggedUser?.id || "";
-  const modoDiscreto = true;
+  // Modo Discreto REAL do usuário (coluna modo_discreto no banco).
+  // Antes estava fixo em `true`, o que escondia o nome do contato no header.
+  const modoDiscreto = loggedUser?.modo_discreto === true;
 
   const { messages, sendMessage, sendInvite, sendImage, deleteMessage, hideMessageForMe, isOtherUserTyping, handleTyping, loading: chatLoading, loadMore, hasNext, setMessages } = useChat(conversationId, usuarioLogadoId);
 
@@ -139,7 +179,7 @@ const Chat = () => {
       <main className="figma-chat-main">
         {activeChat ? (
           <>
-            <header className="chat-area-header"><img src={activeChat.img} alt={activeChat.name} className="header-avatar" /><div className="header-info"><h4>{modoDiscreto ? "Usuário" : activeChat.name}</h4>{isOtherUserTyping && <span className="typing-header">digitando...</span>}</div></header>
+            <header className="chat-area-header"><img src={activeChat.img} alt={activeChat.name} className="header-avatar" /><div className="header-info"><h4>{activeChat.name}</h4>{isOtherUserTyping && <span className="typing-header">digitando...</span>}</div></header>
             <div className="chat-scroll-area" onScroll={handleScroll} ref={chatContainerRef}>
               {chatLoading && <div style={{ textAlign: "center", padding: "10px" }}><Loading /></div>}
               <img src={logoOn} alt="Watermark" className="on-watermark-img" />
@@ -171,6 +211,12 @@ const Chat = () => {
                             ) : <div className="invite-actions"><span className="waiting-text">Aguardando resposta...</span></div>}
                           </div>
                         ) : msg.content}
+                        <span className="msg-footer">
+                          <span className="msg-time">{formatHoraMsg(msg.created_at || msg.createdAt)}</span>
+                          {msg.sender_id === usuarioLogadoId && !foiApagada && (
+                            <MessageTicks status={statusDaMensagem(msg)} />
+                          )}
+                        </span>
                       </div>
                       <button className="btn-msg-options" onClick={() => setMenuAberto(menuAberto === msg.id ? null : msg.id)}><IconDots /></button>
                     </div>

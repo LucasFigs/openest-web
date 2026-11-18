@@ -20,6 +20,14 @@ const userService = {
     return response.data.url;
   },
 
+  // Modo Discreto (T022): PATCH altera só a flag modo_discreto no banco.
+  // Com ele ligado, nem você nem o outro participante veem os checks azuis
+  // de "visualizada" nas conversas.
+  setDiscreteMode: async (value) => {
+    const response = await api.patch('/users/perfil', { modo_discreto: !!value });
+    return response.data;
+  },
+
   // Nova função adicionada
   deleteAccount: async () => {
     return await api.delete('/users/conta');

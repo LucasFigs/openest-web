@@ -14,18 +14,36 @@ const Settings = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [settings, setSettings] = useState({
-    discreteMode: true,
+    discreteMode: false,
     matchNotifications: true,
     messageNotifications: true
   });
 
   useEffect(() => {
+    // Preferências de notificação continuam locais…
     const saved = localStorage.getItem('userSettings');
-    if (saved) setSettings(JSON.parse(saved));
+    if (saved) setSettings(prev => ({ ...prev, ...JSON.parse(saved) }));
+    // …mas o Modo Discreto é a flag REAL do banco (modo_discreto).
+    userService.getProfile()
+      .then(data => setSettings(prev => ({ ...prev, discreteMode: data?.modo_discreto === true })))
+      .catch(err => console.error('Erro ao carregar o Modo Discreto:', err));
   }, []);
 
   const handleToggle = (key) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Modo Discreto grava direto no PostgreSQL (otimista, com rollback no erro).
+  const handleToggleDiscreteMode = async () => {
+    const novo = !settings.discreteMode;
+    setSettings(prev => ({ ...prev, discreteMode: novo }));
+    try {
+      await userService.setDiscreteMode(novo);
+    } catch (err) {
+      console.error('Erro ao salvar o Modo Discreto:', err);
+      setSettings(prev => ({ ...prev, discreteMode: !novo })); // volta ao estado real
+      alert('Não foi possível alterar o Modo Discreto.');
+    }
   };
 
   const handleSave = () => {
@@ -79,13 +97,17 @@ const Settings = () => {
             <div className="setting-row">
               <div className="setting-text">
                 <span className="label-dark">Modo Discreto</span>
-                <p className="desc-text">Oculta seu perfil para quem não tem match com você.</p>
+                <p className="desc-text">
+                  Oculta seu perfil para quem não tem match com você e desliga a
+                  confirmação de leitura: nem você nem a outra pessoa verão os
+                  checks azuis de "visualizada" — as mensagens param em entregue.
+                </p>
               </div>
               <label className="ui-switch">
                 <input 
                   type="checkbox" 
                   checked={settings.discreteMode} 
-                  onChange={() => handleToggle('discreteMode')} 
+                  onChange={handleToggleDiscreteMode} 
                 />
                 <span className="ui-slider"></span>
               </label>
