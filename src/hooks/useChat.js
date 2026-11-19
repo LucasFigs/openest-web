@@ -78,8 +78,16 @@ export const useChat = (conversationId, loggedUserId) => {
     hasNextRef.current = true; 
     fetchMessages(1);
     socket.emit('join_conversation', conversationId);
+    // Abriu a conversa ⇒ o que recebeu vira lido. O servidor aplica a trava
+    // do Modo Discreto: se algum dos dois estiver discreto, para em entregue.
+    socket.emit('mark_read', { conversation_id: conversationId });
 
-    function onConnect() { setIsConnected(true); }
+    // Ao (re)conectar, o servidor esquece as salas: entra de novo na conversa.
+    function onConnect() {
+      setIsConnected(true);
+      socket.emit('join_conversation', conversationId);
+      socket.emit('mark_read', { conversation_id: conversationId });
+    }
     function onDisconnect() { setIsConnected(false); }
     function onNewMessage(message) { 
       const hiddenIds = getHiddenMessages();
@@ -89,7 +97,26 @@ export const useChat = (conversationId, loggedUserId) => {
         const jaExiste = prev.some(m => m.id === message.id || (m.content === message.content && m.sender_id === message.sender_id && m.id > Date.now() - 10000));
         if (jaExiste) return prev;
         return [...prev, message];
-      }); 
+      });
+      // Chegou mensagem do contato com a conversa aberta ⇒ já foi lida.
+      if (String(message.sender_id) !== String(loggedUserId)) {
+        socket.emit('mark_read', { conversation_id: conversationId });
+      }
+    }
+
+    // Checks de entrega/leitura das MINHAS mensagens, em tempo real.
+    function onStatusUpdated(payload) {
+      if (String(payload?.conversation_id) !== String(conversationId)) return;
+      const ids = payload.message_ids ? payload.message_ids.map(String) : null;
+      setMessages((prev) => prev.map((m) => {
+        if (String(m.sender_id) !== String(loggedUserId)) return m;
+        if (ids && !ids.includes(String(m.id))) return m;
+        const rank = { sent: 0, delivered: 1, read: 2 };
+        const atual = rank[m.status] != null ? rank[m.status] : 0;
+        const novo = rank[payload.status] != null ? rank[payload.status] : 0;
+        if (novo <= atual) return m; // nunca regride
+        return { ...m, status: payload.status };
+      }));
     }
     function onUserTyping({ is_typing }) { setIsOtherUserTyping(is_typing); }
     
@@ -118,7 +145,8 @@ export const useChat = (conversationId, loggedUserId) => {
     socket.on('new_message', onNewMessage);
     socket.on('user_typing', onUserTyping); 
     socket.on('message_deleted', onMessageDeleted); 
-    socket.on('invite_updated', onInviteUpdated); 
+    socket.on('invite_updated', onInviteUpdated);
+    socket.on('message_status_updated', onStatusUpdated); 
 
     return () => {
       socket.off('connect', onConnect);
@@ -126,7 +154,8 @@ export const useChat = (conversationId, loggedUserId) => {
       socket.off('new_message', onNewMessage);
       socket.off('user_typing', onUserTyping); 
       socket.off('message_deleted', onMessageDeleted); 
-      socket.off('invite_updated', onInviteUpdated); 
+      socket.off('invite_updated', onInviteUpdated);
+      socket.off('message_status_updated', onStatusUpdated); 
       
       socket.emit('leave_conversation', conversationId);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);

@@ -9,6 +9,23 @@ import Loading from '../../components/Loading/Loading';
 const avatarFallback = (name = 'Usuário') =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=200`;
 
+// Deduplica por par de usuários: cada pessoa aparece UMA vez. Um encontro
+// AGENDADO substitui o card "A combinar" (match) do mesmo par. (A API já
+// deduplica; esta é uma trava extra no cliente contra cards duplicados.)
+const dedupeEventos = (lista = []) => {
+  const porPar = new Map();
+  for (const ev of lista) {
+    const chave = ev.otherUserId
+      ? String(ev.otherUserId)
+      : ev.matchId != null ? `conv-${ev.matchId}` : ev.id;
+    const atual = porPar.get(chave);
+    if (!atual || (atual.tipo !== 'agendado' && ev.tipo === 'agendado')) {
+      porPar.set(chave, ev);
+    }
+  }
+  return Array.from(porPar.values());
+};
+
 const gerarLinkGoogleCalendar = (evento) => {
   if (!evento || !evento.data_encontro) return '#';
   const inicio = new Date(evento.data_encontro);
@@ -62,7 +79,7 @@ const Events = () => {
         const { data } = await api.get('/events/meus-encontros', {
           params: { mes: currentDate.getMonth() + 1, ano: currentDate.getFullYear() },
         });
-        setEvents(data || []);
+        setEvents(dedupeEventos(data || []));
       } catch (err) {
         console.error(err);
         setEvents([]);
@@ -73,15 +90,25 @@ const Events = () => {
     fetchEvents();
   }, [currentDate]);
 
-  const handleCancelEvent = async (e, eventId) => {
+  // "Desistir" encerra o vínculo inteiro (evento agendado + match) no banco.
+  // Só tira o card da tela DEPOIS que a API confirma — se falhar, o card
+  // continua lá e o erro aparece, em vez de sumir e voltar no refresh.
+  const handleCancelEvent = async (e, evento) => {
     e.stopPropagation();
     if (!window.confirm('Tem a certeza que deseja cancelar este encontro?')) return;
+    const eventId = typeof evento === 'object' ? evento.id : evento;
     try {
-      await api.delete(`/events/cancelar/${eventId}`);
+      await api.delete(`/events/cancelar/${encodeURIComponent(eventId)}`, {
+        // Rede de segurança: se o evento já tiver sumido, a API ainda resolve
+        // o vínculo pelo outro participante.
+        data: { other_user_id: (typeof evento === 'object' ? evento.otherUserId : null) ?? null },
+      });
       setEvents(prev => prev.filter(ev => ev.id !== eventId));
       if (selectedEvent && selectedEvent.id === eventId) setIsModalOpen(false);
     } catch (error) {
-      alert('Erro ao cancelar o encontro.');
+      console.error('Erro ao cancelar o encontro:', error);
+      const detalhe = error?.response?.data?.error;
+      alert(detalhe ? `Erro ao cancelar o encontro: ${detalhe}` : 'Erro ao cancelar o encontro. Tente novamente.');
     }
   };
 
@@ -199,7 +226,7 @@ const Events = () => {
                     </a>
                     
                     {/* 🔥 O BOTÃO FOI LIBERTADO! APARECE EM TODOS OS EVENTOS! */}
-                    <button className="btn-cancel-event" onClick={(e) => handleCancelEvent(e, event.id)}>
+                    <button className="btn-cancel-event" onClick={(e) => handleCancelEvent(e, event)}>
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                       Desistir
                     </button>
@@ -273,7 +300,7 @@ const Events = () => {
                 )}
 
                 {/* 🔥 O BOTÃO DO MODAL TAMBÉM FOI LIBERTADO! */}
-                <button className="event-modal-cancel-btn" onClick={(e) => handleCancelEvent(e, selectedEvent.id)}>
+                <button className="event-modal-cancel-btn" onClick={(e) => handleCancelEvent(e, selectedEvent)}>
                   Desistir do Encontro
                 </button>
 
