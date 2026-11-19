@@ -24,6 +24,28 @@ const IconDots = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="non
 const READ_TICK_COLOR = "#38BDF8";
 
 const MessageTicks = ({ status }) => {
+  // (1) pending — relógio discreto, antes da API confirmar.
+  if (status === 'pending') {
+    return (
+      <span className="msg-ticks pending" title="Enviando" aria-label="Enviando" data-status="pending">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="rgba(255,255,255,0.75)"
+             strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="6" cy="6" r="4.6" />
+          <polyline points="6,3.4 6,6 7.9,7.1" />
+        </svg>
+      </span>
+    );
+  }
+  if (status === 'failed') {
+    return (
+      <span className="msg-ticks failed" title="Não enviada" aria-label="Não enviada" data-status="failed">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#FCA5A5"
+             strokeWidth="1.6" strokeLinecap="round">
+          <circle cx="6" cy="6" r="4.6" /><line x1="6" y1="3.4" x2="6" y2="6.6" /><line x1="6" y1="8.4" x2="6" y2="8.5" />
+        </svg>
+      </span>
+    );
+  }
   const lido = status === "read";
   const duplo = lido || status === "delivered"; // 'delivered' e 'read' = SEMPRE 2 checks
   const cor = lido ? READ_TICK_COLOR : "rgba(255,255,255,0.75)";
@@ -55,6 +77,7 @@ const MessageTicks = ({ status }) => {
 // Status da mensagem tolerando payloads antigos (só com read_at).
 const statusDaMensagem = (msg) => {
   if (!msg) return "sent";
+  if (msg.status === "pending" || msg.status === "failed") return msg.status;
   if (msg.status === "read" || msg.status === "delivered" || msg.status === "sent") return msg.status;
   if (msg.read_at) return "read";
   if (msg.delivered_at) return "delivered";

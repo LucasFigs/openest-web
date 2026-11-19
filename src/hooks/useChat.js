@@ -78,15 +78,27 @@ export const useChat = (conversationId, loggedUserId) => {
     hasNextRef.current = true; 
     fetchMessages(1);
     socket.emit('join_conversation', conversationId);
-    // Abriu a conversa ⇒ o que recebeu vira lido. O servidor aplica a trava
-    // do Modo Discreto: se algum dos dois estiver discreto, para em entregue.
-    socket.emit('mark_read', { conversation_id: conversationId });
+
+    // Marca como lido só quando a aba está de fato visível — ter a conversa
+    // aberta numa aba em segundo plano não é "ler". O servidor ainda aplica a
+    // trava do Modo Discreto e pode parar em entregue.
+    const abaAtiva = () =>
+      typeof document === 'undefined' || document.visibilityState !== 'hidden';
+    const marcarLido = () => {
+      if (!abaAtiva()) return;
+      socket.emit('mark_messages_read', { conversation_id: conversationId });
+    };
+
+    marcarLido();
 
     // Ao (re)conectar, o servidor esquece as salas: entra de novo na conversa.
     function onConnect() {
       setIsConnected(true);
+      // Reconectou: entra de novo na sala e ressincroniza o histórico, porque
+      // o status pode ter mudado enquanto a conexão esteve caída.
       socket.emit('join_conversation', conversationId);
-      socket.emit('mark_read', { conversation_id: conversationId });
+      fetchMessages(1);
+      marcarLido();
     }
     function onDisconnect() { setIsConnected(false); }
     function onNewMessage(message) { 
@@ -99,8 +111,9 @@ export const useChat = (conversationId, loggedUserId) => {
         return [...prev, message];
       });
       // Chegou mensagem do contato com a conversa aberta ⇒ já foi lida.
+      // (O ACK de entrega é global e vive no NotificationListener.)
       if (String(message.sender_id) !== String(loggedUserId)) {
-        socket.emit('mark_read', { conversation_id: conversationId });
+        marcarLido();
       }
     }
 
@@ -140,6 +153,12 @@ export const useChat = (conversationId, loggedUserId) => {
       }));
     }
 
+    // Voltou para a aba com a conversa aberta ⇒ leu.
+    const onVisibility = () => marcarLido();
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility);
+    }
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('new_message', onNewMessage);
@@ -157,6 +176,9 @@ export const useChat = (conversationId, loggedUserId) => {
       socket.off('invite_updated', onInviteUpdated);
       socket.off('message_status_updated', onStatusUpdated); 
       
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility);
+      }
       socket.emit('leave_conversation', conversationId);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
@@ -176,7 +198,8 @@ export const useChat = (conversationId, loggedUserId) => {
       content,
       reply_to_content: replyToMsg ? replyToMsg.content : null,
       reply_to_sender: replyToMsg ? (replyToMsg.sender_id === senderId ? "Você" : "Outro") : null,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      status: 'pending', // relógio, até a API confirmar
     };
     
     setMessages((prev) => [...prev, tempMessage]);
@@ -188,9 +211,15 @@ export const useChat = (conversationId, loggedUserId) => {
         reply_to_id: replyToMsg ? replyToMsg.id : null 
       });
 
-      setMessages((prev) => prev.map(m => m.id === fakeId ? { ...m, id: response.data.id } : m));
+      // Confirmou no banco: vira `sent` (1 check) com o id definitivo.
+      setMessages((prev) => prev.map(m => (
+        m.id === fakeId
+          ? { ...m, id: response.data.id, status: response.data.status || 'sent' }
+          : m
+      )));
     } catch (error) {
       console.error("Erro ao salvar a mensagem no banco:", error);
+      setMessages((prev) => prev.map(m => (m.id === fakeId ? { ...m, status: 'failed' } : m)));
     }
   };
 

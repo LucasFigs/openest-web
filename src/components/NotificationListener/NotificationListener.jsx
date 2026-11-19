@@ -96,11 +96,22 @@ export default function NotificationListener() {
       });
     }
 
+    // ACK GLOBAL DE ENTREGA: vale em qualquer rota do sistema, mesmo que o
+    // usuário não esteja no chat. Assim que o socket recebe a mensagem, ele
+    // confirma ao servidor — é o que faz o 2º check cinza aparecer na hora
+    // do outro lado, sem refresh.
+    function onNewMessage(message = {}) {
+      if (!message.conversation_id) return;
+      socket.emit('message_delivered_ack', { conversation_id: message.conversation_id });
+    }
+
     socket.on('notification', onNotification);
     socket.on('new_match', onNewMatch);
+    socket.on('new_message', onNewMessage);
     return () => {
       socket.off('notification', onNotification);
       socket.off('new_match', onNewMatch);
+      socket.off('new_message', onNewMessage);
     };
   }, []);
 
