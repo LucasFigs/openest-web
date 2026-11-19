@@ -90,15 +90,25 @@ const Events = () => {
     fetchEvents();
   }, [currentDate]);
 
-  const handleCancelEvent = async (e, eventId) => {
+  // "Desistir" encerra o vínculo inteiro (evento agendado + match) no banco.
+  // Só tira o card da tela DEPOIS que a API confirma — se falhar, o card
+  // continua lá e o erro aparece, em vez de sumir e voltar no refresh.
+  const handleCancelEvent = async (e, evento) => {
     e.stopPropagation();
     if (!window.confirm('Tem a certeza que deseja cancelar este encontro?')) return;
+    const eventId = typeof evento === 'object' ? evento.id : evento;
     try {
-      await api.delete(`/events/cancelar/${eventId}`);
+      await api.delete(`/events/cancelar/${encodeURIComponent(eventId)}`, {
+        // Rede de segurança: se o evento já tiver sumido, a API ainda resolve
+        // o vínculo pelo outro participante.
+        data: { other_user_id: (typeof evento === 'object' ? evento.otherUserId : null) ?? null },
+      });
       setEvents(prev => prev.filter(ev => ev.id !== eventId));
       if (selectedEvent && selectedEvent.id === eventId) setIsModalOpen(false);
     } catch (error) {
-      alert('Erro ao cancelar o encontro.');
+      console.error('Erro ao cancelar o encontro:', error);
+      const detalhe = error?.response?.data?.error;
+      alert(detalhe ? `Erro ao cancelar o encontro: ${detalhe}` : 'Erro ao cancelar o encontro. Tente novamente.');
     }
   };
 
@@ -216,7 +226,7 @@ const Events = () => {
                     </a>
                     
                     {/* 🔥 O BOTÃO FOI LIBERTADO! APARECE EM TODOS OS EVENTOS! */}
-                    <button className="btn-cancel-event" onClick={(e) => handleCancelEvent(e, event.id)}>
+                    <button className="btn-cancel-event" onClick={(e) => handleCancelEvent(e, event)}>
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                       Desistir
                     </button>
@@ -290,7 +300,7 @@ const Events = () => {
                 )}
 
                 {/* 🔥 O BOTÃO DO MODAL TAMBÉM FOI LIBERTADO! */}
-                <button className="event-modal-cancel-btn" onClick={(e) => handleCancelEvent(e, selectedEvent.id)}>
+                <button className="event-modal-cancel-btn" onClick={(e) => handleCancelEvent(e, selectedEvent)}>
                   Desistir do Encontro
                 </button>
 
