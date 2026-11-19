@@ -25,14 +25,28 @@ const READ_TICK_COLOR = "#38BDF8";
 
 const MessageTicks = ({ status }) => {
   const lido = status === "read";
-  const duplo = lido || status === "delivered";
-  const cor = lido ? READ_TICK_COLOR : "rgba(255,255,255,0.6)";
+  const duplo = lido || status === "delivered"; // 'delivered' e 'read' = SEMPRE 2 checks
+  const cor = lido ? READ_TICK_COLOR : "rgba(255,255,255,0.75)";
   const label = lido ? "Visualizada" : duplo ? "Entregue" : "Enviada";
+  // Dois checks deslocados no eixo X (estilo WhatsApp). O viewBox cresce
+  // quando há 2 checks para eles não ficarem sobrepostos virando "1 check".
   return (
     <span className={`msg-ticks ${lido ? "read" : ""}`} title={label} aria-label={label} data-status={status || "sent"}>
-      <svg width="16" height="11" viewBox="0 0 18 12" fill="none" stroke={cor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="1,6.5 4.5,10 11,2" />
-        {duplo && <polyline points="7,10 13.5,2" />}
+      <svg
+        width={duplo ? 18 : 12}
+        height="12"
+        viewBox={duplo ? "0 0 18 12" : "0 0 12 12"}
+        fill="none"
+        stroke={cor}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        shapeRendering="geometricPrecision"
+      >
+        {/* check da frente */}
+        <polyline points="1,6.8 4.2,10 10.6,2.2" />
+        {/* 2º check, atrás e deslocado à direita */}
+        {duplo && <polyline points="7.4,10 13.8,2.2" />}
       </svg>
     </span>
   );
