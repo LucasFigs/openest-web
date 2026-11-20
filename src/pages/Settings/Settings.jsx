@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AuthContext } from '../../contexts/AuthContext'; 
-import userService from '../../services/userService'; 
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { AuthContext } from '../../contexts/AuthContext';
+import userService from '../../services/userService';
+import { ChevronRight, KeyRound, LogOut, Trash2, X } from 'lucide-react';
+import ThemeSelector from '../../components/ThemeSelector/ThemeSelector';
 import './Settings.css';
 
 const Settings = () => {
@@ -79,7 +81,7 @@ const Settings = () => {
   };
 
   return (
-    <motion.div 
+    <Motion.div
       className="settings-screen-wrapper"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -88,12 +90,23 @@ const Settings = () => {
       <div className="settings-premium-card">
         <header className="settings-header-box">
           <h2>Configurações</h2>
-          <button className="close-x-btn" onClick={() => navigate('/discovery')}>✕</button>
+          <button className="close-x-btn" onClick={() => navigate('/discovery')} aria-label="Fechar configurações">
+            <X size={18} aria-hidden="true" />
+          </button>
         </header>
 
         <div className="settings-scroll-area">
           <section className="settings-group">
+            <h3 className="group-title">Aparência</h3>
+            <div className="settings-group-card settings-group-card--padded">
+              <ThemeSelector />
+              <p className="settings-hint">Automático acompanha o tema do seu sistema. A escolha fica salva neste navegador.</p>
+            </div>
+          </section>
+
+          <section className="settings-group">
             <h3 className="group-title">Privacidade</h3>
+            <div className="settings-group-card">
             <div className="setting-row">
               <div className="setting-text">
                 <span className="label-dark">Modo Discreto</span>
@@ -104,25 +117,27 @@ const Settings = () => {
                 </p>
               </div>
               <label className="ui-switch">
-                <input 
-                  type="checkbox" 
-                  checked={settings.discreteMode} 
-                  onChange={handleToggleDiscreteMode} 
+                <input
+                  type="checkbox"
+                  checked={settings.discreteMode}
+                  onChange={handleToggleDiscreteMode}
                 />
                 <span className="ui-slider"></span>
               </label>
+            </div>
             </div>
           </section>
 
           <section className="settings-group">
             <h3 className="group-title">Notificações</h3>
+            <div className="settings-group-card">
             <div className="setting-row">
               <span className="label-dark">Notificações de Match</span>
               <label className="ui-switch">
-                <input 
-                  type="checkbox" 
-                  checked={settings.matchNotifications} 
-                  onChange={() => handleToggle('matchNotifications')} 
+                <input
+                  type="checkbox"
+                  checked={settings.matchNotifications}
+                  onChange={() => handleToggle('matchNotifications')}
                 />
                 <span className="ui-slider"></span>
               </label>
@@ -130,38 +145,45 @@ const Settings = () => {
             <div className="setting-row">
               <span className="label-dark">Notificações de Mensagem</span>
               <label className="ui-switch">
-                <input 
-                  type="checkbox" 
-                  checked={settings.messageNotifications} 
-                  onChange={() => handleToggle('messageNotifications')} 
+                <input
+                  type="checkbox"
+                  checked={settings.messageNotifications}
+                  onChange={() => handleToggle('messageNotifications')}
                 />
                 <span className="ui-slider"></span>
               </label>
+            </div>
             </div>
           </section>
 
           <section className="settings-group">
             <h3 className="group-title">Conta</h3>
-            <button className="settings-action-btn centered-text" onClick={() => setShowPassModal(true)}>
-              Alterar senha
-            </button>
-            <button className="settings-action-btn centered-text" onClick={() => setShowLogoutModal(true)}>
-              Sair da conta
-            </button>
-            <button className="settings-action-btn btn-danger-soft centered-text" onClick={() => setShowDeleteModal(true)}>
-              Excluir conta
-            </button>
+            <div className="settings-group-card">
+              <button className="settings-action-btn" onClick={() => setShowPassModal(true)}>
+                <span className="row-icon"><KeyRound size={16} aria-hidden="true" /></span>
+                <span style={{ flex: 1 }}>Alterar senha</span>
+                <ChevronRight size={18} aria-hidden="true" color="var(--color-text-tertiary)" />
+              </button>
+              <button className="settings-action-btn" onClick={() => setShowLogoutModal(true)}>
+                <span className="row-icon"><LogOut size={16} aria-hidden="true" /></span>
+                <span style={{ flex: 1 }}>Sair da conta</span>
+              </button>
+              <button className="settings-action-btn btn-danger-soft" onClick={() => setShowDeleteModal(true)}>
+                <span className="row-icon"><Trash2 size={16} aria-hidden="true" /></span>
+                <span style={{ flex: 1 }}>Excluir conta</span>
+              </button>
+            </div>
           </section>
 
           <section className="settings-group">
             <h3 className="group-title">Sobre</h3>
-            <div className="legal-links">
-              <span className="settings-legal-item" onClick={() => navigate('/termos-de-uso')}>
+            <div className="settings-group-card legal-links">
+              <button type="button" className="settings-legal-item" onClick={() => navigate('/termos-de-uso')}>
                 Termos de Uso
-              </span>
-              <span className="settings-legal-item" onClick={() => navigate('/politica-de-privacidade')}>
+              </button>
+              <button type="button" className="settings-legal-item" onClick={() => navigate('/politica-de-privacidade')}>
                 Política de Privacidade
-              </span>
+              </button>
             </div>
             <p className="settings-version-text">Versão 1.0.4 (Beta) - Fortaleza, CE</p>
           </section>
@@ -169,7 +191,7 @@ const Settings = () => {
 
         <footer className="settings-footer-action">
           <button className="main-save-btn" onClick={handleSave} disabled={loading}>
-            {loading ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
+            {loading ? "Salvando..." : "Salvar alterações"}
           </button>
         </footer>
       </div>
@@ -177,47 +199,47 @@ const Settings = () => {
       <AnimatePresence>
         {showLogoutModal && (
           <div className="modal-blur-overlay">
-            <motion.div className="modal-content-card">
+            <Motion.div className="modal-content-card">
               <h4>Encerrar Sessão?</h4>
               <p>Tem certeza que deseja sair do Openest?</p>
               <div className="modal-btns">
-                <button className="m-btn-back" onClick={() => setShowLogoutModal(false)}>CANCELAR</button>
-                <button className="m-btn-danger" onClick={handleLogout}>SAIR</button>
+                <button className="m-btn-back" onClick={() => setShowLogoutModal(false)}>Cancelar</button>
+                <button className="m-btn-danger" onClick={handleLogout}>Sair</button>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
 
         {showDeleteModal && (
           <div className="modal-blur-overlay">
-            <motion.div className="modal-content-card">
+            <Motion.div className="modal-content-card">
               <h4>Excluir conta?</h4>
               <p>Seus dados serão removidos permanentemente conforme a LGPD.</p>
               <div className="modal-btns">
-                <button className="m-btn-back" onClick={() => setShowDeleteModal(false)}>VOLTAR</button>
+                <button className="m-btn-back" onClick={() => setShowDeleteModal(false)}>Voltar</button>
                 <button className="m-btn-danger" onClick={handleConfirmDelete} disabled={loading}>
-                  {loading ? "EXCLUINDO..." : "EXCLUIR"}
+                  {loading ? "Excluindo..." : "Excluir"}
                 </button>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
 
         {showPassModal && (
           <div className="modal-blur-overlay">
-            <motion.div className="modal-content-card">
+            <Motion.div className="modal-content-card">
               <h4>Alterar senha</h4>
-              <input type="password" placeholder="Senha atual" className="m-input" />
-              <input type="password" placeholder="Nova senha" className="m-input" />
+              <input type="password" placeholder="Senha atual" className="m-input" aria-label="Senha atual" />
+              <input type="password" placeholder="Nova senha" className="m-input" aria-label="Nova senha" />
               <div className="modal-btns">
-                <button className="m-btn-back" onClick={() => setShowPassModal(false)}>CANCELAR</button>
-                <button className="m-btn-save" onClick={() => setShowPassModal(false)}>SALVAR</button>
+                <button className="m-btn-back" onClick={() => setShowPassModal(false)}>Cancelar</button>
+                <button className="m-btn-save" onClick={() => setShowPassModal(false)}>Salvar</button>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </Motion.div>
   );
 };
 
