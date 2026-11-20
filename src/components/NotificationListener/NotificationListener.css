@@ -1,0 +1,56 @@
+/* Aviso de nova mensagem / novo match (canto da tela), no tema atual. */
+.openest-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 340px;
+  max-width: 90vw;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+.openest-toast.is-in { animation: openest-slide-in 0.25s ease; }
+.openest-toast.is-out { animation: openest-slide-out 0.2s ease forwards; }
+
+.openest-toast__avatar { position: relative; flex-shrink: 0; }
+.openest-toast__avatar img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  background: var(--color-surface-muted);
+}
+.openest-toast__match {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: 2px solid var(--color-surface-elevated);
+}
+.openest-toast__texts { flex: 1; min-width: 0; }
+.openest-toast__name,
+.openest-toast__message { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.openest-toast__name { font-weight: 600; font-size: 14px; }
+.openest-toast__message { font-size: 13px; color: var(--color-text-secondary); }
+
+@keyframes openest-slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes openest-slide-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}

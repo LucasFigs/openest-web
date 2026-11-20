@@ -3,9 +3,6 @@ import { defineConfig } from "cypress";
 export default defineConfig({
   allowCypressEnv: false,
 
-  e2e: {
-    setupNodeEvents(on, config) {
-      // implement node event listeners here
-    },
-  },
+  // Sem eventos de Node por enquanto (o gancho vazio só gerava aviso no lint).
+  e2e: {},
 });

@@ -14,11 +14,11 @@ describe('Testes de Tela de Descoberta - L009', () => {
     cy.visit('http://localhost:5173/welcome');
     cy.wait(1000);
     
-    cy.contains('JÁ TENHO UMA CONTA').click();
+    cy.contains('button', 'Já tenho conta').click();
     cy.wait(1000);
     
-    cy.get('input[placeholder="Digite seu email"]').type(usuario.email);
-    cy.get('input[placeholder="********"]').type(usuario.senha);
+    cy.get('#login-email').type(usuario.email);
+    cy.get('#login-senha').type(usuario.senha);
     cy.get('.btn-entrar-submit').click();
     
     cy.url().should('include', '/discovery');
@@ -51,21 +51,21 @@ describe('Testes de Tela de Descoberta - L009', () => {
 
   it('Deve existir o botão de filtros', () => {
     fazerLogin();
-    cy.get('.circle-btn.star-btn').should('be.visible');
+    cy.get('.discovery-filter-btn').should('be.visible');
     cy.log('✅ Botão de filtros está visível');
   });
 
   it('Deve abrir o modal de filtros ao clicar no botão', () => {
     fazerLogin();
-    cy.get('.circle-btn.star-btn').click();
+    cy.get('.discovery-filter-btn').click();
     cy.wait(1000);
-    cy.contains('Filtros').should('be.visible');
+    cy.get('.filter-modal').should('be.visible');
     cy.log('✅ Modal de filtros aberto');
   });
 
   it('Deve alterar o filtro de distância', () => {
     fazerLogin();
-    cy.get('.circle-btn.star-btn').click();
+    cy.get('.discovery-filter-btn').click();
     cy.wait(1000);
     cy.get('.purple-slider').should('be.visible');
     cy.get('.purple-slider').invoke('val', 30).trigger('input');
@@ -74,7 +74,7 @@ describe('Testes de Tela de Descoberta - L009', () => {
 
   it('Deve alterar a faixa etária', () => {
     fazerLogin();
-    cy.get('.circle-btn.star-btn').click();
+    cy.get('.discovery-filter-btn').click();
     cy.wait(1000);
     cy.get('input[type="number"]').first().clear().type('20');
     cy.get('input[type="number"]').last().clear().type('35');
@@ -83,7 +83,7 @@ describe('Testes de Tela de Descoberta - L009', () => {
 
   it('Deve selecionar um status de relacionamento', () => {
     fazerLogin();
-    cy.get('.circle-btn.star-btn').click();
+    cy.get('.discovery-filter-btn').click();
     cy.wait(1000);
     cy.contains('.check-label', 'Solteiro(a)').click();
     cy.log('✅ Status de relacionamento selecionado');
@@ -91,7 +91,7 @@ describe('Testes de Tela de Descoberta - L009', () => {
 
   it('Deve selecionar um interesse', () => {
     fazerLogin();
-    cy.get('.circle-btn.star-btn').click();
+    cy.get('.discovery-filter-btn').click();
     cy.wait(1000);
     cy.contains('.tag-btn', 'Games').click();
     cy.log('✅ Interesse selecionado');
@@ -100,25 +100,19 @@ describe('Testes de Tela de Descoberta - L009', () => {
   it('Deve aplicar os filtros e fechar o modal', () => {
     fazerLogin();
     
-    cy.get('.circle-btn.star-btn').click();
+    cy.get('.discovery-filter-btn').click();
     cy.wait(1000);
     
     // Verificar que o modal está visível
-    cy.contains('Filtros').should('be.visible');
+    cy.get('.filter-modal').should('be.visible');
     
     // Aplicar filtros
     cy.get('.apply-btn').click();
     cy.wait(1000);
     
-    // Verificar se o modal fechou
-    cy.get('body').then(($body) => {
-      if ($body.text().includes('Filtros')) {
-        cy.log('⚠️ Modal ainda aberto, fechando manualmente');
-        cy.get('body').click();
-      } else {
-        cy.log('✅ Filtros aplicados e modal fechado');
-      }
-    });
+    // O painel fecha ao aplicar (o botão "Filtros" do topo continua na tela).
+    cy.get('.filter-modal').should('not.exist');
+    cy.log('✅ Filtros aplicados e modal fechado');
   });
 
   it('Deve curtir um perfil com sucesso', () => {

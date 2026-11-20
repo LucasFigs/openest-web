@@ -18,8 +18,8 @@ describe('Testes de Admin - L013', () => {
     cy.get('.welcome-btn-login').click();
     cy.wait(1000);
     
-    cy.get('input[placeholder="Digite seu email"]').type(admin.email);
-    cy.get('input[placeholder="********"]').type(admin.senha);
+    cy.get('#login-email').type(admin.email);
+    cy.get('#login-senha').type(admin.senha);
     cy.get('.btn-entrar-submit').click();
     
     cy.url().should('include', '/admin');

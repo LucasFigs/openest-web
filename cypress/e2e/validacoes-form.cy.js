@@ -1,145 +1,137 @@
-// cypress/e2e/L006-validacoes-form.cy.js
+// cypress/e2e/validacoes-form.cy.js — validações dos formulários de login
+// e cadastro. Tudo é validado no navegador: não precisa da API rodando.
+//
+// Antes, cada teste registrava um listener de alert DEPOIS do clique e
+// nada era de fato verificado. Agora conferimos o que a pessoa vê na tela.
+
+const APP = 'http://localhost:5173';
+
+// O campo ficou inválido pela validação nativa do navegador?
+const deveSerInvalido = (seletor) =>
+  cy.get(seletor).then(($el) => {
+    expect($el[0].checkValidity(), `${seletor} deveria estar inválido`).to.eq(false);
+  });
+
+function irParaCadastro() {
+  cy.visit(`${APP}/welcome`);
+  cy.contains('button', 'Criar conta').click();
+  cy.url().should('include', '/register');
+}
+
+function preencherEtapa1(email, senha, confirmar = senha) {
+  cy.get('#reg-email').type(email);
+  cy.get('#reg-senha').type(senha);
+  cy.get('#reg-confirmar').type(confirmar);
+  cy.get('.btn-primary').contains('Próximo').click();
+}
 
 describe('Testes de Validações de Formulário - L006', () => {
 
   // ============================================
-  // TESTE 1: Login - Email vazio
+  // LOGIN — validação nativa (o pedido nem chega a sair)
   // ============================================
-  it('Deve mostrar erro ao tentar login com email vazio', () => {
-    cy.visit('http://localhost:5173/welcome');
-    cy.contains('JÁ TENHO UMA CONTA').click();
-    
-    // Digitar apenas a senha, email vazio
-    cy.get('input[placeholder="********"]').type('123456');
-    cy.get('.btn-entrar-submit').click();
-    
-    // Verificar mensagem de erro
-    cy.on('window:alert', (texto) => {
-      expect(texto).to.contain('email');
+  describe('Login', () => {
+    beforeEach(() => {
+      cy.intercept('POST', '**/api/users/login').as('login');
+      cy.visit(`${APP}/welcome`);
+      cy.contains('button', 'Já tenho conta').click();
+      cy.url().should('include', '/login');
+    });
+
+    it('Deve bloquear login com e-mail vazio', () => {
+      cy.get('#login-senha').type('123456');
+      cy.get('.btn-entrar-submit').click();
+      deveSerInvalido('#login-email');
+      cy.url().should('include', '/login');
+    });
+
+    it('Deve bloquear login com senha vazia', () => {
+      cy.get('#login-email').type('teste3@email.com');
+      cy.get('.btn-entrar-submit').click();
+      deveSerInvalido('#login-senha');
+      cy.url().should('include', '/login');
+    });
+
+    it('Deve bloquear login com e-mail inválido (sem @)', () => {
+      cy.get('#login-email').type('emailinvalido');
+      cy.get('#login-senha').type('123456');
+      cy.get('.btn-entrar-submit').click();
+      deveSerInvalido('#login-email');
+      cy.url().should('include', '/login');
+    });
+
+    it('Não chama a API quando o formulário é inválido', () => {
+      cy.get('.btn-entrar-submit').click();
+      cy.wait(300);
+      cy.get('@login.all').should('have.length', 0);
     });
   });
 
   // ============================================
-  // TESTE 2: Login - Senha vazia
+  // CADASTRO — mensagens na tela, sem avançar de etapa
   // ============================================
-  it('Deve mostrar erro ao tentar login com senha vazia', () => {
-    cy.visit('http://localhost:5173/welcome');
-    cy.contains('JÁ TENHO UMA CONTA').click();
-    
-    // Digitar apenas o email, senha vazia
-    cy.get('input[placeholder="Digite seu email"]').type('teste3@email.com');
-    cy.get('.btn-entrar-submit').click();
-    
-    cy.on('window:alert', (texto) => {
-      expect(texto).to.contain('senha');
+  describe('Cadastro', () => {
+    beforeEach(() => {
+      cy.intercept('POST', '**/api/users/register').as('cadastro');
+      irParaCadastro();
     });
-  });
 
-  // ============================================
-  // TESTE 3: Login - Email inválido (sem @)
-  // ============================================
-  it('Deve mostrar erro ao tentar login com email inválido', () => {
-    cy.visit('http://localhost:5173/welcome');
-    cy.contains('JÁ TENHO UMA CONTA').click();
-    
-    cy.get('input[placeholder="Digite seu email"]').type('emailinvalido');
-    cy.get('input[placeholder="********"]').type('123456');
-    cy.get('.btn-entrar-submit').click();
-    
-    cy.on('window:alert', (texto) => {
-      expect(texto).to.contain('inválido') || expect(texto).to.contain('email');
+    it('Deve mostrar erro com e-mail inválido', () => {
+      preencherEtapa1('emailinvalido', '123456');
+      cy.contains('.error-msg', 'Informe um e-mail válido.').should('be.visible');
+      cy.contains('Etapa 1 de 3').should('be.visible');
     });
-  });
 
-  // ============================================
-  // TESTE 4: Cadastro - Senha muito curta (< 6 caracteres)
-  // ============================================
-  it('Deve mostrar erro ao cadastrar com senha muito curta', () => {
-    const emailUnico = `teste_${Date.now()}@email.com`;
-    
-    cy.visit('http://localhost:5173/welcome');
-    cy.contains('CRIAR CONTA').click();
-    
-    cy.get('input[placeholder="exemplo@email.com"]').type(emailUnico);
-    cy.get('input[placeholder="******"]').first().type('123'); // Senha curta (3 caracteres)
-    cy.get('input[placeholder="******"]').last().type('123');
-    
-    cy.get('.btn-primary').contains('Próximo').click();
-    
-    cy.on('window:alert', (texto) => {
-      expect(texto).to.contain('6') || expect(texto).to.contain('caracteres');
+    it('Deve mostrar erro com senha muito curta (< 6 caracteres)', () => {
+      preencherEtapa1(`teste_${Date.now()}@email.com`, '123');
+      cy.contains('.error-msg', 'pelo menos 6 caracteres').should('be.visible');
+      cy.contains('Etapa 1 de 3').should('be.visible');
     });
-  });
 
-  // ============================================
-  // TESTE 5: Cadastro - Senhas diferentes
-  // ============================================
-  it('Deve mostrar erro quando senha e confirmar senha são diferentes', () => {
-    const emailUnico = `teste_${Date.now()}@email.com`;
-    
-    cy.visit('http://localhost:5173/welcome');
-    cy.contains('CRIAR CONTA').click();
-    
-    cy.get('input[placeholder="exemplo@email.com"]').type(emailUnico);
-    cy.get('input[placeholder="******"]').first().type('123456');
-    cy.get('input[placeholder="******"]').last().type('senhadiferente');
-    
-    cy.get('.btn-primary').contains('Próximo').click();
-    
-    cy.on('window:alert', (texto) => {
-      expect(texto).to.contain('diferentes') || expect(texto).to.contain('coincidem');
+    it('Deve mostrar erro quando senha e confirmação são diferentes', () => {
+      preencherEtapa1(`teste_${Date.now()}@email.com`, '123456', 'senhadiferente');
+      cy.contains('.error-msg', 'As senhas não coincidem.').should('be.visible');
+      cy.contains('Etapa 1 de 3').should('be.visible');
     });
-  });
 
-  // ============================================
-  // TESTE 6: Cadastro - Nome vazio
-  // ============================================
-  it('Deve mostrar erro ao cadastrar com nome vazio', () => {
-    const emailUnico = `teste_${Date.now()}@email.com`;
-    
-    cy.visit('http://localhost:5173/welcome');
-    cy.contains('CRIAR CONTA').click();
-    
-    // ETAPA 1 - Email e Senha válidos
-    cy.get('input[placeholder="exemplo@email.com"]').type(emailUnico);
-    cy.get('input[placeholder="******"]').first().type('123456');
-    cy.get('input[placeholder="******"]').last().type('123456');
-    cy.get('.btn-primary').contains('Próximo').click();
-    
-    // ETAPA 2 - Nome vazio, data e bio preenchidos
-    cy.get('input[placeholder="Seu nome"]').clear(); // Garantir que está vazio
-    cy.get('input[type="date"]').type('2000-01-01');
-    cy.get('textarea[placeholder="Um pouco sobre você..."]').type('Teste bio');
-    cy.get('.btn-primary').contains('Próximo').click();
-    
-    cy.on('window:alert', (texto) => {
-      expect(texto).to.contain('nome');
+    it('Deve mostrar erro com nome vazio', () => {
+      preencherEtapa1(`teste_${Date.now()}@email.com`, '123456');
+      cy.contains('Etapa 2 de 3').should('be.visible');
+
+      cy.get('#reg-nascimento').type('2000-01-01');
+      cy.get('#reg-bio').type('Teste bio');
+      cy.get('.btn-primary').contains('Próximo').click();
+
+      cy.contains('.error-msg', 'Informe seu nome.').should('be.visible');
+      cy.contains('Etapa 2 de 3').should('be.visible');
     });
-  });
 
-  // ============================================
-  // TESTE 7: Cadastro - Data de nascimento vazia
-  // ============================================
-  it('Deve mostrar erro ao cadastrar com data de nascimento vazia', () => {
-    const emailUnico = `teste_${Date.now()}@email.com`;
-    
-    cy.visit('http://localhost:5173/welcome');
-    cy.contains('CRIAR CONTA').click();
-    
-    // ETAPA 1
-    cy.get('input[placeholder="exemplo@email.com"]').type(emailUnico);
-    cy.get('input[placeholder="******"]').first().type('123456');
-    cy.get('input[placeholder="******"]').last().type('123456');
-    cy.get('.btn-primary').contains('Próximo').click();
-    
-    // ETAPA 2 - Data vazia
-    cy.get('input[placeholder="Seu nome"]').type('Usuario Teste');
-    cy.get('input[type="date"]').clear(); // Data vazia
-    cy.get('textarea[placeholder="Um pouco sobre você..."]').type('Teste bio');
-    cy.get('.btn-primary').contains('Próximo').click();
-    
-    cy.on('window:alert', (texto) => {
-      expect(texto).to.contain('data') || expect(texto).to.contain('nascimento');
+    it('Deve mostrar erro com data de nascimento vazia', () => {
+      preencherEtapa1(`teste_${Date.now()}@email.com`, '123456');
+      cy.get('#reg-nome').type('Usuario Teste');
+      cy.get('#reg-bio').type('Teste bio');
+      cy.get('.btn-primary').contains('Próximo').click();
+
+      cy.contains('.error-msg', 'Informe sua data de nascimento.').should('be.visible');
+      cy.contains('Etapa 2 de 3').should('be.visible');
+    });
+
+    it('Volta uma etapa sem perder o que foi digitado', () => {
+      const email = `teste_${Date.now()}@email.com`;
+      preencherEtapa1(email, '123456');
+      cy.get('#reg-nome').type('Usuario Teste');
+      cy.get('.btn-secondary').contains('Voltar').click();
+
+      cy.contains('Etapa 1 de 3').should('be.visible');
+      cy.get('#reg-email').should('have.value', email);
+      cy.get('.btn-primary').contains('Próximo').click();
+      cy.get('#reg-nome').should('have.value', 'Usuario Teste');
+    });
+
+    it('Não cria conta enquanto houver erro', () => {
+      preencherEtapa1('emailinvalido', '123');
+      cy.wait(300);
+      cy.get('@cadastro.all').should('have.length', 0);
     });
   });
 });

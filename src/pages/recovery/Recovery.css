@@ -1,93 +1,139 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-
+/* Recuperação de senha (web) — mesmo cartão do login, sobre o tema. */
 .recovery-page-container {
-  width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: linear-gradient(180deg, #444444 0%, #2b003d 100%);
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--color-background);
+  text-align: left;
 }
 
 .recovery-card {
-  background-color: #fce4ec; /* Rosa claro padrão */
-  padding: 40px;
-  border-radius: 25px;
-  width: 100%;
-  max-width: 360px;
   position: relative;
-  text-align: center;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-  animation: slideUp 0.5s ease;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px 28px;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text-primary);
+  animation: recovery-in 0.25s ease;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
+.recovery-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.recovery-close-btn:hover { background: var(--color-surface-muted); color: var(--color-text-primary); }
+
+.recovery-header { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 18px; }
+.recovery-logo-fogo { width: 48px; height: auto; }
+.recovery-logo-nome { width: 120px; height: auto; }
+[data-theme="dark"] .recovery-logo-nome { filter: brightness(0) invert(1); opacity: 0.92; }
+
+.recovery-title { margin: 0 0 6px; font-size: 22px; font-weight: 700; text-align: center; }
+.recovery-desc { margin: 0 0 20px; font-size: 14px; line-height: 1.5; text-align: center; color: var(--color-text-secondary); }
+.recovery-desc strong { color: var(--color-text-primary); font-weight: 600; word-break: break-all; }
+
+.recovery-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.recovery-field label { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.recovery-field input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.recovery-field input:focus { border-color: var(--color-primary); }
+.recovery-field input::placeholder { color: var(--color-text-tertiary); }
+
+.recovery-password { position: relative; }
+.recovery-password input { padding-right: 46px; }
+.recovery-password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 46px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.recovery-error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-text);
+  font-size: 13px;
+}
+
+.btn-recovery,
+.recovery-btn-secondary {
+  width: 100%;
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.btn-recovery { border: 0; background: var(--color-primary); color: var(--color-on-primary); }
+.btn-recovery:hover { background: var(--color-primary-pressed); }
+.btn-recovery:disabled { opacity: 0.6; cursor: default; }
+.recovery-btn-secondary { border: 1px solid var(--color-border); background: transparent; color: var(--color-text-primary); }
+.recovery-btn-secondary:hover { background: var(--color-surface-muted); }
+
+.recovery-link-btn {
+  display: block;
+  margin: 14px auto 0;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.success-state { display: flex; flex-direction: column; align-items: center; }
+.recovery-success-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-accent);
+}
+.recovery-success-icon.is-success { background: var(--color-success-soft); color: var(--color-success-text); }
+
+@keyframes recovery-in {
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* --- TÍTULOS (Recuperar Senha E Link Enviado) --- */
-.recovery-title, 
-.success-state h2 {
-  font-size: 22px;
-  color: #2b003d !important; /* Roxo escuro da sua paleta - Forçado */
-  margin: 0 0 10px 0;
-  font-weight: 700;
-}
-
-/* --- TEXTOS DE INSTRUÇÃO (Enviaremos um link E Verifique sua caixa) --- */
-.recovery-desc, 
-.success-state p {
-  font-size: 14px;
-  color: #444444 !important; /* Cinza escuro para leitura clara - Forçado */
-  margin: 0 0 25px 0;
-  line-height: 1.5;
-}
-
-/* --- ESTILO DO ÍCONE E BOTÕES --- */
-.icon-check {
-  font-size: 45px;
-  margin-bottom: 15px;
-  display: block;
-}
-
-.btn-recovery {
-  background: linear-gradient(90deg, #7b1fa2 0%, #4a148c 100%);
-  color: white;
-  border: none;
-  padding: 14px;
-  width: 100%;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  text-transform: uppercase;
-}
-
-.btn-secondary {
-  background: transparent;
-  color: #4a148c;
-  border: 2px solid #7b1fa2;
-  padding: 14px;
-  width: 100%;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  text-transform: uppercase;
-}
-
-/* Fecha o X */
-.close-btn {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  background: none;
-  border: none;
-  font-size: 22px;
-  color: #7b1fa2;
-  cursor: pointer;
-}
-
-.recovery-logo-fogo { width: 60px; margin-bottom: 5px; }
-.recovery-logo-nome { width: 180px; margin-bottom: 20px; }

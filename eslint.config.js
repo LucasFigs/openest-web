@@ -26,4 +26,23 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  // Testes E2E (Cypress): globais do runner (cy, Cypress, describe, it...).
+  {
+    files: ['cypress/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.mocha,
+        cy: 'readonly',
+        Cypress: 'readonly',
+        expect: 'readonly',
+        assert: 'readonly',
+      },
+    },
+  },
+  // Configuração do Cypress roda no Node.
+  {
+    files: ['cypress.config.js'],
+    languageOptions: { globals: globals.node },
+  },
 ])

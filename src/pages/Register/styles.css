@@ -1,206 +1,198 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Figtree:wght@400;600;700&display=swap');
-
-:root {
-  --roxo-escuro: #2b003d;
-  --roxo-openest: #4b0082;
-  --roxo-brilhante: #7b1fa2;
-}
-
-/* RESET GLOBAL - TELA CHEIA */
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: 'Poppins', 'Figtree', sans-serif; 
-}
-
+/* Cadastro (web) — mesmo cartão do login, em três etapas, sobre o tema.
+   Tudo fica sob .register-page-container: nada de reset global aqui
+   (antes este arquivo travava o overflow de html/body/#root no app todo). */
 .register-page-container {
-  width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  background: linear-gradient(180deg, #4b4b4b 0%, #1a1a1a 50%, #4b0082 100%);
-  padding: 20px;
-  box-sizing: border-box;
+  padding: 24px 16px;
+  background: var(--color-background);
+  text-align: left;
 }
 
-/* CARD COM GLASSMORPHISM */
 .register-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 40px;
-  width: 95%;
+  position: relative;
+  width: 100%;
   max-width: 420px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  padding: 28px 28px 24px;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text-primary);
+  animation: register-in 0.25s ease;
+}
+
+.register-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.register-close-btn:hover { background: var(--color-surface-muted); color: var(--color-text-primary); }
+
+.register-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
-  animation: slideUp 0.5s ease;
+  gap: 8px;
+  margin-bottom: 18px;
 }
+.register-logo-fogo { width: 48px; height: auto; }
+.register-logo-nome { width: 120px; height: auto; }
+[data-theme="dark"] .register-logo-nome { filter: brightness(0) invert(1); opacity: 0.92; }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+.register-progress { display: flex; gap: 6px; width: 132px; margin-top: 8px; }
+.register-progress span {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  transition: background-color 0.2s ease;
 }
+.register-progress span.is-done { background: var(--color-primary); }
+.register-step-label { font-size: 12px; color: var(--color-text-secondary); }
 
-/* BOTÃO DE FECHAR (X) */
-.close-btn {
-  position: absolute;
-  top: 20px;
-  right: 25px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: var(--roxo-openest);
-  cursor: pointer;
-  z-index: 10;
-}
+.register-title { margin: 0 0 2px; font-size: 22px; font-weight: 700; text-align: center; }
 
-.register-logo {
-  max-height: 80px;
-  width: auto;
-  margin-bottom: 10px;
-}
+.register-page-container .step-form { display: flex; flex-direction: column; gap: 14px; }
 
-.register-title {
-  color: var(--roxo-openest);
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: 800;
-  text-align: center;
-}
+.register-field { display: flex; flex-direction: column; gap: 6px; }
+.register-field label { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.register-optional { font-weight: 400; color: var(--color-text-tertiary); }
 
-/* FORMULÁRIO E INPUTS (Incluso Fix para Biografia) */
-.step-form {
+.register-field input,
+.register-field select,
+.register-field textarea {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.step-form label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-/* Estilo unificado para Input, Select e Textarea (Biografia) */
-.step-form input, 
-.step-form select, 
-.step-form textarea {
-  width: 100%;
-  padding: 14px;
-  border: 1px solid rgba(75, 0, 130, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #1a1a1a !important; /* Texto escuro nítido */
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
   font-size: 15px;
-  box-sizing: border-box;
-  transition: 0.3s;
-  font-family: 'Poppins', sans-serif;
-}
-
-/* Estilo específico para a Biografia */
-.step-form textarea {
-  min-height: 80px; /* Altura confortável */
-  max-height: 120px; /* Evita que o card cresça demais */
-  resize: vertical;  /* Bloqueia redimensionamento horizontal */
-  line-height: 1.4;
-}
-
-.step-form input:focus, 
-.step-form select:focus, 
-.step-form textarea:focus {
   outline: none;
-  border-color: var(--roxo-openest);
-  box-shadow: 0 0 0 4px rgba(75, 0, 130, 0.1);
+  transition: border-color 0.15s ease;
+}
+.register-field textarea { min-height: 88px; max-height: 160px; resize: vertical; line-height: 1.4; }
+.register-field input::placeholder,
+.register-field textarea::placeholder { color: var(--color-text-tertiary); }
+.register-field input:focus,
+.register-field select:focus,
+.register-field textarea:focus { border-color: var(--color-primary); }
+.register-field [aria-invalid="true"] { border-color: var(--color-danger); }
+
+.register-password { position: relative; }
+.register-password input { padding-right: 46px; }
+.register-password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 46px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
 }
 
-/* FIX DA FOTO DE PERFIL: Tamanho Fixo e Redondo */
+.register-page-container .error-msg { font-size: 12px; color: var(--color-danger-text); }
+
+.register-error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-text);
+  font-size: 13px;
+}
+
+/* Foto de perfil */
+.register-photo { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .photo-upload-card {
-  width: 140px;
-  height: 140px;
-  margin: 10px auto;
+  width: 120px;
+  height: 120px;
+  padding: 0;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid var(--roxo-openest);
-  background-color: rgba(255, 255, 255, 0.5);
+  border: 1.5px dashed var(--color-border);
+  background: var(--color-surface-muted);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: 0.3s;
+  transition: border-color 0.15s ease;
 }
-
-.photo-upload-card:hover {
-  transform: scale(1.02);
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.photo-preview {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Ajusta a foto sem esticar */
-}
-
+.photo-upload-card:hover { border-color: var(--color-primary); }
+.photo-upload-card.has-photo { border: 2px solid var(--color-primary); }
+.photo-preview { width: 100%; height: 100%; object-fit: cover; display: block; }
 .upload-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: var(--roxo-openest);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* BOTÕES */
-.button-group {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  margin-top: 10px;
-}
-
-.btn-secondary {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.5);
-  color: var(--roxo-openest);
-  border: 1px solid rgba(75, 0, 130, 0.2);
-  border-radius: 12px;
-  padding: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-primary {
-  flex: 2;
-  background: linear-gradient(90deg, #4b0082 0%, #800080 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-/* FIX CONTRASTE RODAPÉ */
-.footer-text {
+  gap: 6px;
+  color: var(--color-accent);
   font-size: 13px;
-  color: var(--roxo-escuro) !important;
-  margin-top: 25px;
-  text-align: center;
   font-weight: 600;
 }
+.register-photo-hint { font-size: 12px; color: var(--color-text-secondary); }
 
-.footer-text a {
-  color: var(--roxo-brilhante);
-  font-weight: 800;
-  text-decoration: none;
+/* Botões */
+.register-page-container .button-group { display: flex; gap: 10px; margin-top: 4px; }
+.register-page-container .btn-primary,
+.register-page-container .btn-secondary {
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.register-page-container .btn-primary {
+  width: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.register-page-container .btn-primary:hover { background: var(--color-primary-pressed); }
+.register-page-container .btn-secondary {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-primary);
+}
+/* Proporção só na dupla Voltar/Próximo (lado a lado). Fora dela, o flex
+   agiria na vertical da coluna e achataria o botão. */
+.register-page-container .button-group .btn-primary { flex: 2 1 0; }
+.register-page-container .button-group .btn-secondary { flex: 1 1 0; }
+.register-page-container .btn-secondary:hover { background: var(--color-surface-muted); }
+.register-page-container .btn-primary:disabled,
+.register-page-container .btn-secondary:disabled { opacity: 0.6; cursor: default; }
+
+.register-page-container .footer-text {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+.register-page-container .footer-text a { color: var(--color-accent); font-weight: 700; text-decoration: none; }
+.register-page-container .footer-text a:hover { text-decoration: underline; }
+
+@keyframes register-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
