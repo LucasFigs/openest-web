@@ -1,3 +1,5 @@
+import { Heart } from 'lucide-react';
+import './NotificationListener.css';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -40,36 +42,23 @@ export default function NotificationListener() {
                 navigateRef.current(`/chat/${conversationId}`);
               }
             }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              width: 340,
-              maxWidth: '90vw',
-              padding: '12px 14px',
-              borderRadius: 16,
-              cursor: 'pointer',
-              background: 'rgba(30, 20, 45, 0.97)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.45)',
-              color: '#fff',
-              animation: t.visible ? 'openest-slide-in 0.25s ease' : 'openest-slide-out 0.2s ease forwards',
-            }}
+            className={`openest-toast ${t.visible ? 'is-in' : 'is-out'}`}
           >
-            <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div className="openest-toast__avatar">
               <img
                 src={avatar || avatarFallback(name)}
-                alt={name}
+                alt=""
                 onError={(e) => { e.target.onerror = null; e.target.src = avatarFallback(name); }}
-                style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }}
               />
               {isMatch && (
-                <span style={{ position: 'absolute', right: -2, bottom: -2, width: 18, height: 18, borderRadius: '50%', background: '#E84683', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, border: '2px solid rgba(30,20,45,1)' }}>💜</span>
+                <span className="openest-toast__match" aria-hidden="true">
+                  <Heart size={10} fill="currentColor" />
+                </span>
               )}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{message}</div>
+            <div className="openest-toast__texts">
+              <div className="openest-toast__name">{name}</div>
+              <div className="openest-toast__message">{message}</div>
             </div>
           </div>
         ),
@@ -89,7 +78,7 @@ export default function NotificationListener() {
     function onNewMatch(payload = {}) {
       showToast({
         name: payload.other_user_name || 'Novo match',
-        message: 'Vocês deram match! Diga oi 💜',
+        message: 'Vocês deram match! Diga oi.',
         avatar: payload.other_user_avatar || null,
         conversationId: payload.conversation_id ?? null,
         isMatch: true,

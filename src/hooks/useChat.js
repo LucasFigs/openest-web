@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import socket from '../services/socket';
-import api from '../services/api'; 
+import api from '../services/api';
 
 export const useChat = (conversationId, loggedUserId) => {
   const [messages, setMessages] = useState([]);
   const [isConnected, setIsConnected] = useState(socket.connected);
-  
+
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasNext, setHasNext] = useState(true);
@@ -37,7 +37,7 @@ export const useChat = (conversationId, loggedUserId) => {
       });
 
       const { messages: newMessages, pagination } = response.data;
-      
+
       const hiddenIds = getHiddenMessages();
       const visiveis = newMessages.filter(m => !hiddenIds.includes(m.id));
       const mensagensOrdenadas = visiveis.reverse();
@@ -48,9 +48,9 @@ export const useChat = (conversationId, loggedUserId) => {
       console.error("Erro ao carregar histórico de mensagens:", error);
     } finally {
       loadingRef.current = false;
-      setLoading(false); 
+      setLoading(false);
     }
-  }, [conversationId, loggedUserId, getHiddenMessages]); 
+  }, [conversationId, loggedUserId, getHiddenMessages]);
 
   const loadMore = () => {
     if (hasNextRef.current && !loadingRef.current) {
@@ -72,10 +72,10 @@ export const useChat = (conversationId, loggedUserId) => {
   useEffect(() => {
     if (!conversationId || isNaN(conversationId) || !loggedUserId) return;
 
-    setMessages([]); 
+    setMessages([]);
     setPage(1);
     setHasNext(true);
-    hasNextRef.current = true; 
+    hasNextRef.current = true;
     fetchMessages(1);
     socket.emit('join_conversation', conversationId);
 
@@ -101,7 +101,7 @@ export const useChat = (conversationId, loggedUserId) => {
       marcarLido();
     }
     function onDisconnect() { setIsConnected(false); }
-    function onNewMessage(message) { 
+    function onNewMessage(message) {
       const hiddenIds = getHiddenMessages();
       if (hiddenIds.includes(message.id)) return;
 
@@ -115,6 +115,15 @@ export const useChat = (conversationId, loggedUserId) => {
       if (String(message.sender_id) !== String(loggedUserId)) {
         marcarLido();
       }
+    }
+
+    // Foto de visualização única aberta (pelo contato ou por mim em outra
+    // aba): vira "Aberta" na hora, para os dois lados.
+    function onViewOnceOpened(payload) {
+      if (String(payload?.conversation_id) !== String(conversationId)) return;
+      setMessages((prev) => prev.map(m => (
+        String(m.id) === String(payload.message_id) ? { ...m, is_opened: true } : m
+      )));
     }
 
     // Checks de entrega/leitura das MINHAS mensagens, em tempo real.
@@ -132,11 +141,11 @@ export const useChat = (conversationId, loggedUserId) => {
       }));
     }
     function onUserTyping({ is_typing }) { setIsOtherUserTyping(is_typing); }
-    
+
     function onMessageDeleted(deletedMsgId) {
-      setMessages((prev) => prev.map(m => 
-        m.id === deletedMsgId 
-          ? { ...m, content: "🚫 Mensagem apagada", is_deleted: true } 
+      setMessages((prev) => prev.map(m =>
+        m.id === deletedMsgId
+          ? { ...m, content: "🚫 Mensagem apagada", is_deleted: true }
           : m
       ));
     }
@@ -162,20 +171,22 @@ export const useChat = (conversationId, loggedUserId) => {
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('new_message', onNewMessage);
-    socket.on('user_typing', onUserTyping); 
-    socket.on('message_deleted', onMessageDeleted); 
+    socket.on('user_typing', onUserTyping);
+    socket.on('message_deleted', onMessageDeleted);
     socket.on('invite_updated', onInviteUpdated);
-    socket.on('message_status_updated', onStatusUpdated); 
+    socket.on('message_status_updated', onStatusUpdated);
+    socket.on('message_view_once_opened', onViewOnceOpened);
 
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('new_message', onNewMessage);
-      socket.off('user_typing', onUserTyping); 
-      socket.off('message_deleted', onMessageDeleted); 
+      socket.off('user_typing', onUserTyping);
+      socket.off('message_deleted', onMessageDeleted);
       socket.off('invite_updated', onInviteUpdated);
-      socket.off('message_status_updated', onStatusUpdated); 
-      
+      socket.off('message_status_updated', onStatusUpdated);
+      socket.off('message_view_once_opened', onViewOnceOpened);
+
       if (typeof document !== 'undefined') {
         document.removeEventListener('visibilitychange', onVisibility);
       }
@@ -201,14 +212,14 @@ export const useChat = (conversationId, loggedUserId) => {
       createdAt: new Date().toISOString(),
       status: 'pending', // relógio, até a API confirmar
     };
-    
+
     setMessages((prev) => [...prev, tempMessage]);
 
     try {
       const response = await api.post('/mensagens', {
         conversation_id: conversationId,
         content: content,
-        reply_to_id: replyToMsg ? replyToMsg.id : null 
+        reply_to_id: replyToMsg ? replyToMsg.id : null
       });
 
       // Confirmou no banco: vira `sent` (1 check) com o id definitivo.
@@ -226,45 +237,98 @@ export const useChat = (conversationId, loggedUserId) => {
   // 🔥 NOVA FUNÇÃO PARA ENVIAR CONVITE COMO JSON INVISÍVEL
   const sendInvite = async (evento, senderId) => {
     if (!conversationId || isNaN(conversationId)) return;
-    
+
     // Cria a string com a TAG secreta
     const invitePayload = `[CONVITE_EVENTO]${JSON.stringify(evento)}`;
-    
+
     // Manda isso como se fosse uma mensagem de texto normal
     await sendMessage(invitePayload, senderId);
   };
 
-  const sendImage = async (file, senderId) => {
+  // `options` vem da pré-visualização: { caption, viewOnce }.
+  const sendImage = async (file, senderId, { caption = '', viewOnce = false } = {}) => {
     if (!conversationId) return;
 
     const fakeId = Date.now();
-    const localUrlPreview = URL.createObjectURL(file); 
+    const localUrlPreview = URL.createObjectURL(file);
+    const legenda = caption.trim();
 
     const tempMessage = {
       id: fakeId,
       conversation_id: conversationId,
       sender_id: senderId,
-      content: localUrlPreview, 
-      createdAt: new Date().toISOString()
+      // Visualização única: nem a bolha de quem envia mostra a foto.
+      content: viewOnce ? null : localUrlPreview,
+      caption: viewOnce ? null : legenda || null,
+      is_view_once: !!viewOnce,
+      is_opened: false,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
     };
-    
+
     setMessages((prev) => [...prev, tempMessage]);
 
     const formData = new FormData();
     formData.append('image', file);
     formData.append('conversation_id', conversationId);
+    if (legenda) formData.append('caption', legenda);
+    if (viewOnce) formData.append('is_view_once', 'true');
 
     try {
-      const response = await api.post('/mensagens/imagem', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      setMessages((prev) => prev.map(m => m.id === fakeId ? { ...m, id: response.data.id, content: response.data.content } : m));
+      // Sem Content-Type manual: o navegador monta o boundary do multipart.
+      const response = await api.post('/mensagens/imagem', formData);
+      setMessages((prev) => prev.map(m => (
+        m.id === fakeId ? { ...m, ...response.data, status: response.data.status || 'sent' } : m
+      )));
     } catch (error) {
       console.error("Erro ao fazer upload da imagem:", error);
-      setMessages((prev) => prev.filter(m => m.id !== fakeId));
-      alert("Erro ao enviar imagem. Tente novamente.");
+      setMessages((prev) => prev.map(m => (m.id === fakeId ? { ...m, status: 'failed' } : m)));
+    } finally {
+      if (viewOnce) URL.revokeObjectURL(localUrlPreview);
     }
+  };
+
+  // Abre uma foto de visualização única: a URL vem UMA vez (ack do socket ou
+  // PATCH de reserva). Depois disso a mensagem fica "Aberta" para sempre.
+  const marcarAberta = (messageId) => {
+    setMessages((prev) => prev.map(m => (String(m.id) === String(messageId) ? { ...m, is_opened: true } : m)));
+  };
+
+  const openViewOnce = async (message) => {
+    if (!message?.is_view_once || message.is_opened) {
+      const err = new Error('Esta foto já foi aberta.');
+      err.code = 'already_opened';
+      throw err;
+    }
+    let result;
+    if (socket.connected) {
+      result = await new Promise((resolve, reject) => {
+        socket.timeout(8000).emit('mark_view_once_opened', { message_id: message.id }, (timeoutErr, ack) => {
+          if (timeoutErr) return reject(new Error('Sem resposta do servidor.'));
+          if (!ack?.ok) {
+            const err = new Error(ack?.error || 'Não foi possível abrir a foto.');
+            err.code = ack?.code || 'unknown';
+            return reject(err);
+          }
+          return resolve(ack);
+        });
+      }).catch((err) => {
+        if (err.code === 'already_opened') marcarAberta(message.id);
+        throw err;
+      });
+    } else {
+      try {
+        const { data } = await api.patch(`/mensagens/${message.id}/open-view-once`);
+        result = data;
+      } catch (error) {
+        const err = new Error(error?.response?.data?.error || 'Não foi possível abrir a foto.');
+        err.code = error?.response?.data?.code || (error?.response?.status === 410 ? 'already_opened' : 'unknown');
+        if (err.code === 'already_opened') marcarAberta(message.id);
+        throw err;
+      }
+    }
+    marcarAberta(message.id);
+    return { url: result.url, caption: result.caption || null };
   };
 
   const deleteMessage = async (msgId) => {
@@ -286,5 +350,5 @@ export const useChat = (conversationId, loggedUserId) => {
     setMessages((prev) => prev.filter(m => m.id !== msgId));
   };
 
-  return { messages, isConnected, sendMessage, sendInvite, sendImage, deleteMessage, hideMessageForMe, setMessages, loading, loadMore, hasNext, isOtherUserTyping, handleTyping };
+  return { messages, isConnected, sendMessage, sendInvite, sendImage, openViewOnce, deleteMessage, hideMessageForMe, setMessages, loading, loadMore, hasNext, isOtherUserTyping, handleTyping };
 };
