@@ -150,15 +150,16 @@ export const useChat = (conversationId, loggedUserId) => {
       ));
     }
 
-    // Escuta quando um convite for aceite ou recusado
+    // Convite respondido (por qualquer lado): aceito vira o card "Encontro
+    // marcado" com os dados que a API guardou; recusado vira o aviso.
     function onInviteUpdated(data) {
+      const alvo = String(data?.messageId ?? data?.eventId ?? '');
       setMessages(prev => prev.map(m => {
-        if (m.content && m.content.includes(data.eventId)) {
-           // Troca o JSON do convite por uma mensagem de aviso normal
-           const statusText = data.status === 'aceite' ? '✅ Convite Aceite!' : '❌ Convite Recusado';
-           return { ...m, content: statusText };
+        if (String(m.id) !== alvo) return m;
+        if (data.status === 'aceite') {
+          return { ...m, content: data.content || '✅ Convite Aceite!', meeting: data.meeting || m.meeting || {} };
         }
-        return m;
+        return { ...m, content: data.content || '❌ Convite Recusado', meeting: undefined };
       }));
     }
 
@@ -195,7 +196,9 @@ export const useChat = (conversationId, loggedUserId) => {
     };
   }, [conversationId, loggedUserId, fetchMessages, getHiddenMessages]);
 
-  const sendMessage = async (content, senderId, replyToMsg = null) => {
+  // `reply` = resumo da mensagem citada ({ id, sender_id, sender_name, type,
+  // content }, mesmo formato do `reply_to` da API) ou null.
+  const sendMessage = async (content, senderId, reply = null) => {
     if (!conversationId || isNaN(conversationId)) return;
 
     socket.emit('typing_stop', { conversation_id: conversationId, user_id: senderId });
@@ -207,8 +210,8 @@ export const useChat = (conversationId, loggedUserId) => {
       conversation_id: conversationId,
       sender_id: senderId,
       content,
-      reply_to_content: replyToMsg ? replyToMsg.content : null,
-      reply_to_sender: replyToMsg ? (replyToMsg.sender_id === senderId ? "Você" : "Outro") : null,
+      reply_to_id: reply ? reply.id : null,
+      reply_to: reply || undefined,
       createdAt: new Date().toISOString(),
       status: 'pending', // relógio, até a API confirmar
     };
@@ -219,13 +222,19 @@ export const useChat = (conversationId, loggedUserId) => {
       const response = await api.post('/mensagens', {
         conversation_id: conversationId,
         content: content,
-        reply_to_id: replyToMsg ? replyToMsg.id : null
+        reply_to_id: reply ? reply.id : null
       });
 
       // Confirmou no banco: vira `sent` (1 check) com o id definitivo.
       setMessages((prev) => prev.map(m => (
         m.id === fakeId
-          ? { ...m, id: response.data.id, status: response.data.status || 'sent' }
+          ? {
+            ...m,
+            id: response.data.id,
+            status: response.data.status || 'sent',
+            // A citação confirmada pela API (com o nome do autor) substitui a local.
+            reply_to: response.data.reply_to !== undefined ? response.data.reply_to : m.reply_to,
+          }
           : m
       )));
     } catch (error) {
@@ -245,8 +254,8 @@ export const useChat = (conversationId, loggedUserId) => {
     await sendMessage(invitePayload, senderId);
   };
 
-  // `options` vem da pré-visualização: { caption, viewOnce }.
-  const sendImage = async (file, senderId, { caption = '', viewOnce = false } = {}) => {
+  // `options` vem da pré-visualização: { caption, viewOnce, reply }.
+  const sendImage = async (file, senderId, { caption = '', viewOnce = false, reply = null } = {}) => {
     if (!conversationId) return;
 
     const fakeId = Date.now();
@@ -262,6 +271,8 @@ export const useChat = (conversationId, loggedUserId) => {
       caption: viewOnce ? null : legenda || null,
       is_view_once: !!viewOnce,
       is_opened: false,
+      reply_to_id: reply ? reply.id : null,
+      reply_to: reply || undefined,
       createdAt: new Date().toISOString(),
       status: 'pending',
     };
@@ -273,6 +284,7 @@ export const useChat = (conversationId, loggedUserId) => {
     formData.append('conversation_id', conversationId);
     if (legenda) formData.append('caption', legenda);
     if (viewOnce) formData.append('is_view_once', 'true');
+    if (reply && reply.id != null) formData.append('reply_to_id', String(reply.id));
 
     try {
       // Sem Content-Type manual: o navegador monta o boundary do multipart.

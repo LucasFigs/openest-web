@@ -11,6 +11,7 @@ import Filters from '../../components/Filters/Filters';
 import MatchPopup from '../../components/MatchPopup/MatchPopup';
 import ReportModal from '../../components/ReportModal/ReportModal';
 import AppSidebar from '../../components/AppSidebar/AppSidebar';
+import SwipeCard from './SwipeCard';
 import { BadgeCheck, Heart, RotateCcw, SlidersHorizontal, Sparkles, User, Users, X } from 'lucide-react';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -79,7 +80,8 @@ const Discovery = () => {
   const [hasMore,           setHasMore]          = useState(true);
   const [loggedUser,        setLoggedUser]       = useState(null);
   const [groupMemberIndex,  setGroupMemberIndex] = useState(0);
-  const [exitX,             setExitX]            = useState(0);
+  // Perfil com quem deu match (o card já saiu da tela quando a API responde).
+  const [matchProfile,      setMatchProfile]     = useState(null);
   const [isFilterOpen,      setIsFilterOpen]     = useState(false);
   const [activeFilters,     setActiveFilters]    = useState({
     distance: 50, ageRange: [18, 40], relationshipStatus: [], interests: [],
@@ -89,6 +91,7 @@ const Discovery = () => {
   const [isReportOpen,       setIsReportOpen]     = useState(false);
 
   const fetchingMore = useRef(false);
+  const swipeRef = useRef(null);
 
   // ── Mensagens não lidas (badge do Chat e título da aba) ──────────────────
   // Total real vindo da API (soma do unreadCount de cada conversa), atualizado
@@ -177,11 +180,11 @@ const Discovery = () => {
   // ── Helpers de navegação ───────────────────────────────────────────────────
   const next = useCallback(() => {
     setGroupMemberIndex(0);
-    setExitX(0);
     setCurrentIndex(prev => prev + 1);
   }, []);
 
   const current = profiles[currentIndex];
+  const proximo = profiles[currentIndex + 1];
 
   const toggleGroupMember = useCallback((e) => {
     e.stopPropagation();
@@ -190,39 +193,46 @@ const Discovery = () => {
     }
   }, [current]);
 
-  // ── Like ───────────────────────────────────────────────────────────────────
-  const handleLike = useCallback(async () => {
-    if (!current) return;
-    setExitX(300);
-    try {
-      const { data } = await api.post(`/curtir/${current.id}`);
-      const isMatch = data.match || data.isMatch || data.resultado === 'match' || false;
-      if (isMatch) {
-        setShowMatch(true);
-      } else {
-        setTimeout(next, 400);
+  // ── Swipe concluído (arraste ou botões X / ♥) ─────────────────────────────
+  // O card já voou para fora: o próximo sobe na hora e a API roda em seguida.
+  const concluirSwipe = useCallback(async (direcao) => {
+    const alvo = current;
+    if (!alvo) return;
+    next();
+    if (direcao === 'like') {
+      try {
+        const { data } = await api.post(`/curtir/${alvo.id}`);
+        const isMatch = data.match || data.isMatch || data.resultado === 'match' || false;
+        if (isMatch) {
+          setMatchProfile(alvo);
+          setShowMatch(true);
+        }
+      } catch (err) {
+        console.error('Like:', err?.response?.status, err?.response?.data);
+        toast.error('Não foi possível registrar a curtida.');
       }
-    } catch (err) {
-      console.error('Like:', err?.response?.status, err?.response?.data);
-      setTimeout(next, 400);
+    } else {
+      try {
+        // Rota real da API (antes '/interactions/passar', que não existe).
+        await api.post(`/passar/${alvo.id}`);
+      } catch (err) {
+        console.error('Passar:', err?.response?.status, err?.response?.data);
+      }
     }
   }, [current, next]);
 
-  // ── Dislike ────────────────────────────────────────────────────────────────
-  const handleDislike = useCallback(async () => {
-    if (!current) return;
-    setExitX(-300);
-    try {
-      await api.post(`/interactions/passar/${current.id}`, {
-        to_user_id: current.id,
-        action: 'dislike',
-      });
-    } catch (err) {
-      console.error('Dislike:', err?.response?.status, err?.response?.data);
-    } finally {
-      setTimeout(next, 400);
-    }
-  }, [current, next]);
+  // Setas ← / → do teclado fazem o mesmo que os botões.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (isFilterOpen || isReportOpen || showMatch) return;
+      const alvo = e.target;
+      if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.isContentEditable)) return;
+      if (e.key === 'ArrowRight') swipeRef.current?.swipe('like');
+      if (e.key === 'ArrowLeft') swipeRef.current?.swipe('pass');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isFilterOpen, isReportOpen, showMatch]);
 
   // ── Denúncia ───────────────────────────────────────────────────────────────
   const handleReportSubmit = useCallback(async (userId, reason) => {
@@ -275,82 +285,91 @@ const Discovery = () => {
 
         <div className="discovery-stage">
           <div className="card-container">
-            <AnimatePresence mode="wait">
-              {current ? (
-                <Motion.div
-                  key={current.id}
-                  className="profile-card"
-                  initial={{ opacity: 0, scale: 0.97, x: 40 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  exit={{ opacity: 0, x: exitX, rotate: exitX > 0 ? 8 : -8 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                >
-                  <AnimatePresence mode="wait">
-                    <Motion.img
-                      key={`${current.id}-${groupMemberIndex}`}
-                      src={current.img[groupMemberIndex]}
-                      alt={current.name}
-                      className="card-img"
-                      loading="lazy"
-                      draggable={false}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      onError={e => { e.target.onerror = null; e.target.src = avatarFallback(current.name); }}
-                    />
-                  </AnimatePresence>
+            {proximo ? (
+              // Próximo perfil espiando atrás: quando o card sai, ele já está ali.
+              <div className="profile-card profile-card--peek" aria-hidden="true">
+                <img
+                  src={proximo.img[0]}
+                  alt=""
+                  className="card-img"
+                  draggable={false}
+                  onError={e => { e.target.onerror = null; e.target.src = avatarFallback(proximo.name); }}
+                />
+              </div>
+            ) : null}
 
-                  {current.img.length > 1 && (
-                    <div className="photo-dots">
-                      {current.img.map((_, i) => (
-                        <button
-                          type="button"
-                          key={i}
-                          className={`dot ${i === groupMemberIndex ? 'active' : ''}`}
-                          onClick={e => { e.stopPropagation(); setGroupMemberIndex(i); }}
-                          aria-label={`Foto ${i + 1}`}
-                        />
-                      ))}
-                    </div>
-                  )}
+            {current ? (
+              <SwipeCard
+                key={current.id}
+                ref={swipeRef}
+                className="profile-card"
+                onSwipe={concluirSwipe}
+                label={`Perfil de ${current.name}. Arraste para a direita para curtir ou para a esquerda para passar.`}
+              >
+                <AnimatePresence mode="wait">
+                  <Motion.img
+                    key={`${current.id}-${groupMemberIndex}`}
+                    src={current.img[groupMemberIndex]}
+                    alt={current.name}
+                    className="card-img"
+                    draggable={false}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onError={e => { e.target.onerror = null; e.target.src = avatarFallback(current.name); }}
+                  />
+                </AnimatePresence>
 
-                  <button type="button" className="group-badge" onClick={toggleGroupMember}>
-                    {current.type === 'Grupo'
-                      ? <><Users size={14} aria-hidden="true" /> Grupo{current.img.length > 1 ? ` · ver ${groupMemberIndex === 0 ? '2º' : '1º'}` : ''}</>
-                      : <><User size={14} aria-hidden="true" /> {current.type}</>}
-                  </button>
-
-                  <div className="card-overlay">
-                    <div className="info-box">
-                      <h2>
-                        {current.name}, {current.age}
-                        {current.verified ? <BadgeCheck size={20} className="verified-icon" aria-label="Perfil verificado" /> : null}
-                      </h2>
-                      <p>{current.location} · {current.dist}</p>
-                      {current.bio && (
-                        <p className="bio-preview">
-                          {current.bio.slice(0, 80)}{current.bio.length > 80 ? '…' : ''}
-                        </p>
-                      )}
-                    </div>
+                {current.img.length > 1 && (
+                  <div className="photo-dots">
+                    {current.img.map((_, i) => (
+                      <button
+                        type="button"
+                        key={i}
+                        className={`dot ${i === groupMemberIndex ? 'active' : ''}`}
+                        onClick={e => { e.stopPropagation(); setGroupMemberIndex(i); }}
+                        aria-label={`Foto ${i + 1}`}
+                      />
+                    ))}
                   </div>
-                </Motion.div>
-              ) : (
-                <Motion.div
-                  className="end-state"
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                >
-                  <span className="end-badge"><Sparkles size={26} aria-hidden="true" /></span>
-                  <h3>Você viu todo mundo por aqui</h3>
-                  <p>Tente ampliar os filtros ou volte mais tarde.</p>
-                  <button onClick={() => fetchProfiles(1, activeFilters)} className="btn-retry">
-                    <RotateCcw size={16} aria-hidden="true" /> Buscar novamente
-                  </button>
-                </Motion.div>
-              )}
-            </AnimatePresence>
+                )}
+
+                <button type="button" className="group-badge" onClick={toggleGroupMember}>
+                  {current.type === 'Grupo'
+                    ? <><Users size={14} aria-hidden="true" /> Grupo{current.img.length > 1 ? ` · ver ${groupMemberIndex === 0 ? '2º' : '1º'}` : ''}</>
+                    : <><User size={14} aria-hidden="true" /> {current.type}</>}
+                </button>
+
+                <div className="card-overlay">
+                  <div className="info-box">
+                    <h2>
+                      {current.name}, {current.age}
+                      {current.verified ? <BadgeCheck size={20} className="verified-icon" aria-label="Perfil verificado" /> : null}
+                    </h2>
+                    <p>{current.location} · {current.dist}</p>
+                    {current.bio && (
+                      <p className="bio-preview">
+                        {current.bio.slice(0, 80)}{current.bio.length > 80 ? '…' : ''}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </SwipeCard>
+            ) : (
+              <Motion.div
+                className="end-state"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <span className="end-badge"><Sparkles size={26} aria-hidden="true" /></span>
+                <h3>Você viu todo mundo por aqui</h3>
+                <p>Tente ampliar os filtros ou volte mais tarde.</p>
+                <button onClick={() => fetchProfiles(1, activeFilters)} className="btn-retry">
+                  <RotateCcw size={16} aria-hidden="true" /> Buscar novamente
+                </button>
+              </Motion.div>
+            )}
 
             {loadingMore && (
               <div className="loading-more-indicator">
@@ -363,20 +382,20 @@ const Discovery = () => {
             <Motion.button
               whileTap={{ scale: 0.9 }}
               className="circle-btn x-btn"
-              onClick={handleDislike}
+              onClick={() => swipeRef.current?.swipe('pass')}
               disabled={!current}
               aria-label="Passar perfil"
-              title="Passar"
+              title="Passar (seta ←)"
             >
               <X size={28} aria-hidden="true" />
             </Motion.button>
             <Motion.button
               whileTap={{ scale: 0.9 }}
               className="circle-btn heart-btn"
-              onClick={handleLike}
+              onClick={() => swipeRef.current?.swipe('like')}
               disabled={!current}
               aria-label="Curtir perfil"
-              title="Curtir"
+              title="Curtir (seta →)"
             >
               <Heart size={28} fill="currentColor" aria-hidden="true" />
             </Motion.button>
@@ -392,11 +411,11 @@ const Discovery = () => {
 
         <MatchPopup
           isOpen={showMatch}
-          matchName={current?.name}
-          matchImg={current?.img?.[groupMemberIndex]}
+          matchName={matchProfile?.name}
+          matchImg={matchProfile?.img?.[0]}
           loggedUserImg={loggedUser?.foto}
-          onClose={() => { setShowMatch(false); next(); }}
-          onChat={() => navigate(`/chat/${current?.id}`)}
+          onClose={() => { setShowMatch(false); setMatchProfile(null); }}
+          onChat={() => navigate(`/chat/${matchProfile?.id}`)}
         />
 
         <ReportModal

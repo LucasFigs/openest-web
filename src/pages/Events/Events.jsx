@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, MapPin, MessageCircle, UserRound, X,
 } from 'lucide-react';
@@ -48,12 +48,18 @@ const gerarLinkGoogleCalendar = (evento) => {
 
 const Events = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Vindo do card "Encontro marcado" do chat: abre no mês e no dia dele.
+  const [focoInicial] = useState(() => {
+    const d = location.state?.focusDate ? new Date(location.state.focusDate) : null;
+    return d && !Number.isNaN(d.getTime()) ? d : null;
+  });
   const [loading,       setLoading]       = useState(true);
   const [events,        setEvents]        = useState([]);
   const [loggedUser,    setLoggedUser]    = useState(null);
-  const [currentDate,   setCurrentDate]   = useState(new Date());
+  const [currentDate,   setCurrentDate]   = useState(() => (focoInicial ? new Date(focoInicial.getFullYear(), focoInicial.getMonth(), 1) : new Date()));
 
-  const [selectedDay,   setSelectedDay]   = useState(null);
+  const [selectedDay,   setSelectedDay]   = useState(() => (focoInicial ? focoInicial.getDate() : null));
 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isModalOpen,   setIsModalOpen]   = useState(false);

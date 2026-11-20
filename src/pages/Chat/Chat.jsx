@@ -6,8 +6,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, Ban, CalendarDays, Camera, ChevronDown, Copy, Eye, EyeOff, Image as ImageIcon,
-  MapPin, MessageCircle, Plus, Reply, Search, Send, Trash2, X,
+  ArrowLeft, Ban, CalendarCheck, CalendarDays, CalendarX, Camera, ChevronDown, ChevronRight, Clock, Copy,
+  Eye, EyeOff, Image as ImageIcon, MapPin, MessageCircle, Plus, Reply, Search, Send, Trash2, X,
 } from 'lucide-react';
 import Loading from '../../components/Loading/Loading';
 import { useChat } from '../../hooks/useChat';
@@ -15,8 +15,9 @@ import api from '../../services/api';
 import socket from '../../services/socket';
 import { Avatar, MessageTicks } from './components/ChatBits';
 import {
-  DELETED_TEXT, ehImagem, formatHora, formatHoraLista, lerConvite, linkDeMapa, mesmoDia, rotuloDoDia,
-  statusDaMensagem,
+  DELETED_TEXT, INVITE_REJECTED_TEXT, citacaoDe, ehImagem, formatHora, formatHoraLista, formatarQuando,
+  lerConvite, lerEncontro, linkDeMapa, mesmoDia, montarEncontro, resumoDaCitacao, rotuloDoDia,
+  statusDaMensagem, textoDaCitacao,
 } from './components/chatUtils';
 import Sheet from './components/Sheet';
 import ImagePreviewModal from './components/ImagePreviewModal';
@@ -105,6 +106,31 @@ function InviteCard({ invite, mine, onAccept, onReject }) {
   );
 }
 
+// Convite aceito: card com data/local (quando houver) e atalho para Encontros.
+function MeetingCard({ meeting, onOpen }) {
+  const quando = formatarQuando(meeting.scheduled_at);
+  return (
+    <div className="meeting-card">
+      <div className="meeting-card__head">
+        <span className="meeting-card__icon"><CalendarCheck size={18} aria-hidden="true" /></span>
+        <span className="meeting-card__title">
+          <strong>Encontro marcado</strong>
+          {meeting.titulo ? <small>{meeting.titulo}</small> : null}
+        </span>
+      </div>
+      {quando || meeting.local ? (
+        <div className="meeting-card__body">
+          {quando ? <p><Clock size={14} aria-hidden="true" /> {quando}</p> : null}
+          {meeting.local ? <p><MapPin size={14} aria-hidden="true" /> {meeting.local}</p> : null}
+        </div>
+      ) : null}
+      <button type="button" className="meeting-card__cta" onClick={onOpen}>
+        Ver encontro <ChevronRight size={16} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
 const Chat = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
@@ -125,6 +151,7 @@ const Chat = () => {
   const [loggedUser, setLoggedUser] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [replyTo, setReplyTo] = useState(null);
+  const [destaqueId, setDestaqueId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [attachOpen, setAttachOpen] = useState(false);
   const [actionMessage, setActionMessage] = useState(null);
@@ -237,10 +264,35 @@ const Chat = () => {
     return termo ? conversations.filter((c) => normalizar(c.name).includes(termo)) : conversations;
   }, [conversations, searchQuery]);
 
+  // ── citação ────────────────────────────────────────────────────────────
+  const autorDaCitacao = (c) => {
+    if (!c) return '';
+    if (c.sender_id != null && String(c.sender_id) === String(meuId)) return 'Você';
+    if (c.sender_id == null && c.sender_name === 'Você') return 'Você';
+    return c.sender_name && c.sender_name !== 'Outro' ? c.sender_name : (activeChat?.name || 'Contato');
+  };
+  const citacaoAtual = replyTo
+    ? resumoDaCitacao(replyTo, String(replyTo.sender_id) === String(meuId) ? (loggedUser?.name || null) : (activeChat?.name || null))
+    : null;
+
+  // Toque na citação: rola suave até a original e destaca por um instante.
+  const irParaMensagem = (id) => {
+    if (id == null) return;
+    const el = listRef.current?.querySelector(`[data-msg-id="${String(id).replace(/"/g, '')}"]`);
+    if (!el) {
+      mostrarAviso('A mensagem original não está carregada.');
+      return;
+    }
+    pertoDoFim.current = false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setDestaqueId(String(id));
+    window.setTimeout(() => setDestaqueId(null), 1600);
+  };
+
   // ── envio ──────────────────────────────────────────────────────────────
   const enviarTexto = () => {
     if (!newMessage.trim() || !conversationId) return;
-    sendMessage(newMessage, meuId, replyTo);
+    sendMessage(newMessage, meuId, citacaoAtual);
     setNewMessage('');
     setReplyTo(null);
     atualizarListaEmBreve();
@@ -269,7 +321,8 @@ const Chat = () => {
     const file = previewFile;
     setPreviewFile(null);
     if (file) {
-      sendImage(file, meuId, { caption, viewOnce });
+      sendImage(file, meuId, { caption, viewOnce, reply: citacaoAtual });
+      setReplyTo(null);
       atualizarListaEmBreve();
     }
   };
@@ -281,7 +334,7 @@ const Chat = () => {
     }
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        sendMessage(`📍 Localização partilhada:\nhttp://maps.google.com/maps?q=${coords.latitude},${coords.longitude}`, meuId, replyTo);
+        sendMessage(`📍 Localização partilhada:\nhttp://maps.google.com/maps?q=${coords.latitude},${coords.longitude}`, meuId, citacaoAtual);
         setReplyTo(null);
       },
       () => mostrarAviso('Não foi possível obter a sua localização.')
@@ -290,7 +343,8 @@ const Chat = () => {
 
   // ── convites ───────────────────────────────────────────────────────────
   const handleAceitarConvite = async (msgId, payload) => {
-    setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: '✅ Convite Aceite!' } : m)));
+    const encontro = montarEncontro(payload);
+    setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: encontro.content, meeting: encontro.meeting } : m)));
     try {
       // other_user_id é sempre o contato do chat ativo (nunca o próprio usuário).
       await api.post('/events/agendar', { ...payload, other_user_id: activeChat.other_user_id });
@@ -302,7 +356,7 @@ const Chat = () => {
   };
 
   const handleRecusarConvite = async (msgId) => {
-    setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: '❌ Convite Recusado' } : m)));
+    setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, content: INVITE_REJECTED_TEXT, meeting: undefined } : m)));
     try {
       await api.post(`/mensagens/${msgId}/responder`, { resposta: 'recusado' });
     } catch (err) {
@@ -329,9 +383,9 @@ const Chat = () => {
     const msg = actionMessage;
     if (!msg) return [];
     const apagada = msg.is_deleted || msg.content === DELETED_TEXT;
-    const textual = !apagada && !msg.is_view_once && !ehImagem(msg.content) && !lerConvite(msg.content);
+    const textual = !apagada && !msg.is_view_once && !ehImagem(msg.content) && !lerConvite(msg.content) && !lerEncontro(msg) && msg.content !== INVITE_REJECTED_TEXT;
     const lista = [];
-    if (!apagada && !msg.is_view_once) {
+    if (!apagada) {
       lista.push({ key: 'reply', label: 'Responder', Icon: Reply, onSelect: () => { setReplyTo(msg); textareaRef.current?.focus(); } });
     }
     if (textual) {
@@ -365,7 +419,10 @@ const Chat = () => {
       Math.abs(new Date(criada) - new Date(criadaAnterior)) <= GROUP_WINDOW_MS;
 
     const apagada = msg.is_deleted || msg.content === DELETED_TEXT;
-    const convite = !apagada && !msg.is_view_once ? lerConvite(msg.content) : null;
+    const encontro = !apagada && !msg.is_view_once ? lerEncontro(msg) : null;
+    const recusado = !apagada && msg.content === INVITE_REJECTED_TEXT;
+    const convite = !apagada && !msg.is_view_once && !encontro ? lerConvite(msg.content) : null;
+    const citacao = !apagada ? citacaoDe(msg) : null;
     const imagem = !apagada && !msg.is_view_once && !convite && ehImagem(msg.content);
     const mapa = !apagada && !msg.is_view_once && !convite && !imagem ? linkDeMapa(msg.content) : null;
 
@@ -388,6 +445,23 @@ const Chat = () => {
       corpo = (
         <span className="bubble__inline">
           <ViewOnceCard message={msg} mine={mine} opening={openingId === msg.id} onOpen={abrirFotoUnica} />
+          {meta}
+        </span>
+      );
+    } else if (encontro) {
+      corpo = (
+        <>
+          <MeetingCard
+            meeting={encontro}
+            onOpen={() => navigate('/events', { state: { focusDate: encontro.scheduled_at || null } })}
+          />
+          <span className="bubble__meta-row">{meta}</span>
+        </>
+      );
+    } else if (recusado) {
+      corpo = (
+        <span className="bubble__inline">
+          <span className="bubble__system"><CalendarX size={14} aria-hidden="true" /> Convite recusado</span>
           {meta}
         </span>
       );
@@ -435,17 +509,32 @@ const Chat = () => {
     return (
       <React.Fragment key={msg.id || index}>
         {novoDia && criada ? <div className="day-chip" role="separator"><span>{rotuloDoDia(criada)}</span></div> : null}
-        <div className={`msg-row ${mine ? 'is-mine' : 'is-theirs'} ${agrupada ? 'is-grouped' : ''}`}>
+        <div
+          className={`msg-row ${mine ? 'is-mine' : 'is-theirs'} ${agrupada ? 'is-grouped' : ''} ${destaqueId === String(msg.id) ? 'is-highlighted' : ''}`}
+          data-msg-id={msg.id}
+        >
           <div
-            className={`bubble ${mine ? 'bubble--sent' : 'bubble--received'} ${agrupada ? '' : 'has-tail'} ${imagem ? 'bubble--media' : ''} ${msg.status === 'failed' ? 'is-failed' : ''}`}
+            className={`bubble ${mine ? 'bubble--sent' : 'bubble--received'} ${agrupada ? '' : 'has-tail'} ${imagem ? 'bubble--media' : ''} ${encontro ? 'bubble--card' : ''} ${msg.status === 'failed' ? 'is-failed' : ''}`}
             onContextMenu={(e) => { e.preventDefault(); setActionMessage(msg); }}
           >
-            {msg.reply_to_content && !apagada ? (
-              <span className="bubble__quote">
-                <strong>{msg.reply_to_sender === 'Você' ? 'Você' : activeChat?.name}</strong>
-                <span>{msg.reply_to_content}</span>
-              </span>
-            ) : null}
+            {citacao ? (() => {
+              const QuoteIcon = TYPE_ICONS[citacao.type] || null;
+              const autor = autorDaCitacao(citacao);
+              return (
+                <button
+                  type="button"
+                  className="bubble__quote"
+                  onClick={() => irParaMensagem(citacao.id)}
+                  aria-label={`Ir para a mensagem de ${autor}`}
+                >
+                  <strong>{autor}</strong>
+                  <span className="bubble__quote-text">
+                    {QuoteIcon ? <QuoteIcon size={13} aria-hidden="true" /> : null}
+                    <span>{textoDaCitacao(citacao)}</span>
+                  </span>
+                </button>
+              );
+            })() : null}
             {corpo}
             <button type="button" className="bubble__menu" onClick={() => setActionMessage(msg)} aria-label="Ações da mensagem">
               <ChevronDown size={16} aria-hidden="true" />
@@ -547,11 +636,13 @@ const Chat = () => {
 
             <footer className="composer">
               {replyTo ? (
-                <div className="composer__reply">
-                  <span className="composer__reply-bar" aria-hidden="true" />
+                <div className="composer__reply" role="status" aria-label="Respondendo mensagem">
                   <span className="composer__reply-content">
-                    <strong>Respondendo {replyTo.sender_id === meuId ? 'a você' : activeChat.name}</strong>
-                    <span>{replyTo.is_view_once ? 'Foto' : ehImagem(replyTo.content) ? (replyTo.caption || 'Foto') : replyTo.content}</span>
+                    <strong>{autorDaCitacao(citacaoAtual)}</strong>
+                    <span className="composer__reply-text">
+                      {TYPE_ICONS[citacaoAtual.type] ? React.createElement(TYPE_ICONS[citacaoAtual.type], { size: 13, 'aria-hidden': true }) : null}
+                      <span>{textoDaCitacao(citacaoAtual)}</span>
+                    </span>
                   </span>
                   <button type="button" className="icon-btn icon-btn--sm" onClick={() => setReplyTo(null)} aria-label="Cancelar resposta">
                     <X size={16} aria-hidden="true" />
