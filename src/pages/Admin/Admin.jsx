@@ -1,102 +1,116 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
-import { motion } from 'framer-motion';
-import { 
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock } from 'lucide-react';
+import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell 
+  BarChart, Bar,
 } from 'recharts';
+import { AuthContext } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/theme';
 import './Admin.css';
 
-import logoOn from '../../assets/images/LOGO.png'; 
+import logoOn from '../../assets/images/LOGO.png';
+
+// Dados de exemplo: ainda não existe rota de métricas na API. Quando existir
+// (ex.: GET /api/admin/stats), troque MOCK_KPIS pelo retorno dela.
+const MOCK_KPIS = {
+  growth: [
+    { name: 'Seg', value: 120 }, { name: 'Ter', value: 210 },
+    { name: 'Qua', value: 190 }, { name: 'Qui', value: 300 },
+    { name: 'Sex', value: 280 }, { name: 'Sáb', value: 450 },
+    { name: 'Dom', value: 410 },
+  ],
+  matches: [
+    { name: 'Seg', count: 40 }, { name: 'Ter', count: 55 },
+    { name: 'Qua', count: 48 }, { name: 'Qui', count: 70 },
+    { name: 'Sex', count: 65 }, { name: 'Sáb', count: 90 },
+    { name: 'Dom', count: 85 },
+  ],
+  reportsData: [
+    { name: 'Pendentes', value: 5 },
+    { name: 'Em análise', value: 3 },
+    { name: 'Resolvidos', value: 12 },
+  ],
+};
+
+// O SVG dos gráficos precisa da cor em si (não da variável CSS).
+// Série única validada (faixa de luminosidade, croma e contraste >= 3:1)
+// contra a superfície de cada tema: #6d28d9 no claro, #8b5cf6 no escuro.
+const CHART_COLORS = {
+  light: { series: '#6d28d9', grid: '#eeebf3', axis: '#6b6578', surface: '#ffffff', border: '#e5e2ec', text: '#1a1523', cursor: '#f1eef6' },
+  dark: { series: '#8b5cf6', grid: '#2a2636', axis: '#a19db0', surface: '#1b1824', border: '#2a2636', text: '#f4f3f8', cursor: '#221e2c' },
+};
+
+// Status com ícone + rótulo + número: a cor nunca carrega o sentido sozinha.
+const REPORT_STATUS = [
+  { Icon: AlertCircle, tone: 'critical' },
+  { Icon: Clock, tone: 'warning' },
+  { Icon: CheckCircle2, tone: 'good' },
+];
+
+const iniciais = (nome = '') =>
+  nome.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() || '').join('') || 'A';
+
+// Tabela só para leitores de tela: os mesmos números dos gráficos.
+// O sr-only fica num <div>: tabela ignora height/overflow e esticaria a página.
+function DataTable({ caption, rows, valueLabel, valueKey }) {
+  return (
+    <div className="sr-only">
+      <table>
+        <caption>{caption}</caption>
+        <thead><tr><th scope="col">Dia</th><th scope="col">{valueLabel}</th></tr></thead>
+        <tbody>
+          {rows.map((r) => <tr key={r.name}><th scope="row">{r.name}</th><td>{r[valueKey]}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 const Admin = () => {
   const { user } = useContext(AuthContext);
+  const { isDark } = useTheme();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('metrics');
-  
-  // Estado para os dados da API
-  const [stats, setStats] = useState({
-    growth: [],
-    matches: [],
-    reportsData: []
-  });
-
-  // Cores para o gráfico de denúncias
-  const COLORS = ['#FF8042', '#FFBB28', '#00C49F'];
-
-  useEffect(() => {
-    const fetchKPIs = () => {
-      // Simulação de chamada de API (Substitua pelo seu fetch real)
-      const mockKPIs = {
-        growth: [
-          { name: 'Seg', value: 120 }, { name: 'Ter', value: 210 },
-          { name: 'Qua', value: 190 }, { name: 'Qui', value: 300 },
-          { name: 'Sex', value: 280 }, { name: 'Sáb', value: 450 },
-          { name: 'Dom', value: 410 },
-        ],
-        matches: [
-          { name: 'Seg', count: 40 }, { name: 'Ter', count: 55 },
-          { name: 'Qua', count: 48 }, { name: 'Qui', count: 70 },
-          { name: 'Sex', count: 65 }, { name: 'Sáb', count: 90 },
-          { name: 'Dom', count: 85 },
-        ],
-        reportsData: [
-          { name: 'Pendentes', value: 5 },
-          { name: 'Em Análise', value: 3 },
-          { name: 'Resolvidos', value: 12 }
-        ]
-      };
-      setStats(mockKPIs);
-    };
-
-    // const fetchKPIs = async () => {
-    //   try {
-    // const response = await fetch('http://seu-api-url/admin/stats');
-    // const data = await response.json();
-    // setStats(data);
-    // } catch (error) {
-    // console.error("Erro ao buscar KPIs:", error);
-    // }
-    // };
-
-    fetchKPIs();
-    const interval = setInterval(fetchKPIs, 30000); // Refresh a cada 30s
-    return () => clearInterval(interval);
-  }, []);
 
   if (user?.role !== 'admin') {
     return <Navigate to="/discovery" />;
   }
 
+  const stats = MOCK_KPIS;
+  const c = isDark ? CHART_COLORS.dark : CHART_COLORS.light;
+  const axisProps = { axisLine: false, tickLine: false, tick: { fill: c.axis, fontSize: 12 } };
+  const tooltipProps = {
+    contentStyle: { background: c.surface, border: `1px solid ${c.border}`, borderRadius: 8, color: c.text, fontSize: 13 },
+    labelStyle: { color: c.axis, marginBottom: 2 },
+    itemStyle: { color: c.text },
+  };
+  const totalDenuncias = stats.reportsData.reduce((s, r) => s + r.value, 0) || 1;
+
   return (
-    <motion.div 
-      className="admin-page-container"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="admin-page-container">
       <aside className="admin-sidebar">
-        <motion.div className="admin-logo-wrapper" whileHover={{ scale: 1.1 }}>
-           <img src={logoOn} alt="Openest Logo" style={{ width: '40px' }} />
-        </motion.div>
-        <button className="logout-btn" onClick={() => navigate('/discovery')}> ➔ </button>
+        <img src={logoOn} alt="Openest" className="admin-logo" />
+        <button type="button" className="logout-btn" onClick={() => navigate('/discovery')} aria-label="Voltar ao app" title="Voltar ao app">
+          <ArrowLeft size={20} aria-hidden="true" />
+        </button>
       </aside>
 
       <main className="admin-main-content">
         <header className="admin-header">
           <div className="admin-user-info">
-            <h2>PAINEL DE CONTROLE</h2>
-            <p>{user?.name || "Eduardo Dourado"}</p>
+            <h2>Painel de controle</h2>
+            <p>{user?.name || 'Administrador'}</p>
+            <span className="admin-sample-badge">Dados de exemplo</span>
           </div>
-          <img src={user?.avatar || "https://github.com/edudouraado.png"} alt="Admin" className="admin-avatar" />
+          <span className="admin-avatar" aria-hidden="true">{iniciais(user?.name)}</span>
         </header>
 
-        <nav className="admin-tabs">
-          <button className={activeTab === 'metrics' ? 'active' : ''} onClick={() => setActiveTab('metrics')}>
+        <nav className="admin-tabs" role="tablist" aria-label="Seções do painel">
+          <button type="button" role="tab" aria-selected={activeTab === 'metrics'} className={activeTab === 'metrics' ? 'active' : ''} onClick={() => setActiveTab('metrics')}>
             Usuários & Matches
           </button>
-          <button className={activeTab === 'reports' ? 'active' : ''} onClick={() => setActiveTab('reports')}>
+          <button type="button" role="tab" aria-selected={activeTab === 'reports'} className={activeTab === 'reports' ? 'active' : ''} onClick={() => setActiveTab('reports')}>
             Status de Denúncias
           </button>
         </nav>
@@ -104,67 +118,69 @@ const Admin = () => {
         <section className="dashboard-card">
           {activeTab === 'metrics' ? (
             <div className="metrics-view">
-              <div className="chart-group">
-                <h3>Crescimento (Últimos 7 dias)</h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={stats.growth}>
+              <figure className="chart-group">
+                <figcaption><h3>Crescimento (Últimos 7 dias)</h3><span>Novos usuários por dia</span></figcaption>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={stats.growth} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                     <defs>
-                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8e24aa" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#8e24aa" stopOpacity={0}/>
+                      <linearGradient id="admin-growth-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={c.series} stopOpacity={0.22} />
+                        <stop offset="100%" stopColor={c.series} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="value" stroke="#8e24aa" fill="url(#colorValue)" />
+                    <CartesianGrid stroke={c.grid} vertical={false} />
+                    <XAxis dataKey="name" {...axisProps} />
+                    <YAxis {...axisProps} width={44} />
+                    <Tooltip {...tooltipProps} cursor={{ stroke: c.border, strokeWidth: 1 }} formatter={(v) => [v, 'Novos usuários']} />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke={c.series}
+                      strokeWidth={2}
+                      fill="url(#admin-growth-fill)"
+                      activeDot={{ r: 5, fill: c.series, stroke: c.surface, strokeWidth: 2 }}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
+                <DataTable caption="Novos usuários por dia" rows={stats.growth} valueLabel="Novos usuários" valueKey="value" />
+              </figure>
 
-              <div className="chart-group" style={{ marginTop: '30px' }}>
-                <h3>Matches Realizados</h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={stats.matches}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#4a148c" radius={[4, 4, 0, 0]} />
+              <figure className="chart-group">
+                <figcaption><h3>Matches Realizados</h3><span>Matches por dia</span></figcaption>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={stats.matches} margin={{ top: 8, right: 8, left: -12, bottom: 0 }} barCategoryGap="28%">
+                    <CartesianGrid stroke={c.grid} vertical={false} />
+                    <XAxis dataKey="name" {...axisProps} />
+                    <YAxis {...axisProps} width={44} />
+                    <Tooltip {...tooltipProps} cursor={{ fill: c.cursor }} formatter={(v) => [v, 'Matches']} />
+                    <Bar dataKey="count" fill={c.series} radius={[4, 4, 0, 0]} maxBarSize={36} />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+                <DataTable caption="Matches por dia" rows={stats.matches} valueLabel="Matches" valueKey="count" />
+              </figure>
             </div>
           ) : (
             <div className="reports-view">
               <h3>Distribuição de Denúncias</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats.reportsData}
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {stats.reportsData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="reports-legend">
-                {stats.reportsData.map((item, i) => (
-                  <div key={i}><span style={{ color: COLORS[i] }}>●</span> {item.name}: {item.value}</div>
-                ))}
-              </div>
+              <ul className="report-stats">
+                {stats.reportsData.map((item, i) => {
+                  const { Icon, tone } = REPORT_STATUS[i] || REPORT_STATUS[0];
+                  const pct = Math.round((item.value / totalDenuncias) * 100);
+                  return (
+                    <li key={item.name} className={`report-stat is-${tone}`}>
+                      <span className="report-stat__icon"><Icon size={18} aria-hidden="true" /></span>
+                      <span className="report-stat__label">{item.name}</span>
+                      <strong className="report-stat__value">{item.value}</strong>
+                      <span className="report-stat__pct">{pct}% do total</span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
         </section>
       </main>
-    </motion.div>
+    </div>
   );
 };
 

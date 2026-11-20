@@ -1,24 +1,26 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { motion as Motion } from 'framer-motion';
 import './Legal.css';
 
 const TermsOfUse = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Aberta direto pelo link (sem histórico no app): volta para o início.
+  const voltar = () => (location.key !== 'default' ? navigate(-1) : navigate('/'));
 
   return (
     <div className="legal-page-wrapper">
-      <div className="legal-animated-bg"></div>
-      
-      <motion.div 
-        className="legal-glass-card"
+      <Motion.div
+        className="legal-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <header className="legal-header">
-          <button className="legal-back-button" onClick={() => navigate(-1)}>
-            ← Voltar
+          <button type="button" className="legal-back-button" onClick={voltar}>
+            <ArrowLeft size={16} aria-hidden="true" /> Voltar
           </button>
           <h1>Termos de Uso</h1>
           <div className="legal-divider"></div>
@@ -40,7 +42,7 @@ const TermsOfUse = () => {
             <p>O usuário é o único responsável pela veracidade dos dados fornecidos e pela segurança de suas credenciais de acesso.</p>
           </section>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 };

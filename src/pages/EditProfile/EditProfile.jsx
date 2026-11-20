@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import userService from '../../services/userService';
+import { ChevronLeft, ChevronRight, ImageOff, Loader2, Plus, Star, X } from 'lucide-react';
 import './EditProfile.css';
 
 const calcularIdade = (birth_date) => {
@@ -36,8 +36,8 @@ const EditProfile = () => {
 
   const [formData, setFormData] = useState({
     fullName:           '',
-    age:                '',   
-    birth_date:         '',   
+    age:                '',
+    birth_date:         '',
     bio:                '',
     relationshipStatus: 'individual',
     discreteMode:       false,
@@ -172,7 +172,7 @@ const EditProfile = () => {
       } else if (index < activePhoto) {
         setActivePhoto(activePhoto - 1);
       }
-      
+
     } catch (err) {
       console.error('Erro ao apagar foto:', err);
       alert('Ocorreu um erro ao apagar a foto.');
@@ -186,7 +186,7 @@ const EditProfile = () => {
     setFormData(prev => ({
       ...prev,
       age:        idade,
-      birth_date: idadeParaBirthDate(idade), 
+      birth_date: idadeParaBirthDate(idade),
     }));
   };
 
@@ -196,7 +196,7 @@ const EditProfile = () => {
 
     const dataToSave = {
       name:                  formData.fullName,
-      birth_date:            formData.birth_date,      
+      birth_date:            formData.birth_date,
       bio:                   formData.bio,
       status_relacionamento: formData.relationshipStatus,
       modo_discreto:         formData.discreteMode,
@@ -220,34 +220,34 @@ const EditProfile = () => {
   if (isLoading) return <div className="loading-overlay">Sincronizando dados...</div>;
 
   return (
-    <motion.div
+    <Motion.div
       className="profile-edit-wrapper"
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
-      <div className="profile-edit-glass-card">
+      <div className="profile-edit-card">
         <header className="profile-edit-header">
-          <h2>Editar Perfil</h2>
-          <button type="button" className="exit-button" onClick={() => navigate('/discovery')}>✕</button>
+          <h2>Editar perfil</h2>
+          <button type="button" className="exit-button" onClick={() => navigate('/discovery')} aria-label="Fechar">
+            <X size={18} aria-hidden="true" />
+          </button>
         </header>
 
         <form className="profile-edit-body" onSubmit={handleSave}>
 
           <div className="column-left">
-            {/* 🔥 BLOCO DA IMAGEM E INFO SEPARADOS! */}
             <div className="image-container-3x4">
               {photos.length > 0 ? (
-                <img src={photos[activePhoto]} alt="Perfil" className="img-render-3x4" />
+                <img src={photos[activePhoto]} alt="Foto do perfil" className="img-render-3x4" />
               ) : (
-                <div className="img-placeholder">Sem fotos</div>
+                <div className="img-placeholder"><ImageOff size={28} aria-hidden="true" /> Sem fotos</div>
               )}
             </div>
-            
+
             <div className="image-info-below">
               <h3>{formData.fullName || 'Usuário'}, {formData.age || '?'}</h3>
             </div>
-            {/* -------------------------------------- */}
 
             <div className="carousel-mini-list">
               {photos.map((photo, index) => (
@@ -259,10 +259,12 @@ const EditProfile = () => {
                   <img src={photo} alt="Thumb" className="img-render-3x4" />
 
                   {index === 0 && (
-                    <span className="main-photo-badge" title="Foto principal">★</span>
+                    <span className="main-photo-badge" title="Foto principal"><Star size={11} fill="currentColor" aria-hidden="true" /></span>
                   )}
 
-                  <span className="remove-item-btn" onClick={(e) => handleDeletePhoto(e, index)}>×</span>
+                  <button type="button" className="remove-item-btn" onClick={(e) => handleDeletePhoto(e, index)} aria-label={`Remover foto ${index + 1}`}>
+                    <X size={12} aria-hidden="true" />
+                  </button>
 
                   {/* T021 — reordenar e definir a foto principal (posição 0) */}
                   <span className="photo-controls">
@@ -271,31 +273,33 @@ const EditProfile = () => {
                       title="Mover para a esquerda"
                       disabled={index === 0}
                       onClick={(e) => handleMovePhoto(e, index, index - 1)}
-                    >←</button>
+                     aria-label="Mover para a esquerda"><ChevronLeft size={14} aria-hidden="true" /></button>
                     <button
                       type="button"
                       title="Definir como foto principal"
                       disabled={index === 0}
                       onClick={(e) => handleSetMainPhoto(e, index)}
-                    >★</button>
+                     aria-label="Definir como foto principal"><Star size={12} aria-hidden="true" /></button>
                     <button
                       type="button"
                       title="Mover para a direita"
                       disabled={index === photos.length - 1}
                       onClick={(e) => handleMovePhoto(e, index, index + 1)}
-                    >→</button>
+                     aria-label="Mover para a direita"><ChevronRight size={14} aria-hidden="true" /></button>
                   </span>
                 </div>
               ))}
-              
+
               {photos.length < MAX_PROFILE_PHOTOS && (
-                <div
+                <button
+                  type="button"
                   className="add-item-btn"
                   onClick={() => document.getElementById('fileIn').click()}
                   title="Adicionar foto"
+                  aria-label="Adicionar foto"
                 >
-                  {isSaving ? '...' : '+'}
-                </div>
+                  {isSaving ? <Loader2 size={18} className="spin" aria-hidden="true" /> : <Plus size={20} aria-hidden="true" />}
+                </button>
               )}
             </div>
 
@@ -310,7 +314,7 @@ const EditProfile = () => {
 
           <div className="column-right">
             <div className="input-field-premium">
-              <label>NOME COMPLETO</label>
+              <label>Nome completo</label>
               <input
                 type="text"
                 required
@@ -321,7 +325,7 @@ const EditProfile = () => {
 
             <div className="input-field-row">
               <div className="input-field-premium">
-                <label>IDADE</label>
+                <label>Idade</label>
                 <input
                   type="number"
                   min="18"
@@ -334,7 +338,7 @@ const EditProfile = () => {
             </div>
 
             <div className="input-field-premium">
-              <label>STATUS DE RELACIONAMENTO</label>
+              <label>Status de relacionamento</label>
               <select
                 value={formData.relationshipStatus}
                 onChange={e => setFormData({ ...formData, relationshipStatus: e.target.value })}
@@ -346,7 +350,7 @@ const EditProfile = () => {
             </div>
 
             <div className="input-field-premium">
-              <label>BIOGRAFIA</label>
+              <label>Biografia</label>
               <textarea
                 value={formData.bio}
                 maxLength={300}
@@ -355,8 +359,11 @@ const EditProfile = () => {
               />
             </div>
 
-            <div className="lgpd-security-bar-glass">
-              <span>Modo Discreto (LGPD)</span>
+            <div className="discrete-bar">
+              <span>
+                <strong>Modo Discreto</strong>
+                <small>Oculta seu perfil e desliga os checks azuis de leitura para os dois lados.</small>
+              </span>
               <label className="ui-switch-mini">
                 <input
                   type="checkbox"
@@ -369,14 +376,14 @@ const EditProfile = () => {
 
             <div className="form-action-buttons">
               <button type="submit" className="save-button-action" disabled={isSaving}>
-                {isSaving ? 'SALVANDO...' : 'SALVAR ALTERAÇÕES'}
+                {isSaving ? 'Salvando...' : 'Salvar alterações'}
               </button>
             </div>
           </div>
 
         </form>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 };
 

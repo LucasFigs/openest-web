@@ -1,24 +1,26 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { motion as Motion } from 'framer-motion';
 import './Legal.css';
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Aberta direto pelo link (sem histórico no app): volta para o início.
+  const voltar = () => (location.key !== 'default' ? navigate(-1) : navigate('/'));
 
   return (
     <div className="legal-page-wrapper">
-      <div className="legal-animated-bg"></div>
-      
-      <motion.div 
-        className="legal-glass-card"
+      <Motion.div
+        className="legal-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <header className="legal-header">
-          <button className="legal-back-button" onClick={() => navigate(-1)}>
-            ← Voltar
+          <button type="button" className="legal-back-button" onClick={voltar}>
+            <ArrowLeft size={16} aria-hidden="true" /> Voltar
           </button>
           <h1>Privacidade</h1>
           <p className="legal-subtitle">Em total conformidade com a LGPD (Brasil)</p>
@@ -27,7 +29,7 @@ const PrivacyPolicy = () => {
 
         <div className="legal-scroll-content">
           <section className="highlight-section">
-            <h3>🛡️ Direitos do Titular (Art. 18 LGPD)</h3>
+            <h3>Direitos do Titular (Art. 18 LGPD)</h3>
             <p>Garantimos a você o pleno exercício dos seus direitos:</p>
             <ul>
               <li><strong>Confirmação e Acesso:</strong> Direito de saber se tratamos seus dados e acessá-los.</li>
@@ -47,7 +49,7 @@ const PrivacyPolicy = () => {
             <p>Seus dados são armazenados de forma segura e utilizamos protocolos de criptografia para proteger suas interações no Chat.</p>
           </section>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 };

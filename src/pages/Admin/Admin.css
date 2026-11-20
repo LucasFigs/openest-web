@@ -1,152 +1,164 @@
+/* Painel admin (web) — sobre os tokens do tema. */
 .admin-page-container {
   display: flex;
-  height: 100vh;
-  background-color: #6a1b9a; /* Roxo principal do protótipo */
-  color: white;
-  overflow: hidden;
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  text-align: left;
 }
 
 .admin-sidebar {
-  width: 100px;
+  width: 76px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 40px 0;
+  padding: 20px 0;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
 }
+.admin-logo { width: 36px; height: auto; }
 
-.admin-badge {
-  position: relative;
-  font-size: 30px;
-}
-
-.badge-number {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background: white;
-  color: #6a1b9a;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 12px;
-  display: flex;
+.logout-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
 }
+.logout-btn:hover { background: var(--color-surface-muted); color: var(--color-text-primary); }
 
 .admin-main-content {
   flex: 1;
-  padding: 40px 60px;
-  display: flex;
-  flex-direction: column;
+  min-width: 0;
+  max-width: 1080px;
+  padding: 28px 32px 40px;
 }
 
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
+.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.admin-user-info h2 { margin: 0; font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.admin-user-info p { margin: 2px 0 6px; font-size: 24px; font-weight: 700; letter-spacing: -0.3px; }
+.admin-sample-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
 }
-
-.admin-user-info h2 { font-size: 14px; letter-spacing: 2px; margin: 0; opacity: 0.9; }
-.admin-user-info p { font-size: 24px; margin: 5px 0; font-weight: bold; }
-.admin-user-info span { font-size: 12px; opacity: 0.7; }
-
 .admin-avatar {
-  width: 70px;
-  height: 70px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-soft);
+  color: var(--color-accent);
+  font-weight: 700;
 }
 
+/* Abas em controle segmentado */
 .admin-tabs {
-  display: flex;
-  background: #fce4ec; /* Rosa muito claro */
-  border-radius: 10px 10px 0 0;
-  overflow: hidden;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
 }
-
 .admin-tabs button {
-  flex: 1;
-  padding: 15px;
-  border: none;
-  background: none;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: bold;
-  color: #880e4f;
-  transition: 0.3s;
 }
-
 .admin-tabs button.active {
-  background: white;
-  color: #6a1b9a;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .dashboard-card {
-  background: white;
-  color: #333;
-  padding: 40px;
-  border-radius: 0 0 10px 10px;
-  flex: 1;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
-.metrics-view h3 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #4a148c;
+.metrics-view { display: grid; gap: 28px; }
+.chart-group { margin: 0; }
+.chart-group figcaption { margin-bottom: 12px; }
+.chart-group h3,
+.reports-view h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.chart-group figcaption span { font-size: 13px; color: var(--color-text-secondary); }
+
+/* Denúncias por status: ícone + rótulo + número */
+.report-stats {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
-
-.metrics-footer {
-  display: flex;
-  justify-content: center;
-  gap: 50px;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+.report-stat {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "icon label" "value value" "pct pct";
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 6px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
-
-.stat-box { text-align: center; }
-.stat-box span { display: block; font-size: 12px; color: #999; }
-.stat-box strong { font-size: 20px; color: #4a148c; }
-.positive { color: #2e7d32 !important; }
-
-/* --- Estilização do Botão de Voltar/Sair --- */
-.logout-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 15px; /* Levemente arredondado, estilo iOS/Moderno */
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
+.report-stat__icon {
+  grid-area: icon;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  margin-bottom: 20px; /* Distância do fundo da sidebar */
+}
+.report-stat__label { grid-area: label; font-size: 14px; font-weight: 600; color: var(--color-text-secondary); }
+.report-stat__value { grid-area: value; font-size: 30px; font-weight: 700; letter-spacing: -0.5px; color: var(--color-text-primary); }
+.report-stat__pct { grid-area: pct; font-size: 12px; color: var(--color-text-tertiary); }
+.report-stat.is-critical .report-stat__icon { background: var(--color-danger-soft); color: var(--color-danger-text); }
+.report-stat.is-warning .report-stat__icon { background: var(--color-warning-soft); color: var(--color-warning-text); }
+.report-stat.is-good .report-stat__icon { background: var(--color-success-soft); color: var(--color-success-text); }
+
+/* Conteúdo só para leitores de tela */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.logout-btn:hover {
-  background: white;
-  color: #6a1b9a; /* Roxo principal do seu projeto */
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Opcional: Efeito de clique */
-.logout-btn:active {
-  transform: scale(0.95);
-}
-
-/* Ajuste na Sidebar para garantir que o botão fique no fundo */
-.admin-sidebar {
-  width: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between; /* Garante logo no topo e botão no fundo */
-  padding: 40px 0;
-  background-color: #00000021; /* Um roxo levemente mais escuro para profundidade */
+@media (max-width: 720px) {
+  .admin-page-container { flex-direction: column; }
+  .admin-sidebar { width: 100%; flex-direction: row; padding: 10px 16px; border-right: 0; border-bottom: 1px solid var(--color-border); }
+  .admin-main-content { padding: 20px 16px 32px; }
+  .report-stats { grid-template-columns: 1fr; }
 }
