@@ -1,12 +1,12 @@
 import React, { createContext, useState, useEffect } from 'react';
-import api from '../services/api'; 
+import api from '../services/api';
 import { connectSocket, disconnectSocket } from '../services/socket';
 
 // Token do admin offline (não existe no backend): não abre socket com ele.
 const OFFLINE_ADMIN_TOKEN = 'fake-jwt-token-admin';
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const AuthContext = createContext(null); 
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(adminUser));
       localStorage.setItem('token', adminToken);
       setUser(adminUser);
-      return; 
+      return;
     }
 
     const response = await api.post('/users/login', { email, password });
@@ -58,24 +58,38 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(loggedUser));
     localStorage.setItem('token', token);
     setUser(loggedUser);
-  
+
 
     localStorage.setItem('user', JSON.stringify(loggedUser));
     localStorage.setItem('token', token);
     setUser(loggedUser);
   };
 
-  // --- NOVA FUNÇÃO DE REGISTRO ---
-const register = async (userData) => {
-    // Adicionamos o /users/ para completar a URL corretamente!
+  // Cadastro. A API cria a conta só com nome, e-mail e senha; o resto do
+  // perfil (data, bio, status, foto) vai em `afterCreate`, que roda já com o
+  // token salvo e ANTES de a sessão abrir, para a Descoberta carregar o
+  // perfil completo. Se completar falhar, a conta continua criada e quem
+  // chamou recebe profileCompleted = false (para levar a pessoa ao perfil).
+  const register = async (userData, { afterCreate } = {}) => {
     const response = await api.post('/users/register', userData);
     const { user: registeredUser, token } = response.data;
 
-    localStorage.setItem('user', JSON.stringify(registeredUser));
     localStorage.setItem('token', token);
+    let profileCompleted = true;
+    if (afterCreate) {
+      try {
+        await afterCreate(registeredUser);
+      } catch (err) {
+        profileCompleted = false;
+        console.error('Cadastro: conta criada, mas o perfil ficou incompleto:', err?.response?.status, err?.response?.data);
+      }
+    }
+
+    localStorage.setItem('user', JSON.stringify(registeredUser));
     setUser(registeredUser);
+    return { user: registeredUser, profileCompleted };
   };
-  
+
   const logout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
