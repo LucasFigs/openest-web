@@ -9,12 +9,12 @@ describe('Testes de Integração Frontend/Backend - L005', () => {
     const emailUnico = `teste_${Date.now()}@email.com`;
     
     cy.visit('http://localhost:5173/welcome');
-    cy.contains('CRIAR CONTA').click();
+    cy.contains('button', 'Criar conta').click();
     
     // ETAPA 1 - Email e Senha
     cy.get('input[placeholder="exemplo@email.com"]').type(emailUnico);
-    cy.get('input[placeholder="******"]').first().type('123456');
-    cy.get('input[placeholder="******"]').last().type('123456');
+    cy.get('#reg-senha').type('123456');
+    cy.get('#reg-confirmar').type('123456');
     cy.get('.btn-primary').contains('Próximo').click();
     
     // ETAPA 2 - Nome, Data e Bio
@@ -25,7 +25,7 @@ describe('Testes de Integração Frontend/Backend - L005', () => {
     
     // ETAPA 3 - Foto e Identificação
     cy.get('select').select('individual');
-    cy.contains('FINALIZAR').click();  // Botão FINALIZAR em CAIXA ALTA
+    cy.contains('button', 'Criar conta').click();
     
     // Verificar se foi redirecionado (para login ou discovery)
     cy.url().should('not.contain', '/register');
@@ -36,10 +36,10 @@ describe('Testes de Integração Frontend/Backend - L005', () => {
   // ============================================
   it('Deve fazer login com sucesso e redirecionar', () => {
     cy.visit('http://localhost:5173/welcome');
-    cy.contains('JÁ TENHO UMA CONTA').click();
+    cy.contains('button', 'Já tenho conta').click();
     
-    cy.get('input[placeholder="Digite seu email"]').type('teste3@email.com');
-    cy.get('input[placeholder="********"]').type('123456');
+    cy.get('#login-email').type('teste3@email.com');
+    cy.get('#login-senha').type('123456');
     cy.get('.btn-entrar-submit').click();
     
     cy.url().should('include', '/discovery');
@@ -50,9 +50,9 @@ describe('Testes de Integração Frontend/Backend - L005', () => {
   // ============================================
   it('Deve manter o usuário logado após recarregar a página', () => {
     cy.visit('http://localhost:5173/welcome');
-    cy.contains('JÁ TENHO UMA CONTA').click();
-    cy.get('input[placeholder="Digite seu email"]').type('teste3@email.com');
-    cy.get('input[placeholder="********"]').type('123456');
+    cy.contains('button', 'Já tenho conta').click();
+    cy.get('#login-email').type('teste3@email.com');
+    cy.get('#login-senha').type('123456');
     cy.get('.btn-entrar-submit').click();
     
     cy.url().should('include', '/discovery');
@@ -61,18 +61,20 @@ describe('Testes de Integração Frontend/Backend - L005', () => {
   });
 
   // ============================================
-  // TESTE 4: Logout (PENDENTE - Funcionalidade não implementada)
+  // TESTE 4: Logout (Configurações → Sair da conta)
   // ============================================
   it('Deve fazer logout e redirecionar para a página inicial', () => {
     cy.visit('http://localhost:5173/welcome');
-    cy.contains('JÁ TENHO UMA CONTA').click();
-    cy.get('input[placeholder="Digite seu email"]').type('teste3@email.com');
-    cy.get('input[placeholder="********"]').type('123456');
+    cy.contains('button', 'Já tenho conta').click();
+    cy.get('#login-email').type('teste3@email.com');
+    cy.get('#login-senha').type('123456');
     cy.get('.btn-entrar-submit').click();
     
     cy.url().should('include', '/discovery');
     
-    cy.get('button:contains("Sair"), button:contains("Logout")').click();
+    cy.get('[aria-label="Configurações"]').click();
+    cy.contains('button', 'Sair da conta').click();
+    cy.get('.m-btn-danger').contains('Sair').click();
     cy.url().should('include', '/welcome');
   });
 

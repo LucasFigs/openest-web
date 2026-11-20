@@ -17,8 +17,8 @@ describe('Testes de Modo Discreto - L010', () => {
     cy.get('.welcome-btn-login').click();
     cy.wait(1000);
     
-    cy.get('input[placeholder="Digite seu email"]').type(usuario.email);
-    cy.get('input[placeholder="********"]').type(usuario.senha);
+    cy.get('#login-email').type(usuario.email);
+    cy.get('#login-senha').type(usuario.senha);
     cy.get('.btn-entrar-submit').click();
     
     cy.url().should('include', '/discovery');
@@ -27,14 +27,14 @@ describe('Testes de Modo Discreto - L010', () => {
 
   it('Deve acessar a tela de configurações', () => {
     fazerLogin();
-    cy.get('.mono-icon-shield').click();
+    cy.get('[aria-label="Configurações"]').click();
     cy.url().should('include', '/settings');
     cy.log('✅ Acessou tela de configurações');
   });
 
   it('Deve existir o toggle do Modo Discreto', () => {
     fazerLogin();
-    cy.get('.mono-icon-shield').click();
+    cy.get('[aria-label="Configurações"]').click();
     cy.url().should('include', '/settings');
     
     cy.get('.ui-slider').should('exist');
@@ -43,7 +43,7 @@ describe('Testes de Modo Discreto - L010', () => {
 
   it('Deve ativar o Modo Discreto', () => {
     fazerLogin();
-    cy.get('.mono-icon-shield').click();
+    cy.get('[aria-label="Configurações"]').click();
     cy.url().should('include', '/settings');
     
     // Usar .first() para pegar o primeiro slider
@@ -55,7 +55,7 @@ describe('Testes de Modo Discreto - L010', () => {
 
   it('Deve desativar o Modo Discreto', () => {
     fazerLogin();
-    cy.get('.mono-icon-shield').click();
+    cy.get('[aria-label="Configurações"]').click();
     cy.url().should('include', '/settings');
     
     cy.get('.ui-slider').first().click();
@@ -66,7 +66,7 @@ describe('Testes de Modo Discreto - L010', () => {
 
   it('Deve alternar o Modo Discreto (ON/OFF) sem erros', () => {
     fazerLogin();
-    cy.get('.mono-icon-shield').click();
+    cy.get('[aria-label="Configurações"]').click();
     cy.url().should('include', '/settings');
     
     // Alternar 3 vezes

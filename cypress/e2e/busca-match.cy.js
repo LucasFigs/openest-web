@@ -26,11 +26,11 @@ describe('Testes de Busca e Match - L007', () => {
       cy.visit('http://localhost:5173/welcome');
       cy.wait(1000);
       
-      cy.contains('JÁ TENHO UMA CONTA').click();
+      cy.contains('button', 'Já tenho conta').click();
       cy.wait(1000);
       
-      cy.get('input[placeholder="Digite seu email"]').type(email);
-      cy.get('input[placeholder="********"]').type(senha);
+      cy.get('#login-email').type(email);
+      cy.get('#login-senha').type(senha);
       cy.get('.btn-entrar-submit').click();
       
       cy.url().should('include', '/discovery');
@@ -41,11 +41,11 @@ describe('Testes de Busca e Match - L007', () => {
     // PASSO 1: Criar segundo usuário
     // ============================================
     cy.visit('http://localhost:5173/welcome');
-    cy.contains('CRIAR CONTA').click();
+    cy.contains('button', 'Criar conta').click();
     
     cy.get('input[placeholder="exemplo@email.com"]').type(usuario2.email);
-    cy.get('input[placeholder="******"]').first().type(usuario2.senha);
-    cy.get('input[placeholder="******"]').last().type(usuario2.senha);
+    cy.get('#reg-senha').type(usuario2.senha);
+    cy.get('#reg-confirmar').type(usuario2.senha);
     cy.get('.btn-primary').contains('Próximo').click();
     
     cy.get('input[placeholder="Seu nome"]').type(usuario2.nome);
@@ -54,7 +54,7 @@ describe('Testes de Busca e Match - L007', () => {
     cy.get('.btn-primary').contains('Próximo').click();
     
     cy.get('select').select('individual');
-    cy.contains('FINALIZAR').click();
+    cy.contains('button', 'Criar conta').click();
     
     cy.wait(2000);
     cy.log('✅ PASSO 1: Segundo usuário criado');
@@ -98,11 +98,11 @@ describe('Testes de Busca e Match - L007', () => {
     // ============================================
     fazerLogin(usuario1.email, usuario1.senha);
     
-    cy.visit('http://localhost:5173/chat/lista');
+    cy.visit('http://localhost:5173/chat');
     cy.wait(3000);
     
     // Verificar se o card de conversa existe
-    cy.get('.conv-card').should('exist');
+    cy.get('.conv-row').should('exist');
     cy.log('✅ PASSO 5: Match aparece na lista de chats!');
     
     cy.log('🎉 FLUXO COMPLETO DE MATCH EXECUTADO COM SUCESSO!');

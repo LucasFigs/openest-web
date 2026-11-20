@@ -1,45 +1,40 @@
-// cypress/e2e/auth.cy.js
+// cypress/e2e/autenticacao.cy.js — login de verdade.
+// Precisa da API rodando e da conta de teste teste3@email.com / 123456.
 
 describe('Testes de Autenticação - L003', () => {
 
-  // Antes de cada teste, visitar a página inicial e clicar em "JÁ TENHO UMA CONTA"
+  // Antes de cada teste: página inicial → "Já tenho conta" → tela de login.
   beforeEach(() => {
     cy.visit('http://localhost:5173/welcome');
-    cy.contains('JÁ TENHO UMA CONTA').click();
-    // Agora está na página de login
+    cy.contains('button', 'Já tenho conta').click();
+    cy.url().should('include', '/login');
   });
 
-  // Teste 1: Login com dados válidos
   it('Deve fazer login com sucesso', () => {
-    cy.get('input[type="email"]').type('teste3@email.com');
-    cy.get('input[type="password"]').type('123456');
+    cy.get('#login-email').type('teste3@email.com');
+    cy.get('#login-senha').type('123456');
     cy.get('button[type="submit"]').click();
-    
-    // Verificar se redirecionou para alguma página (não está mais no login)
+
+    // Saiu do login (vai para a Descoberta).
     cy.url().should('not.include', '/login');
   });
 
-  // Teste 2: Login com senha errada (capturando o alert)
+  // O erro agora aparece na própria tela (antes era um alert do navegador).
   it('Deve mostrar erro ao tentar login com senha errada', () => {
-    // Escuta o alert antes de clicar no botão
-    cy.on('window:alert', (textoDoAlert) => {
-      expect(textoDoAlert).to.contain('Falha no login');
-    });
-    
-    cy.get('input[type="email"]').type('teste3@email.com');
-    cy.get('input[type="password"]').type('senhaerrada123');
+    cy.get('#login-email').type('teste3@email.com');
+    cy.get('#login-senha').type('senhaerrada123');
     cy.get('button[type="submit"]').click();
+
+    cy.get('.login-error').should('be.visible').and('contain', 'E-mail ou senha incorretos');
+    cy.url().should('include', '/login');
   });
 
-  // Teste 3: Login com email não existente (capturando o alert)
   it('Deve mostrar erro ao tentar login com email inexistente', () => {
-    // Escuta o alert antes de clicar no botão
-    cy.on('window:alert', (textoDoAlert) => {
-      expect(textoDoAlert).to.contain('Falha no login');
-    });
-    
-    cy.get('input[type="email"]').type('naoexiste@email.com');
-    cy.get('input[type="password"]').type('123456');
+    cy.get('#login-email').type('naoexiste@email.com');
+    cy.get('#login-senha').type('123456');
     cy.get('button[type="submit"]').click();
+
+    cy.get('.login-error').should('be.visible').and('contain', 'E-mail ou senha incorretos');
+    cy.url().should('include', '/login');
   });
 });

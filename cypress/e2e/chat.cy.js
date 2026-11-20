@@ -18,8 +18,8 @@ describe('Testes de Chat - L012', () => {
     cy.get('.welcome-btn-login').click();
     cy.wait(1000);
     
-    cy.get('input[placeholder="Digite seu email"]').type(usuario.email);
-    cy.get('input[placeholder="********"]').type(usuario.senha);
+    cy.get('#login-email').type(usuario.email);
+    cy.get('#login-senha').type(usuario.senha);
     cy.get('.btn-entrar-submit').click();
     
     cy.url().should('include', '/discovery');
@@ -44,27 +44,27 @@ describe('Testes de Chat - L012', () => {
         cy.log('✅ Redirecionou para o chat');
         
         const mensagem = `Teste automatizado - ${Date.now()}`;
-        cy.get('input[placeholder="Envie uma mensagem..."]').type(mensagem);
-        cy.get('.btn-send').click();
+        cy.get('[placeholder="Mensagem"]').type(mensagem);
+        cy.get('.composer__send').click();
         cy.wait(1000);
         cy.contains(mensagem).should('be.visible');
         cy.log('✅ Mensagem enviada com sucesso');
         
         // ========== PASSO 4: VOLTAR PARA TELA DE DISCOVERY ==========
         cy.wait(1000);
-        cy.get('.icon-back').click();
+        cy.get('[aria-label="Voltar para Descobrir"]').click();
         cy.wait(1000);
         cy.url().should('include', '/discovery');
         cy.log('✅ Voltou para a tela de discovery');
         
         // ========== PASSO 5: IR PARA LISTA DE CHATS ==========
-        cy.get('.mono-icon').first().click();
+        cy.get('[aria-label="Conversas"]').click();
         cy.wait(1000);
-        cy.url().should('include', '/chat/lista');
+        cy.url().should('include', '/chat');
         cy.log('✅ Acessou a lista de chats');
         
         // ========== PASSO 6: ENTRAR NA CONVERSA PELA LISTA ==========
-        cy.get('.conv-info').first().click();
+        cy.get('.conv-row').first().click();
         cy.wait(1000);
         cy.url().should('match', /\/chat\/\d+/);
         cy.log('✅ Entrou na conversa pela lista de chats');

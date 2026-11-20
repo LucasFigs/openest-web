@@ -4,12 +4,12 @@ describe('Testes de Upload de Foto - L004', () => {
 
   beforeEach(() => {
     cy.visit('http://localhost:5173/welcome');
-    cy.contains('JÁ TENHO UMA CONTA').click();
+    cy.contains('button', 'Já tenho conta').click();
     cy.get('input[type="email"]').type('teste3@email.com');
     cy.get('input[type="password"]').type('123456');
     cy.get('button[type="submit"]').click();
     cy.url().should('include', '/discovery');
-    cy.get('img[alt="Profile"]').click();
+    cy.get('[aria-label="Editar perfil"]').click();
     cy.url().should('include', '/edit-profile');
   });
 

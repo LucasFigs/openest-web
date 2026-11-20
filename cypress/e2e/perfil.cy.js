@@ -14,11 +14,11 @@ describe('Testes de Tela de Perfil - L008', () => {
     cy.visit('http://localhost:5173/welcome');
     cy.wait(1000);
     
-    cy.contains('JÁ TENHO UMA CONTA').click();
+    cy.contains('button', 'Já tenho conta').click();
     cy.wait(1000);
     
-    cy.get('input[placeholder="Digite seu email"]').type(usuario.email);
-    cy.get('input[placeholder="********"]').type(usuario.senha);
+    cy.get('#login-email').type(usuario.email);
+    cy.get('#login-senha').type(usuario.senha);
     cy.get('.btn-entrar-submit').click();
     
     cy.url().should('include', '/discovery');
@@ -36,7 +36,7 @@ describe('Testes de Tela de Perfil - L008', () => {
   // ============================================
   it('Deve acessar a tela de perfil com sucesso', () => {
     fazerLogin();
-    cy.get('img[alt="Profile"]').click();
+    cy.get('[aria-label="Editar perfil"]').click();
     cy.url().should('include', '/edit-profile');
     cy.log('✅ Acessou a tela de perfil');
   });
@@ -46,7 +46,7 @@ describe('Testes de Tela de Perfil - L008', () => {
   // ============================================
   it('Deve exibir todos os campos do perfil', () => {
     fazerLogin();
-    cy.get('img[alt="Profile"]').click();
+    cy.get('[aria-label="Editar perfil"]').click();
     cy.url().should('include', '/edit-profile');
     
     cy.get('input[type="text"]').first().should('be.visible');
@@ -64,7 +64,7 @@ describe('Testes de Tela de Perfil - L008', () => {
     const nomeNovo = `Leandro Editado ${Date.now()}`;
     
     fazerLogin();
-    cy.get('img[alt="Profile"]').click();
+    cy.get('[aria-label="Editar perfil"]').click();
     cy.url().should('include', '/edit-profile');
     
     cy.get('input[type="text"]').first().clear().type(nomeNovo);
@@ -84,7 +84,7 @@ describe('Testes de Tela de Perfil - L008', () => {
     const bioNova = `Teste automatizado Cypress - ${Date.now()}`;
     
     fazerLogin();
-    cy.get('img[alt="Profile"]').click();
+    cy.get('[aria-label="Editar perfil"]').click();
     cy.url().should('include', '/edit-profile');
     
     cy.get('textarea').clear().type(bioNova);
@@ -102,7 +102,7 @@ describe('Testes de Tela de Perfil - L008', () => {
   // ============================================
   it('Deve alterar o status do usuário com sucesso', () => {
     fazerLogin();
-    cy.get('img[alt="Profile"]').click();
+    cy.get('[aria-label="Editar perfil"]').click();
     cy.url().should('include', '/edit-profile');
     
     cy.get('select').then(($select) => {
@@ -132,7 +132,7 @@ describe('Testes de Tela de Perfil - L008', () => {
     const idadeNova = '30';
     
     fazerLogin();
-    cy.get('img[alt="Profile"]').click();
+    cy.get('[aria-label="Editar perfil"]').click();
     cy.url().should('include', '/edit-profile');
     
     cy.get('input[type="number"]').clear().type(idadeNova);
