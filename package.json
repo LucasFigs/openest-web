@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/drei": "10.7.9",
+    "@react-three/fiber": "9.8.2",
     "axios": "^1.14.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",
@@ -18,7 +20,8 @@
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.14.2",
     "recharts": "^3.8.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "three": "0.187.0"
   },
   "devDependencies": {
     "@4tw/cypress-drag-drop": "^2.3.1",
